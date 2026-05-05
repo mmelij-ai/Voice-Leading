@@ -1740,6 +1740,18 @@
             if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
         };
 
+        window.limpiarProgresion = function() {
+            window.progresion = []; window.indiceEdicion = -1; window.hitboxes = []; window.registroInicial = 'central'; window.modalContextIndex = -1; window.currentModalSection = 'all'; 
+            document.getElementById('posicion-inicial').value = window.calcularMejorPosicionSoprano('I', document.getElementById('tipo-voicing').value);
+            window.actualizarTimeline();
+            const t = document.getElementById('titulo-agregar'); t.innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`; t.className = "font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300";
+            document.getElementById("contenedor-partitura").innerHTML = "<p class='text-slate-500 text-center mt-20 font-medium italic text-lg'>Agrega acordes para visualizar el Voice Leading...</p>";
+            const envolturaPiano = document.getElementById("envoltura-piano");
+            if (envolturaPiano) { envolturaPiano.classList.remove("flex"); envolturaPiano.classList.add("hidden"); }
+            window.iluminarPiano([], []); window.guardarEstado();
+            if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
+        };
+
         window.renderizarPartitura = function(activeIndex = -1, autoScroll = true) {
             const envolturaPiano = document.getElementById("envoltura-piano");
             
@@ -2097,6 +2109,60 @@
             });
 
             window.playTimeouts.push(setTimeout(() => { if (window.isReproduciendo) window.detenerAudio(); }, time * 1000));
+        };
+
+        window.exportarMusicXML = function() {
+            if (window.progresion.length === 0) return window.mostrarToast("Agrega acordes primero para poder exportar.", "error");
+            let measures = []; let currentMeasure = { beats: 0, chords: [] };
+            window.progresion.forEach((acorde) => {
+                if (currentMeasure.beats + acorde.beats > 4) { measures.push(currentMeasure); currentMeasure = { beats: 0, chords: [] }; }
+                currentMeasure.chords.push(acorde); currentMeasure.beats += acorde.beats;
+                if (currentMeasure.beats === 4) { measures.push(currentMeasure); currentMeasure = { beats: 0, chords: [] }; }
+            });
+            if (currentMeasure.chords.length > 0) measures.push(currentMeasure);
+
+            const bpm = parseInt(document.getElementById("tempo-input").value) || 100;
+            const fifths = infoTonalidades[window.tonalidadActual].fifths;
+            let xmlContent = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n<score-partwise version="3.1"><part-list><score-part id="P1"><part-name>Piano</part-name></score-part></part-list><part id="P1">`;
+
+            measures.forEach((measure, mIndex) => {
+                let xmlTreble = ""; let xmlBass = "";
+                measure.chords.forEach(acorde => {
+                    const durXML = acorde.beats; const typeXML = acorde.beats === 4 ? "whole" : (acorde.beats === 2 ? "half" : "quarter");
+                    
+                    if (acorde.isRest) {
+                        xmlTreble += `<note><rest/><duration>${durXML}</duration><voice>1</voice><type>${typeXML}</type><staff>1</staff></note>`;
+                        xmlBass += `<note><rest/><duration>${durXML}</duration><voice>2</voice><type>${typeXML}</type><staff>2</staff></note>`;
+                        return;
+                    }
+
+                    let root = acorde.nombre.charAt(0); if (acorde.nombre.charAt(1) === '#' || acorde.nombre.charAt(1) === 'b') root = acorde.nombre.substring(0, 2);
+                    let kindStr = acorde.nombre.substring(root.length);
+                    let kindXML = kindStr === "maj7" ? `<kind text="maj7">major-seventh</kind>` : (kindStr === "m7" ? `<kind text="m7">minor-seventh</kind>` : (kindStr === "7" ? `<kind text="7">dominant</kind>` : (kindStr === "m7b5" ? `<kind text="m7b5">half-diminished</kind>` : (kindStr === "6" ? `<kind text="6">major-sixth</kind>` : (kindStr === "m" ? `<kind text="m">minor</kind>` : (kindStr === "dim" ? `<kind text="dim">diminished</kind>` : `<kind text="">major</kind>`))))));
+                    let rootStep = root.charAt(0); let rootAlterXML = root.includes("#") ? `<root-alter>1</root-alter>` : (root.includes("b") ? `<root-alter>-1</root-alter>` : "");
+                    xmlTreble += `<harmony placement="above"><root><root-step>${rootStep}</root-step>${rootAlterXML}</root>${kindXML}<staff>1</staff></harmony>`;
+                    acorde.trebleMidi.forEach((midi, i) => {
+                        let octava = Math.floor(midi / 12) - 1; const notaOriginal = acorde.spellings[midi % 12]; if (notaOriginal === "cb") octava += 1;
+                        const step = notaOriginal.charAt(0).toUpperCase(); let alterXML = notaOriginal.includes("#") ? `<alter>1</alter>` : (notaOriginal.length > 1 && notaOriginal.includes("b") ? `<alter>-1</alter>` : "");
+                        xmlTreble += `<note>${i > 0 ? "<chord/>" : ""}<pitch><step>${step}</step>${alterXML}<octave>${octava}</octave></pitch><duration>${durXML}</duration><voice>1</voice><type>${typeXML}</type><staff>1</staff></note>`;
+                    });
+                    xmlBass += `<harmony placement="below"><function>${acorde.roman}</function><staff>2</staff></harmony>`;
+                    let bassOct = Math.floor(acorde.rootMidi / 12) - 1; const bassNotaOriginal = acorde.spellings[acorde.rootMidi % 12]; if (bassNotaOriginal === "cb") bassOct += 1;
+                    const bStep = bassNotaOriginal.charAt(0).toUpperCase(); let bAlterXML = bassNotaOriginal.includes("#") ? `<alter>1</alter>` : (bassNotaOriginal.length > 1 && bassNotaOriginal.includes("b") ? `<alter>-1</alter>` : "");
+                    xmlBass += `<note><pitch><step>${bStep}</step>${bAlterXML}<octave>${bassOct}</octave></pitch><duration>${durXML}</duration><voice>2</voice><type>${typeXML}</type><staff>2</staff></note>`;
+                });
+                xmlContent += `<measure number="${mIndex + 1}">`;
+                if (mIndex === 0) xmlContent += `<attributes><divisions>1</divisions><key><fifths>${fifths}</fifths></key><time><beats>4</beats><beat-type>4</beat-type></time><staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef></attributes><direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>${bpm}</per-minute></metronome></direction-type><sound tempo="${bpm}"/></direction>`;
+                xmlContent += `${xmlTreble}<backup><duration>${measure.beats}</duration></backup>${xmlBass}`;
+                if (mIndex === measures.length - 1) xmlContent += `<barline location="right"><bar-style>light-heavy</bar-style></barline>`;
+                xmlContent += `</measure>`;
+            });
+
+            xmlContent += `</part></score-partwise>`;
+            const blob = new Blob([xmlContent], { type: 'application/vnd.recordare.musicxml+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `progresion_${window.tonalidadActual}Mayor.musicxml`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
         };
 
     </script>
