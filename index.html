@@ -1438,19 +1438,89 @@
 
         window.agregarCadencia = async function(id1, id2) {
             document.getElementById('panel-variantes-armonicas').classList.add('hidden');
-            let indexObjetivo = (window.indiceEdicion !== -1) ? window.indiceEdicion : window.progresion.length;
+            let isEdition = window.indiceEdicion !== -1;
+            let indexObjetivo = isEdition ? window.indiceEdicion : window.progresion.length;
             if (window.modoActual === 'preview') return; 
-            let vexDur = 'h'; let beats = 2;
-            for (let r of document.getElementsByName('ritmo')) { if (r.checked) { vexDur = r.value; beats = r.value === 'w' ? 4 : (r.value === 'h' ? 2 : 1); } }
+
+            // NUEVO: Gravedad tonal garantizada al C central para el primer acorde real a todo evento
+            let isPrimerAcordeReal = true;
+            for (let i = 0; i < indexObjetivo; i++) {
+                if (window.progresion[i] && !window.progresion[i].isRest) {
+                    isPrimerAcordeReal = false;
+                    break;
+                }
+            }
+
+            if (isPrimerAcordeReal) {
+                let mejorPos = window.calcularMejorPosicionSoprano(id1, document.getElementById('tipo-voicing').value);
+                const sel = document.getElementById('posicion-inicial');
+                if (sel && sel.options.length > 0) {
+                    if (mejorPos >= sel.options.length && sel.options.length > 1) mejorPos = sel.options.length - 2;
+                    sel.value = mejorPos;
+                }
+            }
+
+            let vexDur = 'h'; let beatsPorAcorde = 2;
+            for (let r of document.getElementsByName('ritmo')) { 
+                if (r.checked) { vexDur = r.value; beatsPorAcorde = r.value === 'w' ? 4 : (r.value === 'h' ? 2 : 1); } 
+            }
             
-            let check = await window.comprobarDesbordamiento(beats * 2);
-            if (check.accion !== 'ok') { window.mostrarToast("No hay espacio suficiente en el compás para una cadencia completa. Selecciona otra figura.", "error"); return; }
+            let beatsTotalesCadencia = beatsPorAcorde * 2;
+
+            if (!isEdition) {
+                let check = await window.comprobarDesbordamiento(beatsTotalesCadencia);
+                if (check.accion !== 'ok') { window.mostrarToast("No hay espacio suficiente en el compás para una cadencia completa.", "error"); return; }
+            } else {
+                let acActual = window.progresion[window.indiceEdicion];
+                let diferencia = beatsTotalesCadencia - acActual.beats;
+
+                if (diferencia > 0) {
+                    let diffAbs = diferencia;
+                    let beatsBorrables = 0; let silenciosBorrables = 0;
+                    for (let i = window.indiceEdicion + 1; i < window.progresion.length; i++) {
+                        if (window.progresion[i].isRest) {
+                            beatsBorrables += window.progresion[i].beats;
+                            silenciosBorrables++;
+                            if (beatsBorrables >= diffAbs) break;
+                        } else break; 
+                    }
+
+                    if (window.indiceEdicion === window.progresion.length - 1 || beatsBorrables >= diffAbs) {
+                        if (silenciosBorrables > 0) {
+                            window.progresion.splice(window.indiceEdicion + 1, silenciosBorrables);
+                            let sobrante = beatsBorrables - diffAbs;
+                            let silenciosInsertar = [];
+                            while(sobrante > 0) {
+                                if (sobrante >= 2) { silenciosInsertar.push({ isRest: true, nombre: "𝄽", vexDuration: 'h', beats: 2 }); sobrante -= 2; }
+                                else { silenciosInsertar.push({ isRest: true, nombre: "𝄽", vexDuration: 'q', beats: 1 }); sobrante -= 1; }
+                            }
+                            if (silenciosInsertar.length > 0) window.progresion.splice(window.indiceEdicion + 1, 0, ...silenciosInsertar);
+                        }
+                    } else {
+                        window.mostrarToast("No tienes espacio suficiente por delante para insertar la cadencia. Borra el siguiente acorde primero.", "error");
+                        return;
+                    }
+                } else if (diferencia < 0) {
+                    let silenciosInsertar = [];
+                    let b = Math.abs(diferencia);
+                    while(b > 0) {
+                        if (b >= 2) { silenciosInsertar.push({ isRest: true, nombre: "𝄽", vexDuration: 'h', beats: 2 }); b -= 2; }
+                        else { silenciosInsertar.push({ isRest: true, nombre: "𝄽", vexDuration: 'q', beats: 1 }); b -= 1; }
+                    }
+                    window.progresion.splice(window.indiceEdicion + 1, 0, ...silenciosInsertar);
+                }
+            }
 
             let backup = JSON.parse(JSON.stringify(window.progresion));
             
-            const crearAcordeObj = (gId) => ({ gradoId: gId, nombre: window.diccionarioActual[gId].nombre, roman: window.diccionarioActual[gId].roman, rootMidi: window.diccionarioActual[gId].root, trebleMidi: [], voicingsDisponibles: [], voicingSeleccionado: 0, bassOctaveOffset: 0, ignorarLIL: false, ignorarDisonancia: false, vexDuration: vexDur, beats: beats, spellings: window.diccionarioActual[gId].spellings || window.nombresNotasActual });
+            const crearAcordeObj = (gId) => ({ 
+                gradoId: gId, nombre: window.diccionarioActual[gId].nombre, roman: window.diccionarioActual[gId].roman, 
+                rootMidi: window.diccionarioActual[gId].root, trebleMidi: [], voicingsDisponibles: [], voicingSeleccionado: 0, 
+                bassOctaveOffset: 0, ignorarLIL: false, ignorarDisonancia: false, vexDuration: vexDur, beats: beatsPorAcorde, 
+                spellings: window.diccionarioActual[gId].spellings || window.nombresNotasActual 
+            });
 
-            if (window.indiceEdicion !== -1) { window.progresion.splice(window.indiceEdicion, 1, crearAcordeObj(id1), crearAcordeObj(id2)); } 
+            if (isEdition) { window.progresion.splice(window.indiceEdicion, 1, crearAcordeObj(id1), crearAcordeObj(id2)); } 
             else { window.progresion.push(crearAcordeObj(id1), crearAcordeObj(id2)); }
 
             window.recalcularProgresion(indexObjetivo);
@@ -1582,14 +1652,33 @@
             if (window.modoActual === 'preview') indexObjetivo = 0; 
             let dictObj = window.diccionarioActual[gradoId];
             if (!dictObj) return; 
-            const targetNotes = window.getEstructuraVoicing(dictObj.tetrad, document.getElementById('tipo-voicing').value);
-            const topDegreeIndex = parseInt(document.getElementById('posicion-inicial').value) || 0; 
+
+            // NUEVO: Gravedad tonal garantizada al C central para el primer acorde real a todo evento
+            let isPrimerAcordeReal = true;
+            for (let i = 0; i < indexObjetivo; i++) {
+                if (window.progresion[i] && !window.progresion[i].isRest) {
+                    isPrimerAcordeReal = false;
+                    break;
+                }
+            }
+
+            if (isPrimerAcordeReal && window.modoActual !== 'preview') {
+                let mejorPos = window.calcularMejorPosicionSoprano(gradoId, document.getElementById('tipo-voicing').value);
+                const sel = document.getElementById('posicion-inicial');
+                if (sel && sel.options.length > 0) {
+                    if (mejorPos >= sel.options.length && sel.options.length > 1) mejorPos = sel.options.length - 2;
+                    sel.value = mejorPos;
+                }
+            }
             
             if (window.modoActual === 'preview') {
                 let dictI = window.diccionarioActual['I'];
                 let refTargetNotes = window.getEstructuraVoicing(dictI.tetrad, document.getElementById('tipo-voicing').value);
+                // Utiliza la posición de I como referencia para el preview
+                const topDegreeIndex = parseInt(document.getElementById('posicion-inicial').value) || 0; 
                 let refVoicing = window.generarVoicingInicial(refTargetNotes, topDegreeIndex);
 
+                const targetNotes = window.getEstructuraVoicing(dictObj.tetrad, document.getElementById('tipo-voicing').value);
                 let opcionesPreview = window.enlazarAcordeOpciones(refVoicing, targetNotes);
                 const voicingPreview = opcionesPreview[0].voicing;
 
@@ -1648,18 +1737,6 @@
                 }
             }
             
-            if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
-        };
-
-        window.limpiarProgresion = function() {
-            window.progresion = []; window.indiceEdicion = -1; window.hitboxes = []; window.registroInicial = 'central'; window.modalContextIndex = -1; window.currentModalSection = 'all'; 
-            document.getElementById('posicion-inicial').value = window.calcularMejorPosicionSoprano('I', document.getElementById('tipo-voicing').value);
-            window.actualizarTimeline();
-            const t = document.getElementById('titulo-agregar'); t.innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`; t.className = "font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300";
-            document.getElementById("contenedor-partitura").innerHTML = "<p class='text-slate-500 text-center mt-20 font-medium italic text-lg'>Agrega acordes para visualizar el Voice Leading...</p>";
-            const envolturaPiano = document.getElementById("envoltura-piano");
-            if (envolturaPiano) { envolturaPiano.classList.remove("flex"); envolturaPiano.classList.add("hidden"); }
-            window.iluminarPiano([], []); window.guardarEstado();
             if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
         };
 
