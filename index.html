@@ -383,13 +383,147 @@
         const infoTonalidades={"C":{fifths:0,rootMidi:48,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"G":{fifths:1,rootMidi:43,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"D":{fifths:2,rootMidi:50,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"A":{fifths:3,rootMidi:45,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"E":{fifths:4,rootMidi:40,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"B":{fifths:5,rootMidi:47,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"F":{fifths:-1,rootMidi:41,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Bb":{fifths:-2,rootMidi:46,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Eb":{fifths:-3,rootMidi:51,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Ab":{fifths:-4,rootMidi:44,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Db":{fifths:-5,rootMidi:49,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Gb":{fifths:-6,rootMidi:42,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","cb"]}};
         
         const gradosDiatonicos = [
-            { id: "I", interval: 0, triadType: "", tetradType: "maj7", triadRoman: "I", tetradRoman: "Imaj7", tetrad: [0, 4, 7, 11], megaMenu: true, areas: { intercambio: [{ tipo: 'I_modal', name: "Im7", rootOffset: 0, triadExt: "m", tetradExt: "m7", tetrad: [0, 3, 7, 10], modeShift: 3 }], disminuidos: [{ tipo: 'I_dimAux', name: "I°7", rootOffset: 0, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: 3 }, { tipo: 'I_dimPaso', name: "#I°7", rootOffset: 1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: -3 }], dominantes: [{ tipo: 'I_V7', name: "V7", rootOffset: 7, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 1 }, { tipo: 'I_subV7', name: "subV7", rootOffset: 1, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 6 }], cadencias: [{ tipo: 'cad_I_1', name: "IIm7 - V7", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "IIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7", tetradMod: [0,4,7,10], modeShift: 1 } }, { tipo: 'cad_I_2', name: "IIrel - V7", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7", tetradMod: [0,4,7,10], modeShift: 1 } }, { tipo: 'cad_I_4', name: "IIrel - subV7", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7", tetradMod: [0,4,7,10], modeShift: 6 } }, { tipo: 'cad_I_3', name: "IIm7 - subV7", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "IIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7", tetradMod: [0,4,7,10], modeShift: 6 } }] } },
-            {id:"II",interval:2,triadType:"m",tetradType:"m7",triadRoman:"IIm",tetradRoman:"IIm7",tetrad:[0,3,7,10],variantes:[{tipo:'int',name:"bIImaj7",rootOffset:-1,triadExt:"",tetradExt:"maj7",tetrad:[0,4,7,11],modeShift:4},{tipo:'dom',name:"V7/V",rootOffset:0,triadExt:"",tetradExt:"7",tetrad:[0,4,7,10],modeShift:-1,resuelveA:"V"},{tipo:'cad',name:"II-V al V",resuelveA:"V",c1:{rootOffset:7,triadExt:"m",tetradExt:"m7",roman:"VIm7",tetradMod:[0,3,7,10],modeShift:-1},c2:{rootOffset:0,triadExt:"",tetradExt:"7",roman:"V7/V",tetradMod:[0,4,7,10],modeShift:-1}}]},
-            {id:"III",interval:4,triadType:"m",tetradType:"m7",triadRoman:"IIIm",tetradRoman:"IIIm7",tetrad:[0,3,7,10],variantes:[{tipo:'int',name:"bIIImaj7",rootOffset:-1,triadExt:"",tetradExt:"maj7",tetrad:[0,4,7,11],modeShift:2},{tipo:'dom',name:"V7/VI",rootOffset:0,triadExt:"",tetradExt:"7",tetrad:[0,4,7,10],modeShift:-3,resuelveA:"VI"},{tipo:'cad',name:"II-V al VI",resuelveA:"VI",c1:{rootOffset:7,triadExt:"dim",tetradExt:"m7b5",roman:"VIIm7b5",tetradMod:[0,3,6,10],modeShift:0},c2:{rootOffset:0,triadExt:"",tetradExt:"7",roman:"V7/VI",tetradMod:[0,4,7,10],modeShift:-3}}]},
-            {id:"IV",interval:5,triadType:"",tetradType:"maj7",triadRoman:"IV",tetradRoman:"IVmaj7",tetrad:[0,4,7,11],variantes:[{tipo:'int1',name:"IVm7",rootOffset:0,triadExt:"m",tetradExt:"m7",tetrad:[0,3,7,10],modeShift:3},{tipo:'int2',name:"IV7",rootOffset:0,triadExt:"",tetradExt:"7",tetrad:[0,4,7,10],modeShift:2},{tipo:'cad',name:"II-V al bVII",resuelveA:"bVII",c1:{rootOffset:7,triadExt:"m",tetradExt:"m7",roman:"Im7",tetradMod:[0,3,7,10],modeShift:2},c2:{rootOffset:0,triadExt:"",tetradExt:"7",roman:"V7/bVII",tetradMod:[0,4,7,10],modeShift:2}}]},
-            {id:"V",interval:7,triadType:"",tetradType:"7",triadRoman:"V",tetradRoman:"V7",tetrad:[0,4,7,10],variantes:[{tipo:'int',name:"Vm7",rootOffset:0,triadExt:"m",tetradExt:"m7",tetrad:[0,3,7,10],modeShift:1},{tipo:'sus',name:"V7sus4",rootOffset:0,triadExt:"sus4",tetradExt:"7sus4",tetrad:[0,5,7,10],modeShift:0},{tipo:'cad',name:"II-V al I",resuelveA:"I",c1:{rootOffset:7,triadExt:"m",tetradExt:"m7",roman:"IIm7",tetradMod:[0,3,7,10],modeShift:0},c2:{rootOffset:0,triadExt:"",tetradExt:"7",roman:"V7",tetradMod:[0,4,7,10],modeShift:0}}]},
-            {id:"VI",interval:9,triadType:"m",tetradType:"m7",triadRoman:"VIm",tetradRoman:"VIm7",tetrad:[0,3,7,10],variantes:[{tipo:'int',name:"bVImaj7",rootOffset:-1,triadExt:"",tetradExt:"maj7",tetrad:[0,4,7,11],modeShift:3},{tipo:'dom',name:"V7/II",rootOffset:0,triadExt:"",tetradExt:"7",tetrad:[0,4,7,10],modeShift:-2,resuelveA:"II"},{tipo:'cad',name:"II-V al II",resuelveA:"II",c1:{rootOffset:7,triadExt:"m",tetradExt:"m7",roman:"IIIm7",tetradMod:[0,3,7,10],modeShift:0},c2:{rootOffset:0,triadExt:"",tetradExt:"7",roman:"V7/II",tetradMod:[0,4,7,10],modeShift:-2}}]},
-            {id:"VII",interval:11,triadType:"dim",tetradType:"m7b5",triadRoman:"VIIdim",tetradRoman:"VIIm7b5",tetrad:[0,3,6,10],variantes:[{tipo:'int1',name:"bVII7",rootOffset:-1,triadExt:"",tetradExt:"7",tetrad:[0,4,7,10],modeShift:3},{tipo:'int2',name:"bVIImaj7",rootOffset:-1,triadExt:"",tetradExt:"maj7",tetrad:[0,4,7,11],modeShift:1},{tipo:'dom',name:"V7/III",rootOffset:0,triadExt:"",tetradExt:"7",tetrad:[0,4,7,10],modeShift:-4,resuelveA:"III"},{tipo:'cad',name:"II-V al III",resuelveA:"III",c1:{rootOffset:7,triadExt:"dim",tetradExt:"m7b5",roman:" ",tetradMod:[0,3,6,10],modeShift:-1},c2:{rootOffset:0,triadExt:"",tetradExt:"7",roman:"V7/III",tetradMod:[0,4,7,10],modeShift:-4}}]}
+            {
+                id: "I", interval: 0, triadType: "", tetradType: "maj7", triadRoman: "I", tetradRoman: "Imaj7", tetrad: [0, 4, 7, 11],
+                megaMenu: true,
+                areas: {
+                    intercambio: [
+                        { tipo: 'I_modal', name: "Im7", rootOffset: 0, triadExt: "m", tetradExt: "m7", tetrad: [0, 3, 7, 10], modeShift: 3 }
+                    ],
+                    disminuidos: [
+                        { tipo: 'I_dimAux', name: "I°7", rootOffset: 0, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: 3 },
+                        { tipo: 'I_dimPaso', name: "#I°7", rootOffset: 1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: -3 }
+                    ],
+                    dominantes: [
+                        { tipo: 'I_V7', name: "V7", rootOffset: 7, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 1 },
+                        { tipo: 'I_subV7', name: "subV7", rootOffset: 1, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 6 }
+                    ],
+                    cadencias: [
+                        { tipo: 'cad_I_1', name: "IIm7 - V7", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "IIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7", tetradMod: [0,4,7,10], modeShift: 1 } },
+                        { tipo: 'cad_I_2', name: "IIrel - V7", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7", tetradMod: [0,4,7,10], modeShift: 1 } },
+                        { tipo: 'cad_I_4', name: "IIrel - subV7", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7", tetradMod: [0,4,7,10], modeShift: 6 } },
+                        { tipo: 'cad_I_3', name: "IIm7 - subV7", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "IIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7", tetradMod: [0,4,7,10], modeShift: 6 } }
+                    ]
+                }
+            },
+            {
+                id: "II", interval: 2, triadType: "m", tetradType: "m7", triadRoman: "IIm", tetradRoman: "IIm7", tetrad: [0, 3, 7, 10],
+                megaMenu: true,
+                areas: {
+                    intercambio: [
+                        { tipo: 'II_modal_1', name: "IIm7b5", rootOffset: 0, triadExt: "dim", tetradExt: "m7b5", tetrad: [0, 3, 6, 10], modeShift: -1 },
+                        { tipo: 'II_modal_2', name: "bIImaj7", rootOffset: -1, triadExt: "", tetradExt: "maj7", tetrad: [0, 4, 7, 11], modeShift: 4 }
+                    ],
+                    disminuidos: [
+                        { tipo: 'II_dimUp', name: "#II°7", rootOffset: 1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: -3 }
+                    ],
+                    dominantes: [
+                        { tipo: 'II_V7', name: "V7/II", rootOffset: 7, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: -1 },
+                        { tipo: 'II_subV7', name: "subV7/II", rootOffset: 1, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 2 }
+                    ],
+                    cadencias: [
+                        { tipo: 'cad_II_1', name: "IIIm7 - V7", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "IIIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/II", tetradMod: [0,4,7,10], modeShift: -1 } },
+                        { tipo: 'cad_II_2', name: "IIrel - V7", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 4 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/II", tetradMod: [0,4,7,10], modeShift: -1 } },
+                        { tipo: 'cad_II_4', name: "IIrel - subV7", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 4 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/II", tetradMod: [0,4,7,10], modeShift: 2 } },
+                        { tipo: 'cad_II_3', name: "IIIm7 - subV7", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "IIIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/II", tetradMod: [0,4,7,10], modeShift: 2 } }
+                    ]
+                }
+            },
+            {
+                id: "III", interval: 4, triadType: "m", tetradType: "m7", triadRoman: "IIIm", tetradRoman: "IIIm7", tetrad: [0, 3, 7, 10],
+                megaMenu: true,
+                areas: {
+                    intercambio: [
+                        { tipo: 'III_modal_1', name: "bIIImaj7", rootOffset: -1, triadExt: "", tetradExt: "maj7", tetrad: [0, 4, 7, 11], modeShift: 3 }
+                    ],
+                    disminuidos: [
+                        { tipo: 'III_dim', name: "bIII°7", rootOffset: -1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: 3 }
+                    ],
+                    dominantes: [
+                        { tipo: 'III_V7', name: "V7/III", rootOffset: 7, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: -4 }
+                    ],
+                    cadencias: [
+                        { tipo: 'cad_III_1', name: "IIrel - V7/III", c1: { rootOffset: 2, triadExt: "dim", tetradExt: "m7b5", roman: " ", tetradMod: [0,3,6,10], modeShift: -1 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/III", tetradMod: [0,4,7,10], modeShift: -4 } }
+                    ]
+                }
+            },
+            {
+                id: "IV", interval: 5, triadType: "", tetradType: "maj7", triadRoman: "IV", tetradRoman: "IVmaj7", tetrad: [0, 4, 7, 11],
+                megaMenu: true,
+                areas: {
+                    intercambio: [
+                        { tipo: 'IV_modal_1', name: "IVm7", rootOffset: 0, triadExt: "m", tetradExt: "m7", tetrad: [0, 3, 7, 10], modeShift: 3 },
+                        { tipo: 'IV_modal_2', name: "IV7", rootOffset: 0, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 2 }
+                    ],
+                    disminuidos: [
+                        { tipo: 'IV_dimUp', name: "#IV°7", rootOffset: 1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: -1 }
+                    ],
+                    dominantes: [
+                        { tipo: 'IV_V7', name: "V7/IV", rootOffset: 7, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 1 },
+                        { tipo: 'IV_subV7', name: "subV7/IV", rootOffset: 1, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 6 }
+                    ],
+                    cadencias: [
+                        { tipo: 'cad_IV_1', name: "Vm7 - V7/IV", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "Vm7", tetradMod: [0,3,7,10], modeShift: 1 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/IV", tetradMod: [0,4,7,10], modeShift: 1 } },
+                        { tipo: 'cad_IV_2', name: "IIrel - V7/IV", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/IV", tetradMod: [0,4,7,10], modeShift: 1 } },
+                        { tipo: 'cad_IV_4', name: "IIrel - subV7/IV", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/IV", tetradMod: [0,4,7,10], modeShift: 6 } },
+                        { tipo: 'cad_IV_3', name: "Vm7 - subV7/IV", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "Vm7", tetradMod: [0,3,7,10], modeShift: 1 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/IV", tetradMod: [0,4,7,10], modeShift: 6 } }
+                    ]
+                }
+            },
+            {
+                id: "V", interval: 7, triadType: "", tetradType: "7", triadRoman: "V", tetradRoman: "V7", tetrad: [0, 4, 7, 10],
+                megaMenu: true,
+                areas: {
+                    intercambio: [
+                        { tipo: 'V_modal', name: "Vm7", rootOffset: 0, triadExt: "m", tetradExt: "m7", tetrad: [0, 3, 7, 10], modeShift: 1 }
+                    ],
+                    disminuidos: [
+                        { tipo: 'V_dimUp', name: "#V°7", rootOffset: 1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: -3 },
+                        { tipo: 'V_dimAux', name: "V°7", rootOffset: 0, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: 3 }
+                    ],
+                    dominantes: [
+                        { tipo: 'V_V7', name: "V7/V", rootOffset: 7, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: -1 },
+                        { tipo: 'V_subV7', name: "subV7/V", rootOffset: 1, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 4 }
+                    ],
+                    cadencias: [
+                        { tipo: 'cad_V_1', name: "VIm7 - V7/V", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "VIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/V", tetradMod: [0,4,7,10], modeShift: -1 } },
+                        { tipo: 'cad_V_2', name: "IIrel - V7/V", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/V", tetradMod: [0,4,7,10], modeShift: -1 } },
+                        { tipo: 'cad_V_4', name: "IIrel - subV7/V", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/V", tetradMod: [0,4,7,10], modeShift: 4 } },
+                        { tipo: 'cad_V_3', name: "VIm7 - subV7/V", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "VIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/V", tetradMod: [0,4,7,10], modeShift: 4 } }
+                    ]
+                }
+            },
+            {
+                id: "VI", interval: 9, triadType: "m", tetradType: "m7", triadRoman: "VIm", tetradRoman: "VIm7", tetrad: [0, 3, 7, 10],
+                megaMenu: true,
+                areas: {
+                    intercambio: [
+                        { tipo: 'VI_modal_1', name: "bVImaj7", rootOffset: -1, triadExt: "", tetradExt: "maj7", tetrad: [0, 4, 7, 11], modeShift: 3 }
+                    ],
+                    disminuidos: [
+                        { tipo: 'VI_dim', name: "bVI°7", rootOffset: -1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: 3 }
+                    ],
+                    dominantes: [
+                        { tipo: 'VI_V7', name: "V7/VI", rootOffset: 7, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: -3 }
+                    ],
+                    cadencias: [
+                        { tipo: 'cad_VI_1', name: "VIIm7b5 - V7/VI", c1: { rootOffset: 2, triadExt: "dim", tetradExt: "m7b5", roman: "VIIm7b5", tetradMod: [0,3,6,10], modeShift: 0 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/VI", tetradMod: [0,4,7,10], modeShift: -3 } }
+                    ]
+                }
+            },
+            {
+                id: "VII", interval: 11, triadType: "dim", tetradType: "m7b5", triadRoman: "VIIdim", tetradRoman: "VIIm7b5", tetrad: [0, 3, 6, 10],
+                megaMenu: true,
+                areas: {
+                    intercambio: [
+                        { tipo: 'VII_modal_1', name: "bVII7", rootOffset: -1, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 3 },
+                        { tipo: 'VII_modal_2', name: "bVIImaj7", rootOffset: -1, triadExt: "", tetradExt: "maj7", tetrad: [0, 4, 7, 11], modeShift: 1 }
+                    ],
+                    disminuidos: [],
+                    dominantes: [],
+                    cadencias: []
+                }
+            }
         ];
 
         window.guardarEstado = function() {
@@ -1033,29 +1167,143 @@
             voiceTreble.draw(context, staveTreble); voiceBass.draw(context, staveBass);
         };
 
-        window.toggleAnalisisMain = function() { if(document.activeElement) document.activeElement.blur(); window.renderizarPartitura(); };
+        window.toggleAnalisisMain = function() {
+            if(document.activeElement) document.activeElement.blur(); 
+            window.renderizarPartitura();
+        };
 
         window.toggleSubmenu = function(gradoId) {
             const panel = document.getElementById('panel-variantes-armonicas');
-            if (panel.dataset.activeGrado === gradoId && !panel.classList.contains('hidden')) { panel.classList.add('hidden'); return; }
-            panel.dataset.activeGrado = gradoId; panel.classList.remove('hidden');
+            if (panel.dataset.activeGrado === gradoId && !panel.classList.contains('hidden')) { 
+                panel.classList.add('hidden'); 
+                return; 
+            }
+            panel.dataset.activeGrado = gradoId; 
+            panel.classList.remove('hidden');
             const gObj = gradosDiatonicos.find(g => g.id === gradoId);
+            
             if (gObj.megaMenu) {
-                let html = `<div class="flex items-center gap-3 mb-4"><div class="bg-cyan-900/40 text-cyan-400 p-1.5 rounded-lg border border-cyan-800/50"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg></div><span class="text-cyan-400 font-bold uppercase tracking-widest text-xs">Universo Armónico: Resoluciones hacia el Grado ${gradoId}</span><div class="h-px bg-slate-700 flex-1"></div><button onclick="window.toggleSubmenu('${gradoId}')" class="text-slate-500 hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="bg-blue-900/10 border border-blue-500/30 rounded-xl p-4 shadow-inner"><h5 class="text-blue-400 font-extrabold text-[11px] uppercase tracking-widest mb-4 flex items-center gap-2"><div class="w-2 h-2 bg-blue-500 rounded-full"></div> Área Intercambio Modal</h5><div class="flex flex-col gap-2">${gObj.areas.intercambio.map(v => { const c = window.diccionarioActual[gObj.id + "_" + v.tipo]; return `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="bg-slate-800 hover:bg-blue-900/40 border border-slate-700 hover:border-blue-500 text-left p-3 rounded-lg transition-all shadow-sm group"><span class="text-slate-100 font-extrabold text-base">${c.nombre}</span> <span class="text-blue-300 text-[10px] uppercase font-bold ml-1">(${v.name})</span></button>`; }).join('')}</div></div><div class="bg-emerald-900/10 border border-emerald-500/30 rounded-xl p-4 shadow-inner"><h5 class="text-emerald-400 font-extrabold text-[11px] uppercase tracking-widest mb-4 flex items-center gap-2"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div> Área de Disminuidos</h5><div class="flex flex-col gap-2">${gObj.areas.disminuidos.map(v => { const c = window.diccionarioActual[gObj.id + "_" + v.tipo]; return `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="bg-slate-800 hover:bg-emerald-900/40 border border-slate-700 hover:border-emerald-500 text-left p-3 rounded-lg transition-all shadow-sm group"><span class="text-slate-100 font-extrabold text-base">${c.nombre}</span> <span class="text-emerald-300 text-[10px] uppercase font-bold ml-1">(${v.name})</span></button>`; }).join('')}</div></div><div class="bg-rose-900/10 border border-rose-500/30 rounded-xl p-4 shadow-inner"><h5 class="text-rose-400 font-extrabold text-[11px] uppercase tracking-widest mb-4 flex items-center gap-2"><div class="w-2 h-2 bg-rose-500 rounded-full"></div> Dominantes y 2dos Relativos</h5><div class="flex flex-col gap-4"><div class="bg-slate-900/50 rounded-lg p-2.5 border border-rose-500/20">${gObj.areas.dominantes.filter(d=>d.name==='V7').map(v => { const c = window.diccionarioActual[gObj.id + "_" + v.tipo]; return `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="w-full bg-rose-900/40 hover:bg-rose-800/60 border border-rose-500/50 text-left p-2 rounded-md transition-all shadow-sm mb-2"><span class="text-white font-extrabold text-sm">${c.nombre}</span> <span class="text-rose-300 text-[10px] uppercase font-bold ml-1">(V7 Principal)</span></button>`; }).join('')}<div class="grid grid-cols-2 gap-2">${gObj.areas.cadencias.filter(c=>c.name.endsWith('V7')).map(v => { const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"]; const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"]; return `<button onclick="window.agregarCadencia('${c1.id}', '${c2.id}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-rose-400 text-center p-1.5 rounded-md transition-all"><span class="block text-slate-100 font-bold text-[11px] mb-0.5">${c1.nombre} → ${c2.nombre}</span><span class="block text-slate-500 text-[9px] uppercase">${v.c1.roman}</span></button>`; }).join('')}</div></div><div class="bg-slate-900/50 rounded-lg p-2.5 border border-rose-500/20">${gObj.areas.dominantes.filter(d=>d.name==='subV7').map(v => { const c = window.diccionarioActual[gObj.id + "_" + v.tipo]; return `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="w-full bg-rose-900/40 hover:bg-rose-800/60 border border-rose-500/50 text-left p-2 rounded-md transition-all shadow-sm mb-2"><span class="text-white font-extrabold text-sm">${c.nombre}</span> <span class="text-rose-300 text-[10px] uppercase font-bold ml-1">(Sustituto subV7)</span></button>`; }).join('')}<div class="grid grid-cols-2 gap-2">${gObj.areas.cadencias.filter(c=>c.name.endsWith('subV7')).map(v => { const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"]; const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"]; return `<button onclick="window.agregarCadencia('${c1.id}', '${c2.id}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-rose-400 text-center p-1.5 rounded-md transition-all"><span class="block text-slate-100 font-bold text-[11px] mb-0.5">${c1.nombre} → ${c2.nombre}</span><span class="block text-slate-500 text-[9px] uppercase">${v.c1.roman}</span></button>`; }).join('')}</div></div></div></div></div>`;
+                let domPrincipales = gObj.areas.dominantes.filter(d=>!d.name.includes('sub'));
+                let cadPrincipales = gObj.areas.cadencias.filter(c=>!c.c2.roman.includes('sub'));
+                let domSustitutos = gObj.areas.dominantes.filter(d=>d.name.includes('sub'));
+                let cadSustitutos = gObj.areas.cadencias.filter(c=>c.c2.roman.includes('sub'));
+
+                let html = `
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-cyan-900/40 text-cyan-400 p-1.5 rounded-lg border border-cyan-800/50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    </div>
+                    <span class="text-cyan-400 font-bold uppercase tracking-widest text-xs">Universo Armónico: Resoluciones hacia el Grado ${gradoId}</span>
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                    <button onclick="window.toggleSubmenu('${gradoId}')" class="text-slate-500 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">`;
+
+                // 1. Área Intercambio Modal
+                html += `
+                    <div class="bg-blue-900/10 border border-blue-500/30 rounded-xl p-4 shadow-inner flex flex-col">
+                        <h5 class="text-blue-400 font-extrabold text-[11px] uppercase tracking-widest mb-4 flex items-center gap-2"><div class="w-2 h-2 bg-blue-500 rounded-full"></div> Área Intercambio Modal</h5>
+                        <div class="flex flex-col gap-2 flex-1">`;
+                
+                if (gObj.areas.intercambio.length > 0) {
+                    gObj.areas.intercambio.forEach(v => {
+                        const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
+                        html += `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="bg-slate-800 hover:bg-blue-900/40 border border-slate-700 hover:border-blue-500 text-left p-3 rounded-lg transition-all shadow-sm group">
+                            <span class="text-slate-100 font-extrabold text-base">${c.nombre}</span> <span class="text-blue-300 text-[10px] uppercase font-bold ml-1">(${v.name})</span>
+                        </button>`;
+                    });
+                } else {
+                    html += `<div class="bg-slate-900/30 rounded-lg p-4 border border-blue-500/10 flex items-center justify-center h-full min-h-[60px]"><span class="text-slate-500 text-xs font-bold uppercase tracking-widest text-center">No Aplica</span></div>`;
+                }
+                html += `</div></div>`;
+
+                // 2. Área de Disminuidos
+                html += `
+                    <div class="bg-emerald-900/10 border border-emerald-500/30 rounded-xl p-4 shadow-inner flex flex-col">
+                        <h5 class="text-emerald-400 font-extrabold text-[11px] uppercase tracking-widest mb-4 flex items-center gap-2"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div> Área de Disminuidos</h5>
+                        <div class="flex flex-col gap-2 flex-1">`;
+                
+                if (gObj.areas.disminuidos.length > 0) {
+                    gObj.areas.disminuidos.forEach(v => {
+                        const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
+                        html += `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="bg-slate-800 hover:bg-emerald-900/40 border border-slate-700 hover:border-emerald-500 text-left p-3 rounded-lg transition-all shadow-sm group">
+                            <span class="text-slate-100 font-extrabold text-base">${c.nombre}</span> <span class="text-emerald-300 text-[10px] uppercase font-bold ml-1">(${v.name})</span>
+                        </button>`;
+                    });
+                } else {
+                    html += `<div class="bg-slate-900/30 rounded-lg p-4 border border-emerald-500/10 flex items-center justify-center h-full min-h-[60px]"><span class="text-slate-500 text-xs font-bold uppercase tracking-widest text-center">No Aplica</span></div>`;
+                }
+                html += `</div></div>`;
+
+                // 3. Área Dominantes y 2dos Relativos
+                html += `
+                    <div class="bg-rose-900/10 border border-rose-500/30 rounded-xl p-4 shadow-inner flex flex-col">
+                        <h5 class="text-rose-400 font-extrabold text-[11px] uppercase tracking-widest mb-4 flex items-center gap-2"><div class="w-2 h-2 bg-rose-500 rounded-full"></div> Dominantes y 2dos Relativos</h5>
+                        <div class="flex flex-col gap-4 flex-1">`;
+                
+                if (gObj.areas.dominantes.length === 0) {
+                    html += `<div class="bg-slate-900/30 rounded-lg p-4 border border-rose-500/10 flex items-center justify-center h-full min-h-[60px]"><span class="text-slate-500 text-xs font-bold uppercase tracking-widest text-center">No Aplica</span></div>`;
+                } else {
+                    if (domPrincipales.length > 0) {
+                        html += `<div class="bg-slate-900/50 rounded-lg p-2.5 border border-rose-500/20">`;
+                        domPrincipales.forEach(v => {
+                            const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
+                            html += `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="w-full bg-rose-900/40 hover:bg-rose-800/60 border border-rose-500/50 text-left p-2 rounded-md transition-all shadow-sm mb-2"><span class="text-white font-extrabold text-sm">${c.nombre}</span> <span class="text-rose-300 text-[10px] uppercase font-bold ml-1">(${v.name} Principal)</span></button>`;
+                        });
+                        html += `<div class="grid grid-cols-2 gap-2">`;
+                        cadPrincipales.forEach(v => {
+                            const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"];
+                            const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"];
+                            html += `<button onclick="window.agregarCadencia('${c1.id}', '${c2.id}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-rose-400 text-center p-1.5 rounded-md transition-all"><span class="block text-slate-100 font-bold text-[11px] mb-0.5">${c1.nombre} &rarr; ${c2.nombre}</span><span class="block text-slate-500 text-[9px] uppercase">${v.c1.roman}</span></button>`;
+                        });
+                        html += `</div></div>`;
+                    }
+
+                    if (domSustitutos.length > 0) {
+                        html += `<div class="bg-slate-900/50 rounded-lg p-2.5 border border-rose-500/20">`;
+                        domSustitutos.forEach(v => {
+                            const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
+                            html += `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="w-full bg-rose-900/40 hover:bg-rose-800/60 border border-rose-500/50 text-left p-2 rounded-md transition-all shadow-sm mb-2"><span class="text-white font-extrabold text-sm">${c.nombre}</span> <span class="text-rose-300 text-[10px] uppercase font-bold ml-1">(Sustituto ${v.name})</span></button>`;
+                        });
+                        html += `<div class="grid grid-cols-2 gap-2">`;
+                        cadSustitutos.forEach(v => {
+                            const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"];
+                            const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"];
+                            html += `<button onclick="window.agregarCadencia('${c1.id}', '${c2.id}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-rose-400 text-center p-1.5 rounded-md transition-all"><span class="block text-slate-100 font-bold text-[11px] mb-0.5">${c1.nombre} &rarr; ${c2.nombre}</span><span class="block text-slate-500 text-[9px] uppercase">${v.c1.roman}</span></button>`;
+                        });
+                        html += `</div></div>`;
+                    } else {
+                        html += `<div class="bg-slate-900/30 rounded-lg p-4 border border-rose-500/10 flex items-center justify-center h-full min-h-[60px]"><span class="text-slate-500 text-xs font-bold uppercase tracking-widest text-center">Sustituto no aplica</span></div>`;
+                    }
+                }
+                
+                html += `</div></div></div>`;
                 panel.innerHTML = html;
             } else {
-                let html = `<div class="flex items-center gap-3 mb-4"><div class="bg-cyan-900/40 text-cyan-400 p-1.5 rounded-lg border border-cyan-800/50"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg></div><span class="text-cyan-400 font-bold uppercase tracking-widest text-xs">Universo Armónico: Grado ${gradoId}</span><div class="h-px bg-slate-700 flex-1"></div><button onclick="window.toggleSubmenu('${gradoId}')" class="text-slate-500 hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">`;
+                // ... fallback format for normal menus
+                let html = `
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-cyan-900/40 text-cyan-400 p-1.5 rounded-lg border border-cyan-800/50"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg></div>
+                    <span class="text-cyan-400 font-bold uppercase tracking-widest text-xs">Universo Armónico: Grado ${gradoId}</span>
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                    <button onclick="window.toggleSubmenu('${gradoId}')" class="text-slate-500 hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">`;
                 if (gObj.variantes) {
                     gObj.variantes.forEach(v => {
                         if (v.tipo === 'cad') {
-                            html += `<button onclick="window.agregarCadencia('${gradoId}_cad1', '${gradoId}_cad2')" class="flex flex-col items-start bg-slate-800 hover:bg-cyan-900/40 border border-slate-700 hover:border-cyan-500 text-left p-4 rounded-xl transition-all shadow-sm group hover:-translate-y-0.5"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5 group-hover:text-cyan-300">Dominante secundario/segundo relativo</span><span class="text-slate-100 font-extrabold text-lg">${window.diccionarioActual[gradoId + "_cad1"].nombre} → ${window.diccionarioActual[gradoId + "_cad2"].nombre}</span><span class="text-slate-500 text-xs mt-1 font-medium">Resuelve al ${v.resuelveA}</span></button>`;
+                            html += `<button onclick="window.agregarCadencia('${gradoId}_cad1', '${gradoId}_cad2')" class="flex flex-col items-start bg-slate-800 hover:bg-cyan-900/40 border border-slate-700 hover:border-cyan-500 text-left p-4 rounded-xl transition-all shadow-sm group hover:-translate-y-0.5"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5 group-hover:text-cyan-300">Dominante secundario/segundo relativo</span><span class="text-slate-100 font-extrabold text-lg">${window.diccionarioActual[gradoId + "_cad1"].nombre} &rarr; ${window.diccionarioActual[gradoId + "_cad2"].nombre}</span><span class="text-slate-500 text-xs mt-1 font-medium">Resuelve al ${v.resuelveA}</span></button>`;
                         } else {
-                            const c = window.diccionarioActual[gradoId + "_" + v.tipo]; let label = v.tipo === 'dom' ? "Dominante Secundario" : (v.tipo.startsWith('int') ? "Intercambio Modal" : "Acorde Suspendido");
+                            const c = window.diccionarioActual[gradoId + "_" + v.tipo]; 
+                            let label = v.tipo === 'dom' ? "Dominante Secundario" : (v.tipo.startsWith('int') ? "Intercambio Modal" : "Acorde Suspendido");
                             html += `<button onclick="window.agregarAcordeGrado('${c.id}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');" class="flex flex-col items-start bg-slate-800 hover:bg-cyan-900/40 border border-slate-700 hover:border-cyan-500 text-left p-4 rounded-xl transition-all shadow-sm group hover:-translate-y-0.5"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5 group-hover:text-cyan-300">${label}</span><div class="flex items-end gap-2"><span class="text-slate-100 font-extrabold text-lg">${c.nombre}</span><span class="text-slate-500 font-medium text-sm mb-0.5">(${c.roman})</span></div>${v.resuelveA ? `<span class="text-slate-500 text-xs mt-1 font-medium">Resuelve al ${v.resuelveA}</span>` : ''}</button>`;
                         }
                     });
                 }
-                panel.innerHTML = html + `</div>`;
+                html += `</div>`;
+                panel.innerHTML = html;
             }
         };
 
