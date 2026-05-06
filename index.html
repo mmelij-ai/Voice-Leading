@@ -154,7 +154,7 @@
             </div>
 
             <div class="flex justify-between items-center relative z-10 mt-2">
-                <span id="titulo-agregar" class="font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300">Asistente de ingreso de acordes (C Mayor)</span>
+                <span id="titulo-agregar" class="font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300">Asistente de ingreso de acordes:</span>
                 <button onclick="window.toggleIngresoManual()" id="btn-toggle-manual" class="text-xs font-bold text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-600 shadow-sm">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Ingreso Manual
                 </button>
@@ -547,7 +547,7 @@
             window.registroInicial = estado.registroInicial; window.indiceEdicion = -1; window.modalContextIndex = -1;
             window.actualizarTimeline(); window.renderizarPartitura();
             const titulo = document.getElementById('titulo-agregar');
-            titulo.innerHTML = `Asistente de ingreso de acordes (${estado.tonalidad} Mayor):`;
+            titulo.innerHTML = `Asistente de ingreso de acordes:`;
             titulo.classList.remove('text-yellow-400'); titulo.classList.add('text-cyan-400');
             window.omitirGuardado = false; 
         };
@@ -623,7 +623,7 @@
                     let ac = window.progresion[window.indiceEdicion];
                     ac.isRest = true; ac.nombre = "𝄽"; ac.gradoId = null; ac.roman = null; ac.trebleMidi = []; ac.voicingsDisponibles = [];
                     window.indiceEdicion = -1; 
-                    document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`; 
+                    document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes:`; 
                     document.getElementById('titulo-agregar').classList.remove('text-yellow-400'); document.getElementById('titulo-agregar').classList.add('text-cyan-400');
                     window.recalcularProgresion(0); window.actualizarTimeline(); window.renderizarPartitura(); window.guardarEstado();
                     return;
@@ -637,7 +637,7 @@
                 if (window.indiceEdicion !== -1) {
                     window.indiceEdicion = -1; window.actualizarTimeline();
                     const titulo = document.getElementById('titulo-agregar');
-                    titulo.innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`;
+                    titulo.innerHTML = `Asistente de ingreso de acordes:`;
                     titulo.classList.remove('text-yellow-400'); titulo.classList.add('text-cyan-400');
                     window.renderizarPartitura(); 
                 }
@@ -980,7 +980,7 @@
             if (window.indiceEdicion !== -1) {
                 window.progresion.splice(window.indiceEdicion, 1, ...nuevosAcordes);
                 window.indiceEdicion = -1; 
-                document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`; 
+                document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes:`; 
                 document.getElementById('titulo-agregar').classList.remove('text-yellow-400'); document.getElementById('titulo-agregar').classList.add('text-cyan-400');
             } else {
                 window.progresion.push(...nuevosAcordes);
@@ -1314,7 +1314,7 @@
                 if (window.indiceEdicion !== -1) { window.indiceEdicion = -1; window.actualizarTimeline(); }
                 titulo.innerHTML = `🎧 MODO ESCUCHA: Prueba la sonoridad`; titulo.classList.replace('text-cyan-400', 'text-emerald-400');
             } else {
-                titulo.innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`; titulo.classList.replace('text-emerald-400', 'text-cyan-400');
+                titulo.innerHTML = `Asistente de ingreso de acordes:`; titulo.classList.replace('text-emerald-400', 'text-cyan-400');
             }
         };
 
@@ -1527,7 +1527,7 @@
             if (!await window.auditoriaPedagogica(true)) { window.progresion = backup; window.recalcularProgresion(indexObjetivo); window.actualizarTimeline(); window.renderizarPartitura(); return; }
 
             window.indiceEdicion = -1;
-            document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`;
+            document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes:`;
             document.getElementById('titulo-agregar').classList.remove('text-yellow-400');
             document.getElementById('titulo-agregar').classList.add('text-cyan-400');
 
@@ -1717,7 +1717,7 @@
                 if (!await window.auditoriaPedagogica(true)) { window.progresion = backup; window.recalcularProgresion(window.indiceEdicion); window.actualizarTimeline(); window.renderizarPartitura(); return; }
                 indiceParaTocar = window.indiceEdicion + nuevosAcordes.length - 1; 
                 window.indiceEdicion = -1; 
-                document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`; document.getElementById('titulo-agregar').className = "font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300";
+                document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes:`; document.getElementById('titulo-agregar').className = "font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300";
             } else {
                 window.progresion.push(...nuevosAcordes);
                 window.recalcularProgresion(window.progresion.length - nuevosAcordes.length); 
@@ -1744,7 +1744,7 @@
             window.progresion = []; window.indiceEdicion = -1; window.hitboxes = []; window.registroInicial = 'central'; window.modalContextIndex = -1; window.currentModalSection = 'all'; 
             document.getElementById('posicion-inicial').value = window.calcularMejorPosicionSoprano('I', document.getElementById('tipo-voicing').value);
             window.actualizarTimeline();
-            const t = document.getElementById('titulo-agregar'); t.innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`; t.className = "font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300";
+            const t = document.getElementById('titulo-agregar'); t.innerHTML = `Asistente de ingreso de acordes:`; t.className = "font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300";
             document.getElementById("contenedor-partitura").innerHTML = "<p class='text-slate-500 text-center mt-20 font-medium italic text-lg'>Agrega acordes para visualizar el Voice Leading...</p>";
             const envolturaPiano = document.getElementById("envoltura-piano");
             if (envolturaPiano) { envolturaPiano.classList.remove("flex"); envolturaPiano.classList.add("hidden"); }
@@ -2076,7 +2076,7 @@
             if (desdeSeleccion && window.indiceEdicion !== -1) { startIndex = window.indiceEdicion; } 
             else if (!desdeSeleccion && window.indiceEdicion !== -1) {
                 window.indiceEdicion = -1; window.actualizarTimeline(); 
-                document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes (${window.tonalidadActual} Mayor):`; 
+                document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes:`; 
                 document.getElementById('titulo-agregar').classList.remove('text-yellow-400');
                 document.getElementById('titulo-agregar').classList.add('text-cyan-400'); 
             }
