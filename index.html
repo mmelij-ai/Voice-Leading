@@ -259,6 +259,13 @@
 
         <!-- BOTONES FINALES -->
         <div class="mt-8 flex flex-wrap gap-4 justify-center md:justify-end hide-on-print">
+            <input type="file" id="file-upload" accept=".armonia" class="hidden" onchange="window.procesarArchivo(event)">
+            <button onclick="window.cargarProyecto()" class="bg-purple-700 hover:bg-purple-600 border border-purple-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg flex items-center gap-2" title="Abrir un archivo de proyecto .armonia">
+                📂 Cargar Proyecto
+            </button>
+            <button onclick="window.guardarProyecto()" class="bg-purple-700 hover:bg-purple-600 border border-purple-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg flex items-center gap-2" title="Guardar la progresión actual">
+                💾 Guardar Proyecto
+            </button>
             <button id="btn-reproducir" onclick="window.reproducirAudio()" class="bg-blue-600 hover:bg-blue-500 border border-blue-500 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg hover:shadow-blue-500/25">
                 ▶️ Reproducir Audio
             </button>
@@ -827,7 +834,8 @@
             let mejorIndex = 0; let menorDistancia = Infinity;
             for (let i = 0; i < targetNotes.length; i++) {
                 let promedio = window.generarVoicingInicial(targetNotes, i, 'central').reduce((a, b) => a + b, 0) / targetNotes.length;
-                let distancia = Math.abs(promedio - 60) + (dictObj.isMaj7 && tipoVoicing === 'tetrad' && i === 0 ? 100 : 0);
+                // Calculamos la gravedad hacia el MIDI 64 (Mi4) para un balance perfecto en la mano derecha
+                let distancia = Math.abs(promedio - 64) + (dictObj.isMaj7 && tipoVoicing === 'tetrad' && i === 0 ? 100 : 0);
                 if (distancia < menorDistancia) { menorDistancia = distancia; mejorIndex = i; }
             }
             return mejorIndex;
@@ -905,30 +913,55 @@
         window.generarVoicingInicial = function(targetNotes, topDegreeIndex, testRegistro = null) {
             let topMidi = targetNotes[topDegreeIndex] + 60; 
             let registro = testRegistro || window.registroInicial;
-            let topeSup = registro === 'agudo' ? 81 : (registro === 'grave' ? 57 : 69); 
-            let topeInf = registro === 'agudo' ? 71 : (registro === 'grave' ? 47 : 59); 
+            // Elevamos matemáticamente el techo y piso para liberar la soprano (Ej: el Si4 del Cmaj7)
+            let topeSup = registro === 'agudo' ? 86 : (registro === 'grave' ? 62 : 74); 
+            let topeInf = registro === 'agudo' ? 74 : (registro === 'grave' ? 50 : 62); 
             while (topMidi > topeSup) topMidi -= 12; while (topMidi < topeInf) topMidi += 12; 
             return window.generarVoicingCerradoDesdeSoprano(topMidi, targetNotes, topDegreeIndex);
         };
 
         window.enlazarAcordeOpciones = function(prevVoicingMidi, targetNotes) {
             if (prevVoicingMidi.length !== targetNotes.length) return [{ voicing: window.generarVoicingInicial(targetNotes, targetNotes.length - 1), distancia: 0, score: 0, notasComunes: 0 }];
-            let opciones = [];
+            
+            let todasLasOpciones = [];
+            let prevSoprano = prevVoicingMidi[prevVoicingMidi.length - 1];
+
             for (let i = 0; i < targetNotes.length; i++) {
-                let baseSoprano = window.encontrarNotaMasCercana(prevVoicingMidi[prevVoicingMidi.length - 1], targetNotes[i]);
+                let baseSoprano = window.encontrarNotaMasCercana(prevSoprano, targetNotes[i]);
+                
+                // Filtramos para evitar saltos de más de una octava (14 st máx) y mantener coherencia acústica
                 for (let sop of [baseSoprano - 12, baseSoprano, baseSoprano + 12]) {
+                    if (Math.abs(sop - prevSoprano) > 14) continue; 
+                    
                     let currVoicing = window.generarVoicingCerradoDesdeSoprano(sop, targetNotes, i);
                     let distAbs = 0; let notasComunes = 0; let maxSalto = 0;
                     for (let v = 0; v < currVoicing.length; v++) {
                         let dist = Math.abs(currVoicing[v] - prevVoicingMidi[v]);
                         distAbs += dist; if (dist === 0) notasComunes++; if (dist > maxSalto) maxSalto = dist;
                     }
-                    if(!opciones.find(o => o.voicing.join(',') === currVoicing.join(','))) {
-                        opciones.push({ voicing: currVoicing, distancia: distAbs, score: distAbs - (notasComunes * 6) + (maxSalto > 5 ? (maxSalto - 5) * 10 : 0), notasComunes: notasComunes });
+                    if(!todasLasOpciones.find(o => o.voicing.join(',') === currVoicing.join(','))) {
+                        todasLasOpciones.push({ voicing: currVoicing, distancia: distAbs, score: distAbs - (notasComunes * 6) + (maxSalto > 5 ? (maxSalto - 5) * 10 : 0), notasComunes: notasComunes });
                     }
                 }
             }
-            return opciones.sort((a, b) => a.score - b.score).slice(0, 4);
+            
+            // Ordenamos matemáticamente de mejor a peor
+            todasLasOpciones.sort((a, b) => a.score - b.score);
+            if (todasLasOpciones.length === 0) return [{ voicing: window.generarVoicingInicial(targetNotes, targetNotes.length - 1), distancia: 0, score: 0, notasComunes: 0 }];
+
+            let optimo = todasLasOpciones[0];
+            let opcionesFinales = [optimo];
+            let optimoSoprano = optimo.voicing[optimo.voicing.length - 1];
+
+            // 1 Variante estrictamente ascendente (la mejor evaluada)
+            let ascendentes = todasLasOpciones.filter(o => o.voicing[o.voicing.length - 1] > optimoSoprano);
+            if (ascendentes.length > 0) opcionesFinales.push(ascendentes[0]);
+
+            // 1 Variante estrictamente descendente (la mejor evaluada)
+            let descendentes = todasLasOpciones.filter(o => o.voicing[o.voicing.length - 1] < optimoSoprano);
+            if (descendentes.length > 0) opcionesFinales.push(descendentes[0]);
+
+            return opcionesFinales;
         };
 
         window.comprobarDesbordamiento = async function(beatsReq) {
@@ -1148,23 +1181,42 @@
             if (current === inKey) return null; if (current === null && inKey !== null) return 'n'; return current; 
         };
 
-        window.renderizarMiniScore = function(containerId, trebleMidi, bassMidi, spellings = window.nombresNotasActual) {
+        window.renderizarMiniScore = function(containerId, trebleMidi, prevTrebleMidi, spellings = window.nombresNotasActual) {
             const div = document.getElementById(containerId); if (!div) return; div.innerHTML = "";
             const { Renderer, Stave, StaveNote, Formatter, Voice, Accidental } = Vex.Flow;
-            const renderer = new Renderer(div, Renderer.Backends.SVG); renderer.resize(130, 200); const context = renderer.getContext();
-            const staveTreble = new Stave(10, 20, 110).addClef("treble").setContext(context).draw();
-            const staveBass = new Stave(10, 105, 110).addClef("bass").setContext(context).draw();
+            const renderer = new Renderer(div, Renderer.Backends.SVG); 
+            
+            // Agrandamos el lienzo a 140px de alto
+            renderer.resize(160, 140); 
+            const context = renderer.getContext();
+            
+            // Subimos el pentagrama al tope (Y=0) para compensar el peso visual de las notas graves
+            const staveTreble = new Stave(5, 0, 145).addClef("treble").setContext(context).draw();
             const fifths = infoTonalidades[window.tonalidadActual].fifths;
+            
+            let notes = [];
+            
+            // Si hay un acorde anterior, lo dibujamos en color gris para dar contexto
+            if (prevTrebleMidi && prevTrebleMidi.length > 0) {
+                const keysPrev = prevTrebleMidi.map(m => window.midiAVexFlow(m, spellings));
+                const notaPrev = new StaveNote({ keys: keysPrev, duration: "h", clef: "treble" });
+                keysPrev.forEach((k, idx) => { let acc = window.obtenerAccidental(k, fifths); if (acc) notaPrev.addModifier(new Accidental(acc), idx); });
+                notaPrev.setStyle({ fillStyle: "#64748b", strokeStyle: "#64748b" }); // Gris (Slate 500)
+                notes.push(notaPrev);
+            }
+
+            // Dibujamos la opción actual en color cyan
             const keysTreble = trebleMidi.map(m => window.midiAVexFlow(m, spellings));
-            const notaTreble = new StaveNote({ keys: keysTreble, duration: "w", clef: "treble" });
+            const duration = (prevTrebleMidi && prevTrebleMidi.length > 0) ? "h" : "w";
+            const notaTreble = new StaveNote({ keys: keysTreble, duration: duration, clef: "treble" });
             keysTreble.forEach((k, idx) => { let acc = window.obtenerAccidental(k, fifths); if (acc) notaTreble.addModifier(new Accidental(acc), idx); });
-            const keyBass = window.midiAVexFlow(bassMidi, spellings);
-            const notaBass = new StaveNote({ keys: [keyBass], duration: "w", clef: "bass" });
-            let accBass = window.obtenerAccidental(keyBass, fifths); if (accBass) notaBass.addModifier(new Accidental(accBass), 0);
-            const voiceTreble = new Voice({ num_beats: 4, beat_value: 4 }).addTickables([notaTreble]);
-            const voiceBass = new Voice({ num_beats: 4, beat_value: 4 }).addTickables([notaBass]);
-            new Formatter().joinVoices([voiceTreble]).joinVoices([voiceBass]).format([voiceTreble, voiceBass], 50);
-            voiceTreble.draw(context, staveTreble); voiceBass.draw(context, staveBass);
+            notaTreble.setStyle({ fillStyle: "#0ea5e9", strokeStyle: "#0ea5e9" }); // Celeste (Sky 500)
+            notes.push(notaTreble);
+
+            const numBeats = notes.length === 2 ? 4 : 4; 
+            const voiceTreble = new Voice({ num_beats: numBeats, beat_value: 4 }).addTickables(notes);
+            new Formatter().joinVoices([voiceTreble]).format([voiceTreble], 110);
+            voiceTreble.draw(context, staveTreble);
         };
 
         window.toggleAnalisisMain = function() {
@@ -1560,6 +1612,11 @@
             const list = document.getElementById('opciones-derecha-list'); list.innerHTML = '';
             const renderTasks = []; 
 
+            // Rescatamos las voces del acorde anterior para mostrarlas en la mini-partitura
+            let prevIndex = index - 1;
+            while (prevIndex >= 0 && window.progresion[prevIndex].isRest) prevIndex--;
+            let prevTrebleMidi = prevIndex >= 0 ? window.progresion[prevIndex].trebleMidi : null;
+
             if (index === 0 || window.progresion.slice(0, index).every(a => a.isRest)) {
                 document.getElementById('opciones-derecha-desc').innerText = 'Establece la altura base. La progresión seguirá este registro.';
                 const tn = window.getEstructuraVoicing(window.diccionarioActual[ac.gradoId].tetrad, document.getElementById('tipo-voicing').value);
@@ -1567,16 +1624,17 @@
                 [{val: 'agudo', txt: 'Agudo (+1 Octava)'}, {val: 'central', txt: 'Central (Estándar)'}, {val: 'grave', txt: 'Grave (-1 Octava)'}].forEach((opt, idx) => {
                     const sel = opt.val === window.registroInicial;
                     const v = window.generarVoicingInicial(tn, tdi, opt.val);
-                    list.innerHTML += `<div onclick="window.seleccionarRegistro('${opt.val}')" class="p-4 border rounded-2xl flex items-stretch gap-4 transition-all cursor-pointer ${sel ? 'bg-cyan-900/30 border-cyan-500 shadow-sm' : 'bg-slate-800 border-slate-700 hover:border-cyan-500/50 hover:bg-slate-800/80'}"><div class="flex-1 flex flex-col justify-center"><div class="flex items-center gap-2"><span class="font-extrabold text-white text-lg">${opt.txt}</span>${sel ? '<span class="bg-cyan-500 text-slate-900 text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm">ACTUAL</span>' : ''}</div></div><div id="ms-${index}-r-${idx}" class="w-[130px] h-[200px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 -my-2 pointer-events-none"></div></div>`;
-                    renderTasks.push({ id: `ms-${index}-r-${idx}`, treble: v, bass: ac.rootMidi, spellings: ac.spellings });
+                    list.innerHTML += `<div onclick="window.seleccionarRegistro('${opt.val}')" class="p-4 border rounded-2xl flex items-stretch gap-4 transition-all cursor-pointer ${sel ? 'bg-cyan-900/30 border-cyan-500 shadow-sm' : 'bg-slate-800 border-slate-700 hover:border-cyan-500/50 hover:bg-slate-800/80'}"><div class="flex-1 flex flex-col justify-center"><div class="flex items-center gap-2"><span class="font-extrabold text-white text-lg">${opt.txt}</span>${sel ? '<span class="bg-cyan-500 text-slate-900 text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm">ACTUAL</span>' : ''}</div></div><div id="ms-${index}-r-${idx}" class="w-[160px] h-[140px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 shadow-inner"></div></div>`;
+                    renderTasks.push({ id: `ms-${index}-r-${idx}`, treble: v, prevTreble: prevTrebleMidi, spellings: ac.spellings });
                 });
             } else {
                 document.getElementById('opciones-derecha-desc').innerText = `Variantes de enlace armónico.`;
                 if (ac.voicingsDisponibles && ac.voicingsDisponibles.length > 1) {
                     ac.voicingsDisponibles.forEach((opcion, idx) => {
                         const sel = idx === ac.voicingSeleccionado;
-                        list.innerHTML += `<div class="p-4 border rounded-2xl flex items-stretch gap-4 transition-all ${sel ? 'bg-cyan-900/30 border-cyan-500' : 'bg-slate-800 border-slate-700'}"><div class="flex flex-col justify-between py-1 flex-1"><div><div class="flex items-center gap-2 mb-2"><h4 class="font-extrabold text-white text-lg tracking-tight">${[...opcion.voicing].reverse().map(m => window.midiATone(m, ac.spellings).replace(/[0-9]/g, '')).join(' - ')}</h4>${sel ? '<span class="bg-cyan-500 text-slate-900 text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm">ACTUAL</span>' : ''}${idx === 0 ? '<span class="text-[10px] text-emerald-400 font-extrabold ml-2 border border-emerald-500/30 bg-emerald-900/30 px-2 py-0.5 rounded-md shadow-sm">Óptimo</span>' : ''}</div><p class="text-xs text-cyan-200 font-bold bg-cyan-900/30 border border-cyan-800/50 inline-block px-2.5 py-1 rounded-lg">Mvto: ${opcion.distancia} st • Comunes: ${opcion.notasComunes}</p></div><div class="flex gap-3 mt-4"><button onclick="window.previsualizarVariante(${index}, ${idx})" class="flex-[0.4] bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 rounded-xl text-xs transition-colors shadow-sm">▶️ Oír</button><button onclick="window.seleccionarVariante(${index}, ${idx})" class="flex-1 ${sel ? 'bg-cyan-900/50 text-cyan-200 border border-cyan-800 cursor-default' : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 text-white border border-cyan-400 shadow-md'} font-bold py-2 rounded-xl text-xs transition-all">${sel ? 'Seleccionada' : 'Aplicar esta opción'}</button></div></div><div id="ms-${index}-v-${idx}" class="w-[130px] h-[200px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 -my-2 shadow-inner"></div></div>`;
-                        renderTasks.push({ id: `ms-${index}-v-${idx}`, treble: opcion.voicing, bass: ac.rootMidi, spellings: ac.spellings });
+                        let badge = idx === 0 ? '<span class="text-[10px] text-emerald-400 font-extrabold ml-2 border border-emerald-500/30 bg-emerald-900/30 px-2 py-0.5 rounded-md shadow-sm">Óptimo</span>' : (opcion.voicing[opcion.voicing.length-1] > ac.voicingsDisponibles[0].voicing[ac.voicingsDisponibles[0].voicing.length-1] ? '<span class="text-[10px] text-blue-400 font-extrabold ml-2 border border-blue-500/30 bg-blue-900/30 px-2 py-0.5 rounded-md shadow-sm">Ascendente</span>' : '<span class="text-[10px] text-amber-400 font-extrabold ml-2 border border-amber-500/30 bg-amber-900/30 px-2 py-0.5 rounded-md shadow-sm">Descendente</span>');
+                        list.innerHTML += `<div class="p-4 border rounded-2xl flex items-stretch gap-4 transition-all ${sel ? 'bg-cyan-900/30 border-cyan-500' : 'bg-slate-800 border-slate-700'}"><div class="flex flex-col justify-between py-1 flex-1"><div><div class="flex items-center gap-2 mb-2"><h4 class="font-extrabold text-white text-lg tracking-tight">${[...opcion.voicing].reverse().map(m => window.midiATone(m, ac.spellings).replace(/[0-9]/g, '')).join(' - ')}</h4>${sel ? '<span class="bg-cyan-500 text-slate-900 text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm">ACTUAL</span>' : ''}${badge}</div><p class="text-xs text-cyan-200 font-bold bg-cyan-900/30 border border-cyan-800/50 inline-block px-2.5 py-1 rounded-lg">Notas comunes: ${opcion.notasComunes}</p></div><div class="flex gap-3 mt-4"><button onclick="window.previsualizarVariante(${index}, ${idx})" class="flex-[0.4] bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 rounded-xl text-xs transition-colors shadow-sm">▶️ Oír</button><button onclick="window.seleccionarVariante(${index}, ${idx})" class="flex-1 ${sel ? 'bg-cyan-900/50 text-cyan-200 border border-cyan-800 cursor-default' : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 text-white border border-cyan-400 shadow-md'} font-bold py-2 rounded-xl text-xs transition-all">${sel ? 'Seleccionada' : 'Aplicar esta opción'}</button></div></div><div id="ms-${index}-v-${idx}" class="w-[160px] h-[140px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 shadow-inner"></div></div>`;
+                        renderTasks.push({ id: `ms-${index}-v-${idx}`, treble: opcion.voicing, prevTreble: prevTrebleMidi, spellings: ac.spellings });
                     });
                 } else {
                     list.innerHTML = `<div class="p-6 border rounded-2xl bg-slate-800/50 border-slate-700 text-slate-400 text-sm font-medium italic text-center">Solo hay 1 enlace válido posible acústicamente.</div>`;
@@ -1592,7 +1650,7 @@
             modal.classList.remove('hidden');
             requestAnimationFrame(() => {
                 modal.classList.remove('opacity-0'); document.getElementById('modal-opciones-content').classList.remove('scale-95');
-                setTimeout(() => renderTasks.forEach(task => window.renderizarMiniScore(task.id, task.treble, task.bass, task.spellings)), 10);
+                setTimeout(() => renderTasks.forEach(task => window.renderizarMiniScore(task.id, task.treble, task.prevTreble, task.spellings)), 10);
             });
         };
 
@@ -2163,6 +2221,88 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `progresion_${window.tonalidadActual}Mayor.musicxml`;
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        };
+
+        window.guardarProyecto = function() {
+            if (window.progresion.length === 0) return window.mostrarToast("Agrega acordes primero para poder guardar el proyecto.", "error");
+            
+            // Empaquetamos todo el estado de la aplicación
+            const proyecto = {
+                version: "1.0",
+                tonalidad: document.getElementById('select-tonalidad').value,
+                voicing: document.getElementById('tipo-voicing').value,
+                posicion: document.getElementById('posicion-inicial').value,
+                tempo: document.getElementById('tempo-input').value,
+                registroInicial: window.registroInicial,
+                progresion: window.progresion
+            };
+            
+            // Creamos un archivo descargable con extensión propia .armonia
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(proyecto));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `Progresion_${window.tonalidadActual}.armonia`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            
+            window.mostrarToast("¡Proyecto guardado con éxito!", "success");
+        };
+
+        window.cargarProyecto = function() {
+            // Simulamos un clic en el input de archivo oculto
+            document.getElementById('file-upload').click();
+        };
+
+        window.procesarArchivo = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const proyecto = JSON.parse(e.target.result);
+                    
+                    // Restauramos todos los controles a partir del archivo
+                    document.getElementById('select-tonalidad').value = proyecto.tonalidad || 'C';
+                    document.getElementById('tipo-voicing').value = proyecto.voicing || 'tetrad';
+                    document.getElementById('tempo-input').value = proyecto.tempo || '100';
+                    
+                    const tempoDisplay = document.getElementById('tempo-display');
+                    if (tempoDisplay) tempoDisplay.innerText = proyecto.tempo || '100';
+                    
+                    window.actualizarDiccionario();
+                    window.actualizarOpcionesSoprano(false);
+                    
+                    document.getElementById('posicion-inicial').value = proyecto.posicion || '0';
+                    window.registroInicial = proyecto.registroInicial || 'central';
+                    
+                    window.progresion = proyecto.progresion || [];
+                    window.indiceEdicion = -1;
+                    
+                    // Obligamos a recalcular y dibujar la partitura
+                    window.recalcularProgresion(0);
+                    window.actualizarTimeline();
+                    window.renderizarPartitura();
+                    window.guardarEstado();
+                    
+                    const titulo = document.getElementById('titulo-agregar');
+                    if (titulo) {
+                        titulo.innerHTML = `Asistente de ingreso de acordes:`;
+                        titulo.classList.remove('text-yellow-400');
+                        titulo.classList.add('text-cyan-400');
+                    }
+                    
+                    window.mostrarToast("¡Proyecto cargado correctamente!", "success");
+                } catch (error) {
+                    window.mostrarToast("Error al cargar el archivo. Verifica que sea un proyecto válido.", "error");
+                    console.error("Error parseando el archivo .armonia:", error);
+                }
+                
+                // Limpiamos el input para poder volver a cargar el mismo archivo si se desea
+                event.target.value = '';
+            };
+            reader.readAsText(file);
         };
 
     </script>
