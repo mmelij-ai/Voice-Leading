@@ -337,7 +337,7 @@
         window.modalContextIndex = -1; window.currentModalSection = 'all'; window.isAnalysisMenuOpen = false;
         window.historial = []; window.pasoActual = -1; window.omitirGuardado = false; 
         window.vistaVertical = true; window.logicalZoom = 1.0; window.baseScale = 0.81; 
-        window.mostrarPianoVisible = false; window.isPrinting = false;
+        window.mostrarPianoVisible = false; window.isPrinting = false; window.portapapeles = null;
 
         window.mostrarToast = function(mensaje, tipo = 'error') {
             let toastContainer = document.getElementById('toast-container');
@@ -667,6 +667,23 @@
             }
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? window.rehacerAccion() : window.deshacerAccion(); return; }
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); window.rehacerAccion(); return; }
+            
+            // NUEVO: Copiar y Pegar con Teclado
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+                e.preventDefault();
+                if (window.indiceEdicion !== -1 && window.progresion[window.indiceEdicion]) {
+                    window.portapapeles = JSON.parse(JSON.stringify(window.progresion[window.indiceEdicion]));
+                    window.mostrarToast(`Copiado: ${window.portapapeles.isRest ? 'Silencio' : window.portapapeles.nombre}`, "success");
+                }
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                e.preventDefault();
+                if (document.activeElement) document.activeElement.blur();
+                window.pegarAcorde();
+                return;
+            }
+
             if (e.key === '5') { e.preventDefault(); window.cambiarDuracionSeleccionada('q'); return; }
             if (e.key === '6') { e.preventDefault(); window.cambiarDuracionSeleccionada('h'); return; }
             if (e.key === '7') { e.preventDefault(); window.cambiarDuracionSeleccionada('w'); return; }
@@ -1474,8 +1491,21 @@
             });
         };
 
-        window.prepararEdicion = function(index) {
+        window.prepararEdicion = function(index, forceSelect = false) {
             if (window.modoActual === 'preview') { document.querySelector('input[name="modo_trabajo"][value="ingreso"]').checked = true; window.cambiarModo('ingreso'); }
+            
+            // Lógica de "Interruptor" (Toggle)
+            if (!forceSelect && window.indiceEdicion === index) {
+                window.indiceEdicion = -1; 
+                window.actualizarTimeline();
+                const titulo = document.getElementById('titulo-agregar');
+                titulo.innerHTML = `Asistente de ingreso de acordes:`;
+                titulo.classList.remove('text-yellow-400');
+                titulo.classList.add('text-cyan-400');
+                window.renderizarPartitura(); 
+                return false; // Retorna falso para avisar que se apagó
+            }
+
             window.indiceEdicion = index; window.actualizarTimeline();
             const t = document.getElementById('titulo-agregar'); t.innerHTML = `⚠️ Reemplazar ${window.progresion[index].isRest ? 'Silencio' : 'Acorde'} ${index + 1}:`; t.className = "font-extrabold text-sm md:text-base uppercase tracking-widest transition-colors duration-300 text-yellow-400";
             
@@ -1486,6 +1516,7 @@
             }
 
             window.renderizarPartitura(); 
+            return true; // Retorna verdadero para avisar que se encendió
         };
 
         window.agregarCadencia = async function(id1, id2) {
@@ -1798,6 +1829,78 @@
             if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
         };
 
+        window.clonarAcorde = async function(index) {
+            window.portapapeles = JSON.parse(JSON.stringify(window.progresion[index]));
+            if (window.indiceEdicion !== -1 && window.indiceEdicion !== index) {
+                // Se pegará encima del que esté seleccionado
+            } else {
+                window.indiceEdicion = -1; // Se pegará al final
+            }
+            await window.pegarAcorde();
+        };
+
+        window.pegarAcorde = async function() {
+            if (!window.portapapeles) { window.mostrarToast("No hay nada copiado en el portapapeles.", "error"); return; }
+            if (window.modoActual === 'preview') return;
+            
+            let sourceAcorde = window.portapapeles;
+            let beats = sourceAcorde.beats;
+            let vexDur = sourceAcorde.vexDuration;
+            
+            let check = await window.comprobarDesbordamiento(beats);
+            if (check.accion === 'cancel') return;
+            if (check.accion === 'fit') { beats = check.beatsFit; vexDur = check.durFit; }
+            
+            let nuevosAcordes = [];
+            if (check.accion === 'rest') {
+                let b = check.beatsFit;
+                while(b > 0) {
+                    if (b >= 2) { nuevosAcordes.push({ isRest: true, nombre: "𝄽", vexDuration: 'h', beats: 2 }); b -= 2; }
+                    else { nuevosAcordes.push({ isRest: true, nombre: "𝄽", vexDuration: 'q', beats: 1 }); b -= 1; }
+                }
+            }
+            
+            if (sourceAcorde.isRest) {
+                nuevosAcordes.push({ isRest: true, nombre: "𝄽", vexDuration: vexDur, beats: beats });
+            } else {
+                let dictObj = window.diccionarioActual[sourceAcorde.gradoId];
+                if(!dictObj) return;
+                nuevosAcordes.push({ 
+                    gradoId: sourceAcorde.gradoId, nombre: dictObj.nombre, roman: dictObj.roman, 
+                    rootMidi: dictObj.root, trebleMidi: [], voicingsDisponibles: [], voicingSeleccionado: 0, 
+                    bassOctaveOffset: sourceAcorde.bassOctaveOffset || 0, 
+                    ignorarLIL: false, ignorarDisonancia: false, 
+                    vexDuration: vexDur, beats: beats, spellings: dictObj.spellings || window.nombresNotasActual 
+                });
+            }
+
+            let indiceParaTocar;
+            if (window.indiceEdicion !== -1) {
+                let backup = JSON.parse(JSON.stringify(window.progresion));
+                window.progresion.splice(window.indiceEdicion, 1, ...nuevosAcordes);
+                window.recalcularProgresion(window.indiceEdicion); 
+                if (!await window.auditoriaPedagogica(true)) { window.progresion = backup; window.recalcularProgresion(window.indiceEdicion); window.actualizarTimeline(); window.renderizarPartitura(); return; }
+                indiceParaTocar = window.indiceEdicion + nuevosAcordes.length - 1; 
+                window.indiceEdicion = -1; 
+                document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes:`; document.getElementById('titulo-agregar').className = "font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300";
+            } else {
+                window.progresion.push(...nuevosAcordes);
+                window.recalcularProgresion(window.progresion.length - nuevosAcordes.length); 
+                if (!await window.auditoriaPedagogica(true)) { window.progresion.splice(window.progresion.length - nuevosAcordes.length, nuevosAcordes.length); window.actualizarTimeline(); window.renderizarPartitura(); return; }
+                indiceParaTocar = window.progresion.length - 1;
+            }
+
+            window.actualizarTimeline(); window.renderizarPartitura(); window.guardarEstado();
+            setTimeout(() => { const s = document.getElementById("scroll-partitura"); if (s) s.scrollLeft = s.scrollWidth; }, 50);
+            
+            await window.inicializarAudio();
+            const ac = window.progresion[indiceParaTocar];
+            if (!ac.isRest) {
+                let notasParaTocar = [...ac.trebleMidi, ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
+                window.tocarAcorde(notasParaTocar, ac.beats * (60 / (parseInt(document.getElementById("tempo-input").value) || 100)));
+            }
+        };
+
         window.limpiarProgresion = function() {
             window.progresion = []; window.indiceEdicion = -1; window.hitboxes = []; window.registroInicial = 'central'; window.modalContextIndex = -1; window.currentModalSection = 'all'; 
             document.getElementById('posicion-inicial').value = window.calcularMejorPosicionSoprano('I', document.getElementById('tipo-voicing').value);
@@ -2078,8 +2181,11 @@
                 });
                 
                 if (Math.abs(clickX - closest.x) < 60 && Math.abs(clickY - closest.yCenter) < 150) {
-                    window.prepararEdicion(closest.index);
-                    window.mostrarVoicingSuelto(closest.index);
+                    let fueSeleccionado = window.prepararEdicion(closest.index);
+                    // Solo toca el audio y resalta si efectivamente ENCENDISTE la nota, no si la apagaste.
+                    if (fueSeleccionado) {
+                        window.mostrarVoicingSuelto(closest.index);
+                    }
                 }
             };
             
@@ -2098,7 +2204,7 @@
                 });
 
                 if (Math.abs(clickX - closest.x) < 60 && Math.abs(clickY - closest.yCenter) < 150) {
-                    window.prepararEdicion(closest.index);
+                    window.prepararEdicion(closest.index, true); // <--- Forzamos la selección con 'true'
                     if (!window.progresion[closest.index].isRest) {
                         window.abrirModalOpciones(closest.index, Math.abs(clickY - closest.yTreble) <= Math.abs(clickY - closest.yBass) ? 'treble' : 'bass');
                     }
