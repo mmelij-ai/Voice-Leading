@@ -195,6 +195,21 @@
             <!-- Fila 2: Botones de grados I–VII -->
             <div class="bg-slate-800/60 rounded-2xl p-3 border border-slate-700/60 relative overflow-hidden">
                 <div class="absolute -top-16 -right-16 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- Aviso modo edición — visible solo cuando hay un acorde seleccionado -->
+                <div id="aviso-modo-edicion" class="hidden items-center gap-2 mb-2.5 px-3 py-1.5 bg-amber-400/10 border border-amber-400/40 rounded-xl">
+                    <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    </svg>
+                    <span class="text-[10px] font-bold text-amber-400 leading-none">
+                        Modo edición — el acorde seleccionado será <strong>reemplazado</strong> al hacer click en otro grado
+                    </span>
+                    <button onclick="window.salirModoEdicion()" class="ml-auto text-amber-500 hover:text-amber-300 transition-colors shrink-0" title="Salir del modo edición (Esc)">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
                 <div id="contenedor-botones-grados" class="grid grid-cols-4 sm:grid-cols-7 gap-2 relative z-10">
                     <div class="flex shadow-sm rounded-xl"><button id="btn-I" onclick="window.agregarAcordeGrado('I')" class="flex-1 bg-slate-700/80 border border-slate-600 hover:border-cyan-400 hover:bg-slate-700 hover:text-cyan-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center"><span class="block text-[9px] font-bold text-slate-400 leading-none mb-0.5 tracking-wide">Imaj7</span><span class="block text-xs font-extrabold leading-none">—</span></button><button onclick="window.toggleSubmenu('I')" class="bg-slate-800 border border-slate-600 border-l-0 hover:bg-slate-600 text-slate-400 hover:text-cyan-400 px-2 rounded-r-xl transition-colors text-xs">▼</button></div>
                     <div class="flex shadow-sm rounded-xl"><button id="btn-II" onclick="window.agregarAcordeGrado('II')" class="flex-1 bg-slate-700/80 border border-slate-600 hover:border-cyan-400 hover:bg-slate-700 hover:text-cyan-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center"><span class="block text-[9px] font-bold text-slate-400 leading-none mb-0.5 tracking-wide">IIm7</span><span class="block text-xs font-extrabold leading-none">—</span></button><button onclick="window.toggleSubmenu('II')" class="bg-slate-800 border border-slate-600 border-l-0 hover:bg-slate-600 text-slate-400 hover:text-cyan-400 px-2 rounded-r-xl transition-colors text-xs">▼</button></div>
@@ -265,13 +280,13 @@
             <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest shrink-0 mr-1">Análisis</span>
             <div class="w-px h-3.5 bg-slate-700 shrink-0"></div>
-            <button data-capa="rad-nombres-notas"   onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-red-400     hover:bg-red-500/10     transition-all whitespace-nowrap">Nombres</button>
-            <button data-capa="rad-sw-redondas"     onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-pink-400    hover:bg-pink-500/10    transition-all whitespace-nowrap">S/W Compás</button>
-            <button data-capa="rad-sw-blancas"      onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-pink-500    hover:bg-pink-500/10    transition-all whitespace-nowrap">S/W Blancas</button>
-            <button data-capa="rad-notas-comunes"   onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-cyan-400    hover:bg-cyan-500/10    transition-all whitespace-nowrap">Notas Comunes</button>
-            <button data-capa="rad-notas-guia"      onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-orange-500  hover:bg-orange-500/10  transition-all whitespace-nowrap">Notas Guía</button>
-            <button data-capa="rad-tritonos"        onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all whitespace-nowrap">Tritonos</button>
-            <button data-capa="rad-saltos"          onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-amber-400   hover:bg-amber-500/10   transition-all whitespace-nowrap">Saltos</button>
+            <button data-capa="rad-nombres-notas"   onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Nombres</button>
+            <button data-capa="rad-sw-redondas"     onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">S/W Compás</button>
+            <button data-capa="rad-sw-blancas"      onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">S/W Blancas</button>
+            <button data-capa="rad-notas-comunes"   onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Notas Comunes</button>
+            <button data-capa="rad-notas-guia"      onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Notas Guía</button>
+            <button data-capa="rad-tritonos"        onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Tritonos</button>
+            <button data-capa="rad-saltos"          onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Saltos</button>
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════
@@ -406,19 +421,6 @@
                         <div id="opciones-derecha-list" class="flex flex-col gap-3"></div>
                     </div>
                     <hr id="separador-opciones" class="border-slate-700 mb-8">
-                    <div id="seccion-izquierda" class="mb-4">
-                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Mano Izquierda (Bajo)</h4>
-                        <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-700 shadow-inner">
-                            <div class="flex justify-between items-center mb-5">
-                                <span class="text-slate-400 font-bold">Nota actual: <strong id="bajo-actual-nota" class="text-white text-xl ml-2 bg-slate-800 px-3 py-1 rounded-lg border border-slate-600"></strong></span>
-                            </div>
-                            <div class="flex gap-3 items-start">
-                                <div class="flex-1 flex flex-col gap-1.5"><button onclick="window.cambiarOctavaBajo('down')" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold py-3 rounded-xl text-sm transition-all">-8va</button><span id="warn-bass-down" class="text-[10px] text-rose-400 text-center font-bold leading-tight hidden">⚠️ No recomendado</span></div>
-                                <div class="flex-[0.6] flex flex-col gap-1.5"><button onclick="window.cambiarOctavaBajo('reset')" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl text-sm transition-all">Reset</button></div>
-                                <div class="flex-1 flex flex-col gap-1.5"><button onclick="window.cambiarOctavaBajo('up')" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold py-3 rounded-xl text-sm transition-all">+8va</button><span id="warn-bass-up" class="text-[10px] text-rose-400 text-center font-bold leading-tight hidden">⚠️ No recomendado</span></div>
-                            </div>
-                        </div>
-                    </div>
                     <hr id="separador-tensiones" class="border-slate-700 my-6">
                     <div id="seccion-tensiones" class="mb-4">
                         <h4 class="text-xs font-bold text-violet-400 uppercase tracking-widest mb-1 flex items-center gap-2">
@@ -611,7 +613,14 @@
 
         window.addEventListener('keydown', function(e) {
             if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
-            
+
+            // ↑↓ arrow keys: change bass octave when bass note is selected
+            if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && window.indiceBajoSeleccionado !== -1) {
+                e.preventDefault();
+                window.cambiarOctavaBajo(window.indiceBajoSeleccionado, e.key === 'ArrowUp' ? 1 : -1);
+                return;
+            }
+
             if (e.key === 'Backspace' || e.key === 'Delete') {
                 if (window.indiceEdicion !== -1 && window.progresion[window.indiceEdicion]) {
                     e.preventDefault(); if (document.activeElement) document.activeElement.blur();
@@ -636,6 +645,8 @@
                     titulo.innerHTML = `Asistente de ingreso de acordes:`;
                     titulo.classList.remove('text-yellow-400'); titulo.classList.add('text-cyan-400');
                     window.ocultarPanelTensionesInline();
+                    const aviso = document.getElementById('aviso-modo-edicion');
+                    if (aviso) { aviso.classList.add('hidden'); aviso.classList.remove('flex'); }
                     window.renderizarPartitura(); 
                 }
                 return;
@@ -1000,14 +1011,13 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                     // - Rootless/Tetrad: all tensions valid
                     if (ac.tensionesActivas && ac.tensionesActivas.length) {
                         if (usarTriada) {
-                            // No tensions in triads
+                            // No tensions in triads — no room
                             ac.tensionesActivas = [];
-                        } else if (usarGuide) {
-                            // Guide only has 3rd and 7th — 9nas OK (substitute 1st which isn't there,
-                            // will be added), 11nas/13nas drop (no 5th to substitute)
-                            ac.tensionesActivas = ac.tensionesActivas.filter(s => s <= 3);
                         }
-                        // rootless and tetrad: keep all tensions
+                        // Guide, rootless, tetrad: keep all tensions.
+                        // In guide, tensions that would substitute the 5th (11th/13th)
+                        // are added as extra notes by reaplicarTensiones (idxSlot === -1 branch)
+                        // rather than discarded — the color is preserved.
                     }
                 });
 
@@ -1707,24 +1717,25 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
             if (yaEsta) {
                 // ── QUITAR TENSIÓN ──
-                // Determinar qué nota original correspondería al slot que ocupa la tensión
-                // 9nas: su slot es la fundamental (semitone ∈ {1,2,3})
-                // 11nas/13nas: su slot es la quinta (semitone ∈ {5,6,8,9})
-                const esTension9 = semitone <= 3;   // b9, 9, #9
-                const slotPC = esTension9 ? rootPC : quintaPC;
-
-                // Encontrar el MIDI de la tensión que queremos quitar
-                const idxTension = voicing.findIndex(m => m % 12 === tensionPC);
-                if (idxTension === -1) return;
-                const midiTension = voicing[idxTension];
-
-                // Calcular el MIDI de la nota original para ese slot (misma octava aprox.)
-                let midiRestaurar = slotPC + Math.floor(midiTension / 12) * 12;
-                // Si queda por encima de la tensión (lo que no tiene sentido armónicamente), ajustar
-                if (midiRestaurar > midiTension + 6) midiRestaurar -= 12;
-                if (midiRestaurar < midiTension - 6) midiRestaurar += 12;
-
-                voicing[idxTension] = midiRestaurar;
+                // Remove from tensionesActivas and let recalcularProgresion rebuild
+                // the voicing cleanly — avoids duplicate notes from manual restoration
+                if (!ac.tensionesActivas) ac.tensionesActivas = [];
+                ac.tensionesActivas = ac.tensionesActivas.filter(s => s !== semitone);
+                // Mark ignorarDisonancia so audit doesn't re-trigger immediately
+                ac.ignorarDisonancia = false;
+                window.recalcularProgresion(index);
+                window.actualizarTimeline();
+                window.renderizarPartitura(index, true);
+                window.mostrarPanelTensionesInline(index);
+                window.guardarEstado();
+                // Reproducir el acorde sin la tensión para feedback auditivo
+                if (window.modoActual === 'ingreso') {
+                    const ac2 = window.progresion[index];
+                    const notasTreble = ac2.trebleMidi.map(m => Tone.Frequency(m, 'midi').toNote());
+                    const notaBass    = Tone.Frequency(ac2.rootMidi, 'midi').toNote();
+                    window.tocarAcorde([...notasTreble, notaBass], '2n');
+                }
+                return;
 
             } else {
                 // ── AGREGAR TENSIÓN ──
@@ -1796,6 +1807,12 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             window.guardarEstado();
             // Re-pintar el panel de tensiones con el estado actualizado
             window.mostrarPanelTensionesInline(index);
+            // Reproducir el acorde con la tensión para feedback auditivo inmediato
+            if (window.modoActual === 'ingreso') {
+                const notasTreble = ac.trebleMidi.map(m => Tone.Frequency(m, 'midi').toNote());
+                const notaBass    = Tone.Frequency(ac.rootMidi, 'midi').toNote();
+                window.tocarAcorde([...notasTreble, notaBass], '2n');
+            }
         };
 
         // Renderizar el panel inline de tensiones (dentro del asistente, en modo edición)
@@ -1808,6 +1825,32 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             const ac = window.progresion[index];
             if (!ac || ac.isRest) { panel.classList.add('hidden'); return; }
             if (!window.tipoVoicingAceptaTensiones()) { panel.classList.add('hidden'); return; }
+
+            // ── MODO BAJO SELECCIONADO ───────────────────────────────────────────
+            if (window.indiceBajoSeleccionado === index) {
+                panel.classList.remove('hidden');
+                const sp = ac.spellings || window.nombresNotasActual;
+                const bassName = window.formatNotaFromPC(ac.rootMidi % 12, sp);
+                const octava   = Math.floor(ac.rootMidi / 12) - 1;
+                document.getElementById('tension-escala-tag').innerText = `Bajo: ${bassName}${octava}`;
+                document.getElementById('tension-evitar-tag').classList.add('hidden');
+                const btnContainer = document.getElementById('tension-botones');
+                btnContainer.innerHTML = `
+                    <div class="flex items-center gap-3 w-full">
+                        <span class="text-[11px] text-slate-400 font-bold">Octava del bajo</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="window.cambiarOctavaBajo(${index}, -1)"
+                                class="w-9 h-9 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-500 text-slate-200 rounded-lg transition-all font-bold text-lg"
+                                title="Bajar octava (↓)">↓</button>
+                            <span class="text-base font-extrabold text-amber-400 min-w-[48px] text-center">${bassName}${octava}</span>
+                            <button onclick="window.cambiarOctavaBajo(${index}, 1)"
+                                class="w-9 h-9 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-500 text-slate-200 rounded-lg transition-all font-bold text-lg"
+                                title="Subir octava (↑)">↑</button>
+                        </div>
+                        <span class="text-[10px] text-slate-600 ml-auto">click fuera o Esc para salir</span>
+                    </div>`;
+                return;
+            }
 
             // Mostrar panel si existe ficha de tensiones para este gradoId
             const ficha = window.obtenerFichaTensiones(ac.gradoId);
@@ -1854,8 +1897,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 // ¿Es nota común con el acorde anterior? (pitch class match en trebleMidi o rootMidi del prev)
                 const prevAcorde = index > 0 ? window.progresion[index - 1] : null;
                 const esNotaComun = prevAcorde && !prevAcorde.isRest && (
-                    (prevAcorde.trebleMidi && prevAcorde.trebleMidi.some(m => m % 12 === tensionPC)) ||
-                    (prevAcorde.rootMidi % 12 === tensionPC)
+                    prevAcorde.trebleMidi && prevAcorde.trebleMidi.some(m => m % 12 === tensionPC)
                 );
 
                 // Color según tipo de tensión
@@ -1890,6 +1932,9 @@ window.getModeSpellings = function(baseKey, flatAdded) {
         window.ocultarPanelTensionesInline = function() {
             const panel = document.getElementById('panel-tensiones-inline');
             if (panel) panel.classList.add('hidden');
+            const aviso = document.getElementById('aviso-modo-edicion');
+            if (aviso) { aviso.classList.add('hidden'); aviso.classList.remove('flex'); }
+            window.indiceBajoSeleccionado = -1;
         };
 
         // (Compatibilidad con código anterior del modal de opciones — ya no renderiza en modal,
@@ -2224,6 +2269,8 @@ window.crearPiano = function() {
                 // Notas comunes requiere vista horizontal para las líneas de conexión
                 if (capaId === 'rad-notas-comunes') window.forzarHorizontal();
             }
+            // Force browser to release hover state immediately
+            btn.blur();
         };
 
         // Vista previa antes de forzar horizontal
@@ -2474,6 +2521,9 @@ window.crearPiano = function() {
                         }
                     }
 
+                    const isBassSelected = !window.isPrinting && window.indiceBajoSeleccionado === noteIndexGlobal;
+                    const bassColor = isBassSelected ? '#f59e0b' : (isSelected ? selColor : defaultColor);
+
                     if (visualAnalysisOn && !showNames && !showSWRedondas && !showSWBlancas) {
                         const isDominant = window.diccionarioActual[acorde.gradoId].roman.includes("7") && !window.diccionarioActual[acorde.gradoId].roman.includes("maj7") && !window.diccionarioActual[acorde.gradoId].roman.includes("m7");
                         acorde.trebleMidi.forEach((m, idx) => {
@@ -2485,11 +2535,11 @@ window.crearPiano = function() {
                         });
                         if (notaTreble.getStem()) notaTreble.getStem().setStyle({ strokeStyle: window.isPrinting ? "#000000" : "#94a3b8" }); 
                         
-                        if (!isSelected) { notaBass.setStyle({ fillStyle: defaultColor, strokeStyle: defaultColor }); annTreble.setStyle({ fillStyle: defaultColor }); annBass.setStyle({ fillStyle: defaultColor }); } 
-                        else { notaBass.setStyle({ fillStyle: selColor, strokeStyle: selColor }); annTreble.setStyle({ fillStyle: selColor }); annBass.setStyle({ fillStyle: selColor }); }
+                        if (!isSelected) { notaBass.setStyle({ fillStyle: bassColor, strokeStyle: bassColor }); annTreble.setStyle({ fillStyle: defaultColor }); annBass.setStyle({ fillStyle: bassColor }); } 
+                        else { notaBass.setStyle({ fillStyle: bassColor, strokeStyle: bassColor }); annTreble.setStyle({ fillStyle: selColor }); annBass.setStyle({ fillStyle: bassColor }); }
                     } else {
-                        if (isSelected) { notaTreble.setStyle({ fillStyle: selColor, strokeStyle: selColor }); notaBass.setStyle({ fillStyle: selColor, strokeStyle: selColor }); annTreble.setStyle({ fillStyle: selColor }); annBass.setStyle({ fillStyle: selColor }); } 
-                        else { notaTreble.setStyle({ fillStyle: defaultColor, strokeStyle: defaultColor }); notaBass.setStyle({ fillStyle: defaultColor, strokeStyle: defaultColor }); annTreble.setStyle({ fillStyle: defaultColor }); annBass.setStyle({ fillStyle: defaultColor }); }
+                        if (isSelected) { notaTreble.setStyle({ fillStyle: selColor, strokeStyle: selColor }); notaBass.setStyle({ fillStyle: bassColor, strokeStyle: bassColor }); annTreble.setStyle({ fillStyle: selColor }); annBass.setStyle({ fillStyle: bassColor }); } 
+                        else { notaTreble.setStyle({ fillStyle: defaultColor, strokeStyle: defaultColor }); notaBass.setStyle({ fillStyle: bassColor, strokeStyle: bassColor }); annTreble.setStyle({ fillStyle: defaultColor }); annBass.setStyle({ fillStyle: bassColor }); }
                     }
 
                     allNotes.push({ index: noteIndexGlobal, trebleNote: notaTreble, bassNote: notaBass,
@@ -2697,8 +2747,27 @@ window.crearPiano = function() {
                 });
                 
                 if (Math.abs(clickX - closest.x) < 60 && Math.abs(clickY - closest.yCenter) < 150) {
+                    const ac = window.progresion[closest.index];
+                    // Second click on already-selected chord: check if clicking bass note
+                    if (window.indiceEdicion === closest.index && !ac?.isRest) {
+                        const distBass   = Math.abs(clickY - closest.yBass);
+                        const distTreble = Math.abs(clickY - closest.yTreble);
+                        if (distBass < distTreble && distBass < 25) {
+                            // Toggle bass note selection
+                            if (window.indiceBajoSeleccionado === closest.index) {
+                                window.indiceBajoSeleccionado = -1;
+                                window.mostrarPanelTensionesInline(closest.index);
+                            } else {
+                                window.indiceBajoSeleccionado = closest.index;
+                                window.mostrarPanelTensionesInline(closest.index);
+                                window.mostrarVoicingSuelto(closest.index);
+                            }
+                            return;
+                        }
+                    }
+                    // First click or click on treble: normal chord selection
+                    window.indiceBajoSeleccionado = -1;
                     let fueSeleccionado = window.prepararEdicion(closest.index);
-                    // Solo toca el audio y resalta si efectivamente ENCENDISTE la nota, no si la apagaste.
                     if (fueSeleccionado) {
                         window.mostrarVoicingSuelto(closest.index);
                     }
@@ -2732,15 +2801,10 @@ window.crearPiano = function() {
             if (index < 0 || index >= window.progresion.length) return;
             window.modalContextIndex = index; window.currentModalSection = targetSection;
             const ac = window.progresion[index];
-            document.getElementById('modal-opciones-titulo').innerText = targetSection === 'treble' ? `Voces (Mano Derecha): ${ac.nombre}` : (targetSection === 'bass' ? `Bajo (Mano Izquierda): ${ac.nombre}` : `Ajustes: ${ac.nombre}`);
-            document.getElementById('bajo-actual-nota').innerText = window.midiATone(ac.rootMidi, ac.spellings);
+            document.getElementById('modal-opciones-titulo').innerText = `Ajustes: ${ac.nombre}`;
 
-            const errDown = window.checkLILError(ac.trebleMidi, window.diccionarioActual[ac.gradoId].root + (((ac.bassOctaveOffset || 0) - 1) * 12));
-            const errUp = window.checkLILError(ac.trebleMidi, window.diccionarioActual[ac.gradoId].root + (((ac.bassOctaveOffset || 0) + 1) * 12));
-
-            document.getElementById('seccion-derecha').style.display = targetSection === 'bass' ? 'none' : 'block';
-            document.getElementById('seccion-izquierda').style.display = targetSection === 'treble' ? 'none' : 'block';
-            document.getElementById('separador-opciones').style.display = targetSection === 'all' ? 'block' : 'none';
+            document.getElementById('seccion-derecha').style.display = 'block';
+            document.getElementById('separador-opciones').style.display = 'none';
             // Panel de tensiones ahora es inline en el asistente, no en este modal
 
             const list = document.getElementById('opciones-derecha-list'); list.innerHTML = '';
@@ -2764,11 +2828,83 @@ window.crearPiano = function() {
             } else {
                 document.getElementById('opciones-derecha-desc').innerText = `Variantes de enlace armónico.`;
                 if (ac.voicingsDisponibles && ac.voicingsDisponibles.length > 1) {
+                    // Pre-compute tensioned voicings for display
+                    let prevIndex2 = index - 1;
+                    while (prevIndex2 >= 0 && window.progresion[prevIndex2].isRest) prevIndex2--;
+                    const prevTrebleForModal = prevIndex2 >= 0 ? window.progresion[prevIndex2].trebleMidi : null;
+
                     ac.voicingsDisponibles.forEach((opcion, idx) => {
                         const sel = idx === ac.voicingSeleccionado;
-                        let badge = idx === 0 ? '<span class="text-[10px] text-emerald-400 font-extrabold ml-2 border border-emerald-500/30 bg-emerald-900/30 px-2 py-0.5 rounded-md shadow-sm">Óptimo</span>' : (opcion.voicing[opcion.voicing.length-1] > ac.voicingsDisponibles[0].voicing[ac.voicingsDisponibles[0].voicing.length-1] ? '<span class="text-[10px] text-blue-400 font-extrabold ml-2 border border-blue-500/30 bg-blue-900/30 px-2 py-0.5 rounded-md shadow-sm">Ascendente</span>' : '<span class="text-[10px] text-amber-400 font-extrabold ml-2 border border-amber-500/30 bg-amber-900/30 px-2 py-0.5 rounded-md shadow-sm">Descendente</span>');
-                        list.innerHTML += `<div class="p-4 border rounded-2xl flex items-stretch gap-4 transition-all ${sel ? 'bg-cyan-900/30 border-cyan-500' : 'bg-slate-800 border-slate-700'}"><div class="flex flex-col justify-between py-1 flex-1"><div><div class="flex items-center gap-2 mb-2"><h4 class="font-extrabold text-white text-lg tracking-tight">${[...opcion.voicing].reverse().map(m => window.midiATone(m, ac.spellings).replace(/[0-9]/g, '')).join(' - ')}</h4>${sel ? '<span class="bg-cyan-500 text-slate-900 text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm">ACTUAL</span>' : ''}${badge}</div><p class="text-xs text-cyan-200 font-bold bg-cyan-900/30 border border-cyan-800/50 inline-block px-2.5 py-1 rounded-lg">Notas comunes: ${opcion.notasComunes}</p></div><div class="flex gap-3 mt-4"><button onclick="window.previsualizarVariante(${index}, ${idx})" class="flex-[0.4] bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 rounded-xl text-xs transition-colors shadow-sm">▶️ Oír</button><button onclick="window.seleccionarVariante(${index}, ${idx})" class="flex-1 ${sel ? 'bg-cyan-900/50 text-cyan-200 border border-cyan-800 cursor-default' : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 text-white border border-cyan-400 shadow-md'} font-bold py-2 rounded-xl text-xs transition-all">${sel ? 'Seleccionada' : 'Aplicar esta opción'}</button></div></div><div id="ms-${index}-v-${idx}" class="w-[160px] h-[140px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 shadow-inner"></div></div>`;
-                        renderTasks.push({ id: `ms-${index}-v-${idx}`, treble: opcion.voicing, prevTreble: prevTrebleMidi, spellings: ac.spellings });
+
+                        // Build tensioned version for display
+                        const acCopy = Object.assign({}, ac, { trebleMidi: [...opcion.voicing] });
+                        window.reaplicarTensiones(acCopy, prevTrebleForModal);
+                        const displayVoicing = acCopy.trebleMidi;
+
+                        // ── Per-voice movement arrows ──────────────────────────────────
+                        let voiceArrows = '';
+                        let totalMovement = 0;
+                        if (prevTrebleForModal && prevTrebleForModal.length === displayVoicing.length) {
+                            const notasConMovimiento = [...displayVoicing].reverse().map((midi, i) => {
+                                const prevMidi = [...prevTrebleForModal].reverse()[i];
+                                const diff = midi - prevMidi;
+                                totalMovement += Math.abs(diff);
+                                const nombre = window.midiATone(midi, ac.spellings).replace(/[0-9]/g, '');
+                                let arrow, color;
+                                if (diff === 0)       { arrow = '→'; color = 'text-slate-400'; }
+                                else if (diff > 0)    { arrow = Math.abs(diff) > 4 ? '↑↑' : '↑'; color = Math.abs(diff) > 4 ? 'text-rose-400' : 'text-emerald-400'; }
+                                else                  { arrow = Math.abs(diff) > 4 ? '↓↓' : '↓'; color = Math.abs(diff) > 4 ? 'text-rose-400' : 'text-blue-400'; }
+                                return `<span class="font-extrabold text-white">${nombre}</span><span class="${color} text-xs font-bold">${arrow}</span>`;
+                            });
+                            voiceArrows = `<div class="flex items-center gap-1.5 mt-1.5 flex-wrap">${notasConMovimiento.join('<span class="text-slate-600 text-xs">·</span>')}</div>`;
+                        } else {
+                            // No prev chord — just show note names
+                            voiceArrows = '';
+                            totalMovement = opcion.distancia;
+                        }
+
+                        // ── Badges ─────────────────────────────────────────────────────
+                        let badge = idx === 0
+                            ? '<span class="text-[10px] text-emerald-400 font-extrabold ml-2 border border-emerald-500/30 bg-emerald-900/30 px-2 py-0.5 rounded-md">Óptimo</span>'
+                            : (opcion.voicing[opcion.voicing.length-1] > ac.voicingsDisponibles[0].voicing[ac.voicingsDisponibles[0].voicing.length-1]
+                                ? '<span class="text-[10px] text-blue-400 font-extrabold ml-2 border border-blue-500/30 bg-blue-900/30 px-2 py-0.5 rounded-md">Ascendente</span>'
+                                : '<span class="text-[10px] text-amber-400 font-extrabold ml-2 border border-amber-500/30 bg-amber-900/30 px-2 py-0.5 rounded-md">Descendente</span>');
+
+                        // ── Stats row ──────────────────────────────────────────────────
+                        const statsRow = `
+                            <div class="flex items-center gap-3 mt-2 flex-wrap">
+                                <p class="text-xs text-cyan-200 font-bold bg-cyan-900/30 border border-cyan-800/50 px-2.5 py-1 rounded-lg">
+                                    Notas comunes: ${opcion.notasComunes}
+                                </p>
+                                <p class="text-xs text-slate-400 font-bold bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg">
+                                    Movimiento: ${totalMovement} st
+                                </p>
+                            </div>`;
+
+                        list.innerHTML += `
+                            <div class="p-4 border rounded-2xl flex items-stretch gap-4 transition-all ${sel ? 'bg-cyan-900/30 border-cyan-500' : 'bg-slate-800 border-slate-700'}">
+                                <div class="flex flex-col justify-between py-1 flex-1">
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                            <h4 class="font-extrabold text-white text-lg tracking-tight">
+                                                ${[...displayVoicing].reverse().map(m => window.midiATone(m, ac.spellings).replace(/[0-9]/g, '')).join(' - ')}
+                                            </h4>
+                                            ${sel ? '<span class="bg-cyan-500 text-slate-900 text-[10px] px-2 py-0.5 rounded-md font-extrabold">ACTUAL</span>' : ''}
+                                            ${badge}
+                                        </div>
+                                        ${voiceArrows}
+                                        ${statsRow}
+                                    </div>
+                                    <div class="flex gap-3 mt-4">
+                                        <button onclick="window.previsualizarVariante(${index}, ${idx})" class="flex-[0.4] bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 rounded-xl text-xs transition-colors">▶️ Oír</button>
+                                        <button onclick="window.seleccionarVariante(${index}, ${idx})" class="flex-1 ${sel ? 'bg-cyan-900/50 text-cyan-200 border border-cyan-800 cursor-default' : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 text-white border border-cyan-400 shadow-md'} font-bold py-2 rounded-xl text-xs transition-all">
+                                            ${sel ? 'Seleccionada' : 'Aplicar esta opción'}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="ms-${index}-v-${idx}" class="w-[160px] h-[140px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 shadow-inner"></div>
+                            </div>`;
+                        renderTasks.push({ id: `ms-${index}-v-${idx}`, treble: displayVoicing, prevTreble: prevTrebleMidi, spellings: ac.spellings });
                     });
                 } else {
                     list.innerHTML = `<div class="p-6 border rounded-2xl bg-slate-800/50 border-slate-700 text-slate-400 text-sm font-medium italic text-center">Solo hay 1 enlace válido posible acústicamente.</div>`;
@@ -2809,20 +2945,38 @@ window.crearPiano = function() {
             const curr = window.progresion[index];
             const bpm = parseInt(document.getElementById("tempo-input").value) || 100;
             
+            // Build tensioned voicing for preview
+            const acCopy = Object.assign({}, curr, { trebleMidi: [...curr.voicingsDisponibles[optIndex].voicing] });
+            const prevTreble = prevIndex >= 0 ? window.progresion[prevIndex].trebleMidi : null;
+            window.reaplicarTensiones(acCopy, prevTreble);
+            const previewVoicing = acCopy.trebleMidi;
+
             if (prevIndex >= 0) {
                 const prev = window.progresion[prevIndex];
                 window.tocarAcorde([...prev.trebleMidi, prev.rootMidi].map(m => window.midiATone(m, prev.spellings)), 60/bpm, Tone.now());
-                window.tocarAcorde([...curr.voicingsDisponibles[optIndex].voicing, curr.rootMidi].map(m => window.midiATone(m, curr.spellings)), (60/bpm)*1.5, Tone.now() + (60/bpm));
+                window.tocarAcorde([...previewVoicing, curr.rootMidi].map(m => window.midiATone(m, curr.spellings)), (60/bpm)*1.5, Tone.now() + (60/bpm));
             } else {
-                window.tocarAcorde([...curr.voicingsDisponibles[optIndex].voicing, curr.rootMidi].map(m => window.midiATone(m, curr.spellings)), (60/bpm)*1.5, Tone.now());
+                window.tocarAcorde([...previewVoicing, curr.rootMidi].map(m => window.midiATone(m, curr.spellings)), (60/bpm)*1.5, Tone.now());
             }
         };
 
         window.seleccionarVariante = async function(index, optIndex) {
             let ac = window.progresion[index]; let sel = ac.voicingSeleccionado;
-            ac.voicingSeleccionado = optIndex; ac.trebleMidi = ac.voicingsDisponibles[optIndex].voicing;
+            ac.voicingSeleccionado = optIndex;
+            // Apply the diatonic voicing first, then reapply tensions on top
+            ac.trebleMidi = [...ac.voicingsDisponibles[optIndex].voicing];
+            // Reapply tensions to the new diatonic base
+            let prevIndex = index - 1;
+            while (prevIndex >= 0 && window.progresion[prevIndex].isRest) prevIndex--;
+            const prevTreble = prevIndex >= 0 ? window.progresion[prevIndex].trebleMidi : null;
+            window.reaplicarTensiones(ac, prevTreble);
             window.recalcularProgresion(index + 1); window.renderizarPartitura();
-            if (!await window.auditoriaPedagogica(true)) { ac.voicingSeleccionado = sel; ac.trebleMidi = ac.voicingsDisponibles[sel].voicing; window.recalcularProgresion(index + 1); }
+            if (!await window.auditoriaPedagogica(true)) { 
+                ac.voicingSeleccionado = sel; 
+                ac.trebleMidi = [...ac.voicingsDisponibles[sel].voicing];
+                window.reaplicarTensiones(ac, prevTreble);
+                window.recalcularProgresion(index + 1); 
+            }
             else { window.guardarEstado(); window.abrirModalOpciones(index, window.currentModalSection); }
             window.actualizarTimeline(); window.renderizarPartitura();
         };
@@ -2832,7 +2986,6 @@ window.crearPiano = function() {
             let nOff = accion === 'up' ? off + 1 : (accion === 'down' ? off - 1 : 0);
             if (nOff === off || nOff > 2 || nOff < -2) return; 
             ac.bassOctaveOffset = nOff; ac.rootMidi = window.diccionarioActual[ac.gradoId].root + (nOff * 12); ac.ignorarLIL = false;
-            document.getElementById('bajo-actual-nota').innerText = window.midiATone(ac.rootMidi, ac.spellings);
             window.renderizarPartitura();
             if (!await window.auditoriaPedagogica(true)) { ac.bassOctaveOffset = off; ac.rootMidi = window.diccionarioActual[ac.gradoId].root + (off * 12); window.recalcularProgresion(window.modalContextIndex); }
             else { window.guardarEstado(); window.abrirModalOpciones(window.modalContextIndex, window.currentModalSection); }
@@ -3213,9 +3366,42 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
             });
         };
 
+        window.indiceBajoSeleccionado = -1;
+
+        window.cambiarOctavaBajo = function(index, direccion) {
+            const ac = window.progresion[index];
+            if (!ac || ac.isRest) return;
+            const nuevoMidi = ac.rootMidi + (direccion * 12);
+            // Keep bass in reasonable range (MIDI 28-52 = E1-E3)
+            if (nuevoMidi < 28 || nuevoMidi > 52) return;
+            ac.rootMidi = nuevoMidi;
+            if (!ac.bassOctaveOffset) ac.bassOctaveOffset = 0;
+            ac.bassOctaveOffset += direccion;
+            window.recalcularProgresion(index + 1);
+            window.actualizarTimeline();
+            window.renderizarPartitura(index, true);
+            window.mostrarPanelTensionesInline(index);
+            window.guardarEstado();
+            // Play chord with new bass
+            const notasTreble = ac.trebleMidi.map(m => Tone.Frequency(m, 'midi').toNote());
+            const notaBass    = Tone.Frequency(ac.rootMidi, 'midi').toNote();
+            window.tocarAcorde([...notasTreble, notaBass], '2n');
+        };
+
+        window.salirModoEdicion = function() {
+            window.indiceEdicion = -1;
+            window.actualizarTimeline();
+            window.ocultarPanelTensionesInline();
+            const aviso = document.getElementById('aviso-modo-edicion');
+            if (aviso) { aviso.classList.add('hidden'); aviso.classList.remove('flex'); }
+            window.renderizarPartitura();
+        };
+
         window.prepararEdicion = function(index, forceSelect = false) {
             if (window.modoActual === 'preview') { document.getElementById('radio-modo-ingreso').checked = true; window.cambiarModo('ingreso'); }
             
+            const aviso = document.getElementById('aviso-modo-edicion');
+
             // Lógica de "Interruptor" (Toggle)
             if (!forceSelect && window.indiceEdicion === index) {
                 window.indiceEdicion = -1; 
@@ -3225,8 +3411,9 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
                 titulo.classList.remove('text-yellow-400');
                 titulo.classList.add('text-cyan-400');
                 window.ocultarPanelTensionesInline();
+                if (aviso) { aviso.classList.add('hidden'); aviso.classList.remove('flex'); }
                 window.renderizarPartitura(); 
-                return false; // Retorna falso para avisar que se apagó
+                return false;
             }
 
             window.indiceEdicion = index; window.actualizarTimeline();
@@ -3238,9 +3425,12 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
                 if (radioFigura) radioFigura.checked = true;
             }
 
+            // Show edit warning banner
+            if (aviso) { aviso.classList.remove('hidden'); aviso.classList.add('flex'); }
+
             window.renderizarPartitura();
             window.mostrarPanelTensionesInline(index);
-            return true; // Retorna verdadero para avisar que se encendió
+            return true;
         };
 
         window.agregarCadencia = async function(id1, id2) {
