@@ -421,23 +421,6 @@
                         <div id="opciones-derecha-list" class="flex flex-col gap-3"></div>
                     </div>
                     <hr id="separador-opciones" class="border-slate-700 mb-8">
-                    <hr id="separador-tensiones" class="border-slate-700 my-6">
-                    <div id="seccion-tensiones" class="mb-4">
-                        <h4 class="text-xs font-bold text-violet-400 uppercase tracking-widest mb-1 flex items-center gap-2">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                            Tensiones Disponibles
-                        </h4>
-                        <p id="tensiones-escala-label" class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-3"></p>
-                        <div id="tensiones-lista" class="flex flex-wrap gap-2 mb-4"></div>
-                        <div id="tensiones-activas-container" class="hidden">
-                            <p class="text-[10px] text-violet-400 font-bold uppercase tracking-wider mb-2">Tensiones activas en este acorde:</p>
-                            <div id="tensiones-activas-lista" class="flex flex-wrap gap-2"></div>
-                        </div>
-                        <div id="tensiones-evitar-container" class="mt-3 hidden">
-                            <p class="text-[10px] text-rose-400 font-bold uppercase tracking-wider mb-2">⚠️ Notas a evitar:</p>
-                            <div id="tensiones-evitar-lista" class="flex flex-wrap gap-2"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1537,7 +1520,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             'II_cad_II_4_1':    { escala: 'Dórica',           t: [2,5],   ev: [9],   constitutivas: [0,3,7,10] },  // IIrel sin análisis → Dórica S6
             'II_cad_II_4_2':    { escala: 'Lidia b7',         t: [2,6,9], ev: [],    constitutivas: [0,4,7,10] },
             // ─ Toward III ─
-            'III_cad_III_1_1':  { escala: 'Locria ♮9',        t: [2,5,8], ev: [1],   constitutivas: [0,3,6,10] },
+            'III_cad_III_1_1':  { escala: 'Locria',            t: [5],     ev: [1,8], constitutivas: [0,3,6,10] },
             'III_cad_III_1_2':  { escala: 'Mixolidia b9 b13', t: [1,8],   ev: [5],   constitutivas: [0,4,7,10] },
             // ─ Toward IV ─
             // Vm7 actúa como IIm7 de IV — Dórica libre (9, 11, 13 sin restricciones)
@@ -1560,7 +1543,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             'V_cad_V_4_1':      { escala: 'Dórica',           t: [2,5],   ev: [9],   constitutivas: [0,3,7,10] },  // IIrel sin análisis → Dórica S6
             'V_cad_V_4_2':      { escala: 'Lidia b7',         t: [2,6,9], ev: [],    constitutivas: [0,4,7,10] },
             // ─ Toward VI ─
-            'VI_cad_VI_1_1':    { escala: 'Locria ♮9',        t: [2,5,8], ev: [1],   constitutivas: [0,3,6,10] },
+            'VI_cad_VI_1_1':    { escala: 'Locria',            t: [5],     ev: [1,8], constitutivas: [0,3,6,10] },
             'VI_cad_VI_1_2':    { escala: 'Mixolidia b9 b13', t: [1,8],   ev: [5],   constitutivas: [0,4,7,10] },
         };
 
@@ -2168,8 +2151,8 @@ window.crearPiano = function() {
         };
 
         window.obtenerAccidental = function(notaConOctava, fifths) {
-            let notaStr = notaConOctava.split('/')[0];
             const sharps = ['f', 'c', 'g', 'd', 'a', 'e', 'b']; const flats = ['b', 'e', 'a', 'd', 'g', 'c', 'f'];
+            let notaStr = notaConOctava.split('/')[0];
             const baseNote = notaStr.charAt(0);
             let inKey = null;
             if (fifths > 0 && sharps.slice(0, fifths).includes(baseNote)) inKey = '#';
@@ -2177,6 +2160,38 @@ window.crearPiano = function() {
             let current = null;
             if (notaStr.includes('#')) current = '#'; else if (notaStr.length > 1 && notaStr.includes('b')) current = 'b';
             if (current === inKey) return null; if (current === null && inKey !== null) return 'n'; return current; 
+        };
+
+        // Context-aware version: also adds naturals when previous measure used accidentals
+        window.obtenerAccidentalConContexto = function(notaConOctava, fifths, prevMeasureAcc, thisMeasureAcc) {
+            const sharps = ['f', 'c', 'g', 'd', 'a', 'e', 'b']; const flats = ['b', 'e', 'a', 'd', 'g', 'c', 'f'];
+            let notaStr  = notaConOctava.split('/')[0];
+            const baseNote = notaStr[0];
+            let inKey = null;
+            if (fifths > 0 && sharps.slice(0, fifths).includes(baseNote)) inKey = '#';
+            if (fifths < 0 && flats.slice(0, Math.abs(fifths)).includes(baseNote)) inKey = 'b';
+            let current = null;
+            if (notaStr.includes('#')) current = '#';
+            else if (notaStr.length > 1 && notaStr.includes('b')) current = 'b';
+
+            let acc = null;
+            if (current === inKey) {
+                // Note matches key signature — check if prev measure used a DIFFERENT accidental
+                // Only add courtesy natural/accidental if the key was explicitly set differently
+                const hasPrevEntry = Object.prototype.hasOwnProperty.call(prevMeasureAcc, baseNote);
+                const prevAcc = hasPrevEntry ? prevMeasureAcc[baseNote] : inKey; // default to key sig
+                if (hasPrevEntry && prevAcc !== inKey) {
+                    acc = inKey || 'n'; // restore key signature or add natural
+                }
+            } else if (current === null && inKey !== null) {
+                acc = 'n'; // natural cancels key signature accidental
+            } else {
+                acc = current; // explicit sharp or flat
+            }
+
+            // Track what accidental this note now carries in the current measure
+            thisMeasureAcc[baseNote] = (acc === null) ? inKey : (acc === 'n' ? null : acc);
+            return acc;
         };
 
         window.renderizarMiniScore = function(containerId, trebleMidi, prevTrebleMidi, spellings = window.nombresNotasActual) {
@@ -2404,7 +2419,7 @@ window.crearPiano = function() {
             const context = renderer.getContext();
             context.scale(actualScale, actualScale);
 
-            let currentX = 20; let noteIndexGlobal = 0; let allNotes = []; 
+            let currentX = 20; let noteIndexGlobal = 0; let allNotes = [];
 
             const showNames = document.getElementById('rad-nombres-notas') && document.getElementById('rad-nombres-notas').checked;
             const showCommon = document.getElementById('rad-notas-comunes') && document.getElementById('rad-notas-comunes').checked;
@@ -2816,14 +2831,34 @@ window.crearPiano = function() {
             let prevTrebleMidi = prevIndex >= 0 ? window.progresion[prevIndex].trebleMidi : null;
 
             if (index === 0 || window.progresion.slice(0, index).every(a => a.isRest)) {
-                document.getElementById('opciones-derecha-desc').innerText = 'Establece la altura base. La progresión seguirá este registro.';
-                const tn = window.getEstructuraVoicing(window.diccionarioActual[ac.gradoId].tetrad, document.getElementById('tipo-voicing').value);
-                const tdi = parseInt(document.getElementById('posicion-inicial').value) || 0;
-                [{val: 'agudo', txt: 'Agudo (+1 Octava)'}, {val: 'central', txt: 'Central (Estándar)'}, {val: 'grave', txt: 'Grave (-1 Octava)'}].forEach((opt, idx) => {
-                    const sel = opt.val === window.registroInicial;
-                    const v = window.generarVoicingInicial(tn, tdi, opt.val);
-                    list.innerHTML += `<div onclick="window.seleccionarRegistro('${opt.val}')" class="p-4 border rounded-2xl flex items-stretch gap-4 transition-all cursor-pointer ${sel ? 'bg-cyan-900/30 border-cyan-500 shadow-sm' : 'bg-slate-800 border-slate-700 hover:border-cyan-500/50 hover:bg-slate-800/80'}"><div class="flex-1 flex flex-col justify-center"><div class="flex items-center gap-2"><span class="font-extrabold text-white text-lg">${opt.txt}</span>${sel ? '<span class="bg-cyan-500 text-slate-900 text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm">ACTUAL</span>' : ''}</div></div><div id="ms-${index}-r-${idx}" class="w-[160px] h-[140px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 shadow-inner"></div></div>`;
-                    renderTasks.push({ id: `ms-${index}-r-${idx}`, treble: v, prevTreble: prevTrebleMidi, spellings: ac.spellings });
+                document.getElementById('opciones-derecha-desc').innerText = 'Cambia la nota en soprano del primer acorde. La progresión calculará el voice leading desde esta posición.';
+                const tipoVoicing = document.getElementById('tipo-voicing').value;
+                const tn  = window.getEstructuraVoicing(window.diccionarioActual[ac.gradoId].tetrad, tipoVoicing);
+                const currentPos = parseInt(document.getElementById('posicion-inicial').value) || 0;
+
+                // Build position options based on voicing type
+                let opciones;
+                if (tipoVoicing === 'tetrad')   opciones = [{val:0,txt:'Fundamental en soprano'},{val:1,txt:'3ra en soprano'},{val:2,txt:'5ta en soprano'},{val:3,txt:'7ma en soprano'}];
+                else if (tipoVoicing === 'triad') opciones = [{val:0,txt:'Fundamental en soprano'},{val:1,txt:'3ra en soprano'},{val:2,txt:'5ta en soprano'}];
+                else if (tipoVoicing === 'rootless') opciones = [{val:0,txt:'3ra en soprano'},{val:1,txt:'5ta en soprano'},{val:2,txt:'7ma en soprano'}];
+                else opciones = [{val:0,txt:'3ra en soprano'},{val:1,txt:'7ma en soprano'}];
+
+                opciones.forEach((opt, idx) => {
+                    const sel = opt.val === currentPos;
+                    const v   = window.generarVoicingInicial(tn, opt.val, window.registroInicial);
+                    list.innerHTML += `
+                        <div onclick="window.seleccionarPosicionSoprano(${opt.val})"
+                             class="p-4 border rounded-2xl flex items-stretch gap-4 transition-all cursor-pointer
+                                    ${sel ? 'bg-cyan-900/30 border-cyan-500 shadow-sm' : 'bg-slate-800 border-slate-700 hover:border-cyan-500/50 hover:bg-slate-800/80'}">
+                            <div class="flex-1 flex flex-col justify-center">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-extrabold text-white text-lg">${opt.txt}</span>
+                                    ${sel ? '<span class="bg-cyan-500 text-slate-900 text-[10px] px-2 py-0.5 rounded-md font-extrabold">ACTUAL</span>' : ''}
+                                </div>
+                            </div>
+                            <div id="ms-${index}-r-${idx}" class="w-[160px] h-[140px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 shadow-inner"></div>
+                        </div>`;
+                    renderTasks.push({ id: `ms-${index}-r-${idx}`, treble: v, prevTreble: null, spellings: ac.spellings });
                 });
             } else {
                 document.getElementById('opciones-derecha-desc').innerText = `Variantes de enlace armónico.`;
@@ -2928,6 +2963,23 @@ window.crearPiano = function() {
             document.getElementById('modal-opciones').classList.add('opacity-0');
             document.getElementById('modal-opciones-content').classList.add('scale-95');
             setTimeout(() => document.getElementById('modal-opciones').classList.add('hidden'), 300);
+        };
+
+        window.seleccionarPosicionSoprano = async function(val) {
+            const sel = document.getElementById('posicion-inicial');
+            if (!sel) return;
+            const prev = sel.value;
+            sel.value = val;
+            await window.alCambiarPosicionSoprano();
+            if (!await window.auditoriaPedagogica(true)) {
+                sel.value = prev;
+                await window.alCambiarPosicionSoprano();
+            } else {
+                window.guardarEstado();
+                window.abrirModalOpciones(window.modalContextIndex, window.currentModalSection);
+            }
+            window.actualizarTimeline();
+            window.renderizarPartitura();
         };
 
         window.seleccionarRegistro = async function(val) {
