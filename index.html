@@ -1728,12 +1728,21 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 // Buscar el MIDI de la nota a sustituir (fundamental o quinta) en el voicing actual
                 const idxSlot = voicing.findIndex(m => m % 12 === slotPC);
                 if (idxSlot === -1) {
-                    // La nota a sustituir no está en el voicing (ej. rootless ya no tiene fundamental)
-                    // Añadir la tensión en la octava más lógica sin eliminar nada
-                    const ref = voicing[voicing.length - 1] || 65;
-                    let tensionMidi = tensionPC + Math.floor(ref / 12) * 12;
-                    if (tensionMidi > ref + 6) tensionMidi -= 12;
-                    if (tensionMidi < ref - 6) tensionMidi += 12;
+                    // La nota a sustituir no está en el voicing (ej. quinta ya reemplazada por otra tensión)
+                    // Prefer common tone octave from previous chord if available
+                    const prevAcorde = index > 0 ? window.progresion[index - 1] : null;
+                    let tensionMidi = null;
+                    if (prevAcorde && !prevAcorde.isRest && prevAcorde.trebleMidi) {
+                        const prevMatches = prevAcorde.trebleMidi.filter(m => m % 12 === tensionPC);
+                        if (prevMatches.length > 0) tensionMidi = Math.max(...prevMatches);
+                    }
+                    if (tensionMidi === null) {
+                        // No common tone — place near soprano
+                        const ref = voicing[voicing.length - 1] || 65;
+                        tensionMidi = tensionPC + Math.floor(ref / 12) * 12;
+                        if (tensionMidi > ref + 6) tensionMidi -= 12;
+                        if (tensionMidi < ref - 6) tensionMidi += 12;
+                    }
                     voicing.push(tensionMidi);
                 } else {
                     // Sustituir: calcular la tensión en la misma octava que la nota que reemplaza
