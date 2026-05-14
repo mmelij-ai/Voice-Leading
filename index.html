@@ -235,24 +235,27 @@
                 <span id="badge-figura-label" class="text-[10px] font-bold text-slate-300 leading-none min-w-[36px]"></span>
             </div>
 
-            <!-- Panel de tensiones — overlay flotante sobre la partitura -->
+            <!-- Panel de tensiones / bajo — overlay flotante sobre la partitura -->
             <div id="panel-tensiones-inline"
-                 class="hidden absolute bottom-4 left-4 right-4 z-30 hide-on-print
+                 class="hidden absolute z-30 hide-on-print
                         bg-slate-800 border border-violet-600/50 rounded-2xl
-                        px-4 py-3 shadow-2xl">
+                        px-3 py-2.5 shadow-2xl
+                        bottom-3 left-3 right-3">
                 <!-- Fila única: todo en horizontal -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <!-- Ícono + título + escala -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <!-- Título + escala/bajo — sin ícono "Tensiones" en modo bajo -->
                     <div class="flex items-center gap-2 shrink-0">
-                        <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                        <span class="text-violet-400 font-extrabold text-[10px] uppercase tracking-widest">Tensiones</span>
-                        <span id="tension-escala-tag" class="text-[10px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-600"></span>
+                        <span id="tension-panel-icon" class="text-violet-400">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                        </span>
+                        <span id="tension-panel-label" class="text-violet-400 font-extrabold text-[10px] uppercase tracking-widest">Tensiones</span>
+                        <span id="tension-escala-tag" class="text-[10px] font-bold text-slate-300 bg-slate-700 px-2 py-0.5 rounded-md border border-slate-600"></span>
                     </div>
                     <!-- Separador -->
                     <div class="w-px h-4 bg-slate-700 shrink-0"></div>
-                    <!-- Botones de tensión -->
+                    <!-- Botones de tensión / inversión -->
                     <div id="tension-botones" class="flex flex-wrap gap-1.5"></div>
-                    <!-- Nota a evitar — empuja al final -->
+                    <!-- Nota a evitar -->
                     <div id="tension-evitar-tag" class="hidden ml-auto shrink-0 text-[10px] font-bold text-rose-400 bg-rose-900/30 border border-rose-700/50 px-2 py-1 rounded-lg flex items-center gap-1">
                         <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
                         Evitar: <span id="tension-evitar-notas"></span>
@@ -301,7 +304,7 @@
         <!-- ═══════════════════════════════════════════════════════════
              BARRA DE ACCIONES INFERIOR — siempre visible
              ════════════════════════════════════════════════════════ -->
-        <div class="flex flex-wrap items-center gap-2 bg-slate-800/80 rounded-2xl px-4 py-3 border border-slate-700 shadow-sm hide-on-print mb-3">
+        <div class="flex items-center gap-2 bg-slate-800/80 rounded-2xl px-4 py-3 border border-slate-700 shadow-sm hide-on-print mb-3 flex-wrap">
 
             <!-- Reproducir -->
             <button id="btn-reproducir" onclick="window.reproducirAudio()" class="bg-cyan-700 hover:bg-cyan-600 border border-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm flex items-center gap-2 shrink-0">
@@ -310,73 +313,67 @@
             </button>
 
             <!-- Separador -->
-            <div class="h-6 w-px bg-slate-700 mx-1 hidden sm:block"></div>
+            <div class="h-6 w-px bg-slate-700 mx-1"></div>
 
-            <!-- Vista + Zoom + Teclado -->
-            <div class="flex items-center gap-1.5 shrink-0">
-                <button onclick="window.toggleVista()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-xl px-3 py-2 transition-all group" title="Cambiar vista">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-slate-200 select-none whitespace-nowrap">
-                        Vista: <span id="vista-label" class="text-slate-100">Vertical</span>
-                    </span>
-                    <div class="relative inline-flex items-center pointer-events-none">
-                        <input type="checkbox" id="toggle-vista" class="peer sr-only" checked>
-                        <div class="w-7 h-3.5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[1px] after:left-[2px] after:bg-white after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-cyan-500"></div>
-                    </div>
-                </button>
-                <div class="flex items-center bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
-                    <button onclick="window.cambiarZoom(-0.1)" class="px-2.5 py-2 text-slate-500 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-r border-slate-700" title="Alejar"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg></button>
-                    <span id="zoom-label" class="px-2 text-[10px] font-bold text-slate-300 select-none w-10 text-center">100%</span>
-                    <button onclick="window.cambiarZoom(0.1)" class="px-2.5 py-2 text-slate-500 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-l border-slate-700" title="Acercar"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg></button>
+            <!-- Vista -->
+            <button onclick="window.toggleVista()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-xl px-3 py-2 transition-all group shrink-0" title="Cambiar vista">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-slate-200 select-none whitespace-nowrap">
+                    Vista: <span id="vista-label" class="text-slate-100">Horizontal</span>
+                </span>
+                <div class="relative inline-flex items-center pointer-events-none">
+                    <input type="checkbox" id="toggle-vista" class="peer sr-only">
+                    <div class="w-7 h-3.5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[1px] after:left-[2px] after:bg-white after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-cyan-500"></div>
                 </div>
-                <button onclick="window.togglePiano()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-xl px-3 py-2 transition-all" title="Mostrar teclado">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">🎹</span>
-                    <div class="relative inline-flex items-center pointer-events-none">
-                        <input type="checkbox" id="toggle-piano" class="peer sr-only">
-                        <div class="w-7 h-3.5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[1px] after:left-[2px] after:bg-white after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-cyan-500"></div>
-                    </div>
-                </button>
+            </button>
+
+            <!-- Zoom -->
+            <div class="flex items-center bg-slate-900 rounded-xl border border-slate-700 overflow-hidden shrink-0">
+                <button onclick="window.cambiarZoom(-0.1)" class="px-2.5 py-2 text-slate-500 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-r border-slate-700" title="Alejar"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/></svg></button>
+                <span id="zoom-label" class="px-2 text-[10px] font-bold text-slate-300 select-none w-10 text-center">100%</span>
+                <button onclick="window.cambiarZoom(0.1)" class="px-2.5 py-2 text-slate-500 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-l border-slate-700" title="Acercar"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg></button>
             </div>
 
-            <!-- Separador -->
-            <div class="h-6 w-px bg-slate-700 mx-1 hidden sm:block"></div>
-
-            <!-- Indicador de capa activa en barra inferior -->
-            <div id="analisis-wrapper" class="flex items-center gap-1.5 shrink-0">
-                <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                <span class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Análisis:</span>
-                <span id="analisis-capa-activa" class="text-[10px] font-bold text-cyan-400 hidden"></span>
-                <span id="analisis-capa-ninguna" class="text-[10px] text-slate-600 italic">ninguno</span>
-                <div class="hidden">
-                    <input type="radio" name="tipo_analisis" id="rad-ninguno"       checked onchange="window.toggleAnalisisMain()">
-                    <input type="radio" name="tipo_analisis" id="rad-nombres-notas"        onchange="window.toggleAnalisisMain()">
-                    <input type="radio" name="tipo_analisis" id="rad-sw-redondas"          onchange="window.toggleAnalisisMain()">
-                    <input type="radio" name="tipo_analisis" id="rad-sw-blancas"           onchange="window.toggleAnalisisMain()">
-                    <input type="radio" name="tipo_analisis" id="rad-notas-comunes"        onchange="window.toggleAnalisisMain()">
-                    <input type="radio" name="tipo_analisis" id="rad-notas-guia"           onchange="window.toggleAnalisisMain()">
-                    <input type="radio" name="tipo_analisis" id="rad-tritonos"             onchange="window.toggleAnalisisMain()">
-                    <input type="radio" name="tipo_analisis" id="rad-saltos"               onchange="window.toggleAnalisisMain()">
+            <!-- Piano -->
+            <button onclick="window.togglePiano()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-xl px-3 py-2 transition-all shrink-0" title="Mostrar teclado">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">🎹</span>
+                <div class="relative inline-flex items-center pointer-events-none">
+                    <input type="checkbox" id="toggle-piano" class="peer sr-only">
+                    <div class="w-7 h-3.5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[1px] after:left-[2px] after:bg-white after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-cyan-500"></div>
                 </div>
-            </div>
+            </button>
 
             <!-- Separador flexible -->
-            <div class="flex-1 hidden sm:block"></div>
+            <div class="flex-1"></div>
 
-            <!-- Proyecto: Cargar / Guardar / Exportar -->
+            <!-- Radios ocultos — necesarios para el sistema de análisis -->
+            <div class="hidden" id="analisis-wrapper">
+                <span id="analisis-capa-activa"></span>
+                <span id="analisis-capa-ninguna"></span>
+                <input type="radio" name="tipo_analisis" id="rad-ninguno"       checked onchange="window.toggleAnalisisMain()">
+                <input type="radio" name="tipo_analisis" id="rad-nombres-notas"        onchange="window.toggleAnalisisMain()">
+                <input type="radio" name="tipo_analisis" id="rad-sw-redondas"          onchange="window.toggleAnalisisMain()">
+                <input type="radio" name="tipo_analisis" id="rad-sw-blancas"           onchange="window.toggleAnalisisMain()">
+                <input type="radio" name="tipo_analisis" id="rad-notas-comunes"        onchange="window.toggleAnalisisMain()">
+                <input type="radio" name="tipo_analisis" id="rad-notas-guia"           onchange="window.toggleAnalisisMain()">
+                <input type="radio" name="tipo_analisis" id="rad-tritonos"             onchange="window.toggleAnalisisMain()">
+                <input type="radio" name="tipo_analisis" id="rad-saltos"               onchange="window.toggleAnalisisMain()">
+            </div>
+
+            <!-- Cargar / Guardar / Exportar -->
             <div class="flex items-center gap-2 shrink-0">
                 <input type="file" id="file-upload" accept=".armonia" class="hidden" onchange="window.procesarArchivo(event)">
-                <button onclick="window.cargarProyecto()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 px-3 rounded-xl transition-all flex items-center gap-1.5 text-xs" title="Cargar proyecto">
+                <button onclick="window.cargarProyecto()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 px-3 rounded-xl transition-all flex items-center gap-1.5 text-xs shrink-0" title="Cargar proyecto">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                    <span class="hidden sm:inline">Cargar</span>
+                    <span>Cargar</span>
                 </button>
-                <button onclick="window.guardarProyecto()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 px-3 rounded-xl transition-all flex items-center gap-1.5 text-xs" title="Guardar proyecto">
+                <button onclick="window.guardarProyecto()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 px-3 rounded-xl transition-all flex items-center gap-1.5 text-xs shrink-0" title="Guardar proyecto">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                    <span class="hidden sm:inline">Guardar</span>
+                    <span>Guardar</span>
                 </button>
-                <!-- Exportar dropdown -->
                 <div class="relative" id="export-dropdown-wrapper">
-                    <button onclick="window.toggleExportMenu()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 px-3 rounded-xl transition-all flex items-center gap-1.5 text-xs" title="Exportar">
+                    <button onclick="window.toggleExportMenu()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 font-bold py-2 px-3 rounded-xl transition-all flex items-center gap-1.5 text-xs shrink-0" title="Exportar">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        <span class="hidden sm:inline">Exportar</span>
+                        <span>Exportar</span>
                         <svg id="export-chevron" class="w-3 h-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div id="export-menu" class="hidden absolute right-0 bottom-full mb-2 w-48 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl overflow-hidden z-50">
@@ -1248,16 +1245,13 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
             for(let j = desdeIndex - 1; j >= 0; j--) {
                 if(!window.progresion[j].isRest) {
-                    // Reconstruir el diatónico del acorde anterior para tener count correcto
                     const prevAc = window.progresion[j];
-                    const prevTarget = window.getEstructuraVoicing(window.diccionarioActual[prevAc.gradoId].tetrad, document.getElementById('tipo-voicing').value);
-                    // trebleMidi actual puede tener tensiones; diatónico tiene count == prevTarget.length
-                    lastTrebleConTension = prevAc.trebleMidi;  // con tensiones, para soprano de referencia
-                    // Para el count-match necesitamos un voicing del mismo tamaño que targetNotes del siguiente
-                    // Usamos el diatónico reconstruido del previo
-                    lastTrebleMidi = prevAc.trebleMidi.filter((_, idx) => idx < prevTarget.length); // misma longitud
-                    // Si tiene tensiones por sustitución el count es igual; si tiene extra, truncamos
-                    if (lastTrebleMidi.length !== prevTarget.length) lastTrebleMidi = prevAc.trebleMidi.slice(0, prevTarget.length);
+                    lastTrebleConTension = prevAc.trebleMidi;
+                    // For count-matching with next chord's targetNotes (may differ by voicing type),
+                    // use the highest N notes of the previous voicing — they contain the guide tones
+                    // and best represent the voice leading register regardless of voicing type.
+                    const sorted = [...prevAc.trebleMidi].sort((a, b) => a - b);
+                    lastTrebleMidi = sorted; // will be sliced to match at refParaEnlazar step
                     break;
                 }
             }
@@ -1274,11 +1268,32 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                     ac.voicingsDisponibles = [{ voicing: [...diatonicVoicing], distancia: 0, notasComunes: 0 }];
                     ac.voicingSeleccionado = 0;
                 } else {
-                    // Usar lastTrebleConTension como referencia de soprano si está disponible
-                    // pero pasar lastTrebleMidi (mismo count que targetNotes) a enlazarAcordeOpciones
-                    const refParaEnlazar = (lastTrebleConTension && lastTrebleConTension.length === targetNotes.length)
-                        ? lastTrebleConTension   // sustitución simple: mismo count, usar con tensión
-                        : lastTrebleMidi;        // fallback: diatónico puro (counts distintos por extra note)
+                    // Build reference for voice leading — match count to targetNotes
+                    // Use highest N notes from previous voicing (preserves register of guide tones)
+                    let refVoicing = lastTrebleConTension || lastTrebleMidi;
+                    if (refVoicing && refVoicing.length !== targetNotes.length) {
+                        // When voicing types differ in note count, build reference by finding
+                        // notes in the previous voicing that share pitch classes with what the
+                        // new voicing will contain (3rd, 5th, 7th for rootless; 3rd+7th for guide)
+                        const newRootPC = window.diccionarioActual[ac.gradoId].root % 12;
+                        // Compute the pitch classes that targetNotes will produce
+                        const targetPCs = targetNotes.map(interval => (newRootPC + interval) % 12);
+                        // For each target PC, find the best note in refVoicing (closest in register)
+                        const refSorted = [...refVoicing].sort((a, b) => a - b);
+                        const midRef = refSorted[Math.floor(refSorted.length / 2)]; // center of register
+                        const matched = targetPCs.map(pc => {
+                            // Find note in refVoicing with this PC, or build it near center
+                            const fromRef = refVoicing.find(m => m % 12 === pc);
+                            if (fromRef !== undefined) return fromRef;
+                            // Not in prev chord — place near center of ref register
+                            let m = pc + Math.floor(midRef / 12) * 12;
+                            if (m > midRef + 6) m -= 12;
+                            if (m < midRef - 6) m += 12;
+                            return m;
+                        });
+                        refVoicing = matched.sort((a, b) => a - b);
+                    }
+                    const refParaEnlazar = refVoicing || lastTrebleMidi;
                     const opciones = window.enlazarAcordeOpciones(refParaEnlazar, targetNotes);
                     ac.voicingsDisponibles = opciones;
                     if (i >= desdeIndex || ac.voicingSeleccionado >= opciones.length) ac.voicingSeleccionado = 0;
@@ -1560,38 +1575,39 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             if (!acorde || acorde.isRest) return '';
             const base = acorde.nombre;
             const ficha = window.obtenerFichaTensiones(acorde.gradoId);
-            if (!ficha || !ficha.t.length) return base;
-
-            // ── Source of truth: tensionesActivas (array de semitones guardado) ──────
-            // Fallback: detectar desde trebleMidi si tensionesActivas no existe o está vacío
-            let semitones = [];
-            if (acorde.tensionesActivas && acorde.tensionesActivas.length) {
-                semitones = acorde.tensionesActivas.filter(s => ficha.t.includes(s));
-            } else {
-                const rootPC = acorde.rootMidi % 12;
-                semitones = ficha.t.filter(s => {
-                    const tPC = (rootPC + s) % 12;
-                    return acorde.trebleMidi && acorde.trebleMidi.some(m => m % 12 === tPC);
-                });
+            
+            let nombreBase = base;
+            if (ficha && ficha.t.length) {
+                let semitones = [];
+                if (acorde.tensionesActivas && acorde.tensionesActivas.length) {
+                    semitones = acorde.tensionesActivas.filter(s => ficha.t.includes(s));
+                } else {
+                    const rootPC = acorde.rootMidi % 12;
+                    semitones = ficha.t.filter(s => {
+                        const tPC = (rootPC + s) % 12;
+                        return acorde.trebleMidi && acorde.trebleMidi.some(m => m % 12 === tPC);
+                    });
+                }
+                if (ficha.constitutivas) semitones = semitones.filter(s => !ficha.constitutivas.includes(s));
+                if (semitones.length) {
+                    const nombresT = [...semitones].sort((a, b) => a - b).map(s => NOMBRE_TENSION[s] || s);
+                    nombreBase = `${base}(${nombresT.join(',')})`;
+                }
             }
 
-            // ── Excluir notas constitutivas del acorde ──────────────────────────────
-            // Para acorde 6: la 6ta (semitono 9) ES parte del acorde, no es tensión display.
-            // Filtramos cualquier semitono cuyo offset coincida con una nota constitutiva.
-            if (ficha.constitutivas) {
-                semitones = semitones.filter(s => !ficha.constitutivas.includes(s));
+            // Append slash notation for inversions (triad only for now)
+            if (acorde.bassNoteMidi !== undefined && acorde.bassNoteMidi !== acorde.rootMidi) {
+                const bassName = window.formatNotaFromPC(acorde.bassNoteMidi % 12, acorde.spellings);
+                nombreBase += `/${bassName}`;
             }
-
-            if (!semitones.length) return base;
-            const nombresT = [...semitones].sort((a, b) => a - b).map(s => NOMBRE_TENSION[s] || s);
-            return `${base}(${nombresT.join(',')})`;
+            return nombreBase;
         };
 
         // Determinar si el voicing actual es compatible con tensiones
         // Solo aplica a tetrad, rootless, guide — NO triad
         window.tipoVoicingAceptaTensiones = function() {
             const tipo = document.getElementById('tipo-voicing').value;
-            return tipo === 'tetrad' || tipo === 'rootless' || tipo === 'guide';
+            return tipo === 'tetrad' || tipo === 'rootless' || tipo === 'guide' || tipo === 'triad';
         };
 
         // Obtener la ficha de tensiones para un gradoId.
@@ -1715,7 +1731,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 if (window.modoActual === 'ingreso') {
                     const ac2 = window.progresion[index];
                     const notasTreble = ac2.trebleMidi.map(m => Tone.Frequency(m, 'midi').toNote());
-                    const notaBass    = Tone.Frequency(ac2.rootMidi, 'midi').toNote();
+                    const notaBass    = Tone.Frequency(ac2.bassNoteMidi !== undefined ? ac2.bassNoteMidi : ac2.rootMidi, 'midi').toNote();
                     window.tocarAcorde([...notasTreble, notaBass], '2n');
                 }
                 return;
@@ -1802,7 +1818,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             // Reproducir el acorde con la tensión para feedback auditivo inmediato
             if (window.modoActual === 'ingreso') {
                 const notasTreble = ac.trebleMidi.map(m => Tone.Frequency(m, 'midi').toNote());
-                const notaBass    = Tone.Frequency(ac.rootMidi, 'midi').toNote();
+                const notaBass    = Tone.Frequency(ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi, 'midi').toNote();
                 window.tocarAcorde([...notasTreble, notaBass], '2n');
             }
         };
@@ -1821,28 +1837,161 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             // ── MODO BAJO SELECCIONADO ───────────────────────────────────────────
             if (window.indiceBajoSeleccionado === index) {
                 panel.classList.remove('hidden');
+                // Move to TOP of score — bass panel should not cover bass clef at bottom
+                panel.classList.remove('bottom-3');
+                panel.classList.add('top-3');
+                panel.style.borderColor = 'rgba(251,191,36,0.4)'; // amber for bass
+                // Update header: hide tension icon/label, show bass icon
+                const icon  = document.getElementById('tension-panel-icon');
+                const label = document.getElementById('tension-panel-label');
+                if (icon)  icon.innerHTML = '<svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>';
+                if (label) { label.textContent = 'Bajo'; label.className = 'text-amber-400 font-extrabold text-[10px] uppercase tracking-widest'; }
                 const sp = ac.spellings || window.nombresNotasActual;
-                const bassName = window.formatNotaFromPC(ac.rootMidi % 12, sp);
-                const octava   = Math.floor(ac.rootMidi / 12) - 1;
-                document.getElementById('tension-escala-tag').innerText = `Bajo: ${bassName}${octava}`;
+                const tipoVoicing = document.getElementById('tipo-voicing').value;
+                const bassMidi = ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi;
+                const bassName = window.formatNotaFromPC(bassMidi % 12, sp);
+                const octava   = Math.floor(bassMidi / 12) - 1;
+
                 document.getElementById('tension-evitar-tag').classList.add('hidden');
-                const btnContainer = document.getElementById('tension-botones');
-                btnContainer.innerHTML = `
-                    <div class="flex items-center gap-3 w-full">
-                        <span class="text-[11px] text-slate-400 font-bold">Octava del bajo</span>
-                        <div class="flex items-center gap-2">
-                            <button onclick="window.cambiarOctavaBajo(${index}, -1)"
-                                class="w-9 h-9 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-500 text-slate-200 rounded-lg transition-all font-bold text-lg"
-                                title="Bajar octava (↓)">↓</button>
-                            <span class="text-base font-extrabold text-amber-400 min-w-[48px] text-center">${bassName}${octava}</span>
-                            <button onclick="window.cambiarOctavaBajo(${index}, 1)"
-                                class="w-9 h-9 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-500 text-slate-200 rounded-lg transition-all font-bold text-lg"
-                                title="Subir octava (↑)">↑</button>
+
+                if (tipoVoicing === 'triad') {
+                    // ── PANEL DE INVERSIONES (solo tríadas) ────────────────────────
+                    document.getElementById('tension-escala-tag').innerText = `Bajo: ${bassName}${octava}`;
+                    const btnContainer = document.getElementById('tension-botones');
+
+                    // Build inversion options from triad notes
+                    const dictObj = window.diccionarioActual[ac.gradoId];
+                    const rootPC = ac.rootMidi % 12;
+                    // dictObj.tetrad stores ABSOLUTE pitch classes, not relative intervals
+                    // Convert to relative semitones from root for correct inversion calculation
+                    const triadAbsPCs = dictObj ? [dictObj.tetrad[0], dictObj.tetrad[1], dictObj.tetrad[2]] : [];
+                    const triadIntervals = triadAbsPCs.map(pc => (pc - rootPC + 12) % 12);
+
+                    // Previous and next bass for voice leading analysis
+                    let prevIdx = index - 1;
+                    while (prevIdx >= 0 && window.progresion[prevIdx].isRest) prevIdx--;
+                    let nextIdx = index + 1;
+                    while (nextIdx < window.progresion.length && window.progresion[nextIdx].isRest) nextIdx++;
+
+                    const prevBassMidi = prevIdx >= 0
+                        ? (window.progresion[prevIdx].bassNoteMidi ?? window.progresion[prevIdx].rootMidi)
+                        : null;
+                    const nextBassMidi = nextIdx < window.progresion.length
+                        ? (window.progresion[nextIdx].bassNoteMidi ?? window.progresion[nextIdx].rootMidi)
+                        : null;
+
+                    // Compute suggested bass: minimum movement from prev bass
+                    let suggestedPC = rootPC; // default fundamental
+                    if (prevBassMidi !== null) {
+                        let minMove = Infinity;
+                        triadIntervals.forEach(interval => {
+                            const candidatePC = (rootPC + interval) % 12;
+                            let candidateMidi = candidatePC + Math.floor(prevBassMidi / 12) * 12;
+                            if (candidateMidi > prevBassMidi + 6) candidateMidi -= 12;
+                            if (candidateMidi < prevBassMidi - 6) candidateMidi += 12;
+                            const move = Math.abs(candidateMidi - prevBassMidi);
+                            if (move < minMove) { minMove = move; suggestedPC = candidatePC; }
+                        });
+                    }
+
+                    const inversionNames = ['Fundamental', '1ra inversión', '2da inversión'];
+                    const inversionSemitons = [0, triadIntervals[1], triadIntervals[2]];
+
+                    let optionsHtml = '';
+                    inversionSemitons.forEach((semitone, invIdx) => {
+                        const notePC = (rootPC + semitone) % 12;
+                        const noteName = window.formatNotaFromPC(notePC, sp);
+                        // Find best octave for this bass note
+                        let targetMidi = notePC + Math.floor(ac.rootMidi / 12) * 12;
+                        if (targetMidi > ac.rootMidi + 6) targetMidi -= 12;
+                        if (targetMidi < ac.rootMidi - 12) targetMidi += 12;
+                        // Keep bass in reasonable range
+                        while (targetMidi > 52) targetMidi -= 12;
+                        while (targetMidi < 28) targetMidi += 12;
+
+                        const isActive = (notePC === bassMidi % 12);
+                        const isSuggested = (notePC === suggestedPC) && prevBassMidi !== null;
+
+                        // Warning analysis for 2nd inversion
+                        let warning = '';
+                        if (invIdx === 2) { // 2da inversión
+                            const entradaOk = prevBassMidi !== null && (
+                                Math.abs((prevBassMidi % 12) - notePC) <= 2 ||
+                                Math.abs((prevBassMidi % 12) - notePC) === 10 ||
+                                Math.abs((prevBassMidi % 12) - notePC) === 11 ||
+                                (prevBassMidi % 12) === notePC
+                            );
+                            const salidaOk = nextBassMidi !== null && (
+                                Math.abs((nextBassMidi % 12) - notePC) <= 2 ||
+                                Math.abs((nextBassMidi % 12) - notePC) === 10 ||
+                                Math.abs((nextBassMidi % 12) - notePC) === 11 ||
+                                (nextBassMidi % 12) === notePC
+                            );
+                            const entradaTxt = prevBassMidi === null ? '—' : (entradaOk ? '✓' : '✗');
+                            const salidaTxt  = nextBassMidi === null ? '—' : (salidaOk  ? '✓' : '✗');
+                            const color = (entradaOk || prevBassMidi === null) && (salidaOk || nextBassMidi === null)
+                                ? 'text-amber-400' : 'text-rose-400';
+                            warning = `<div class="mt-1.5 text-[9px] ${color} font-bold leading-tight">
+                                ⚠ 2da inv. requiere grado conjunto o nota común<br>
+                                Entrada: ${entradaTxt} · Salida: ${salidaTxt}
+                            </div>`;
+                        }
+
+                        optionsHtml += `
+                            <button onclick="window.cambiarInversionBajo(${index}, ${targetMidi})"
+                                class="flex flex-col items-start px-3 py-2 rounded-xl border transition-all text-left
+                                    ${isActive
+                                        ? 'bg-amber-500/20 border-amber-400/60 text-amber-300'
+                                        : 'bg-slate-700 border-slate-500 text-slate-200 hover:border-violet-400 hover:bg-slate-600'}"
+                                title="${inversionNames[invIdx]}">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-extrabold">${noteName}</span>
+                                    <span class="text-[10px] opacity-60">${inversionNames[invIdx]}</span>
+                                    ${isActive ? '<span class="text-[9px] bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded font-bold">ACTUAL</span>' : ''}
+                                    ${isSuggested && !isActive ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">⚡ sugerida</span>' : ''}
+                                </div>
+                                ${warning}
+                            </button>`;
+                    });
+
+                    btnContainer.innerHTML = `
+                        <div class="flex flex-wrap gap-2 w-full">
+                            ${optionsHtml}
                         </div>
-                        <span class="text-[10px] text-slate-600 ml-auto">click fuera o Esc para salir</span>
-                    </div>`;
-                return;
+                        <div class="w-full mt-2 flex items-center gap-2">
+                            <span class="text-[9px] text-slate-500">Octava del bajo:</span>
+                            <button onclick="window.cambiarOctavaBajo(${index}, -1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 rounded text-xs">↓</button>
+                            <span class="text-[10px] text-amber-400 font-bold">${bassName}${octava}</span>
+                            <button onclick="window.cambiarOctavaBajo(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 rounded text-xs">↑</button>
+                            ${bassMidi !== ac.rootMidi ? `<button onclick="window.cambiarInversionBajo(${index}, null)" class="ml-2 text-[9px] text-slate-500 hover:text-rose-400 transition-colors">Restablecer fundamental</button>` : ''}
+                        </div>`;
+                    return;
+                } else {
+                    // Non-triad: just show octave control
+                    document.getElementById('tension-escala-tag').innerText = `Bajo: ${bassName}${octava}`;
+                    const btnContainer = document.getElementById('tension-botones');
+                    btnContainer.innerHTML = `
+                        <div class="flex items-center gap-3 w-full">
+                            <span class="text-[11px] text-slate-400 font-bold">Octava del bajo</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="window.cambiarOctavaBajo(${index}, -1)" class="w-9 h-9 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-500 text-slate-200 rounded-lg transition-all font-bold text-lg" title="Bajar octava (↓)">↓</button>
+                                <span class="text-base font-extrabold text-amber-400 min-w-[48px] text-center">${bassName}${octava}</span>
+                                <button onclick="window.cambiarOctavaBajo(${index}, 1)" class="w-9 h-9 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-500 text-slate-200 rounded-lg transition-all font-bold text-lg" title="Subir octava (↑)">↑</button>
+                            </div>
+                            <span class="text-[10px] text-slate-600 ml-auto">click fuera o Esc para salir</span>
+                        </div>`;
+                    return;
+                }
             }
+
+            // Restore tension panel styling (bottom position, violet)
+            panel.classList.remove('top-3');
+            panel.classList.add('bottom-3');
+            panel.style.borderColor = '';
+            const icon  = document.getElementById('tension-panel-icon');
+            const label = document.getElementById('tension-panel-label');
+            if (icon)  icon.innerHTML = '<svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>';
+            if (label) { label.textContent = 'Tensiones'; label.className = 'text-violet-400 font-extrabold text-[10px] uppercase tracking-widest'; }
 
             // Mostrar panel si existe ficha de tensiones para este gradoId
             const ficha = window.obtenerFichaTensiones(ac.gradoId);
@@ -2029,7 +2178,7 @@ window.crearPiano = function() {
             const ac = window.progresion[index];
             if (ac.isRest) return;
             await window.inicializarAudio();
-            let notasParaTocar = [...ac.trebleMidi, ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
+            let notasParaTocar = [...ac.trebleMidi, ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
             window.tocarAcorde(notasParaTocar, ac.beats * (60 / (parseInt(document.getElementById("tempo-input").value) || 100)));
         };
 
@@ -2070,7 +2219,7 @@ window.crearPiano = function() {
                     window.renderizarPartitura(actualIndex);
                     
                     if (!ac.isRest) {
-                        let notasParaTocar = [...ac.trebleMidi, ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
+                        let notasParaTocar = [...ac.trebleMidi, ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
                         window.tocarAcorde(notasParaTocar, ac.beats * negraSecs, Tone.now());
                     }
                 }, time * 1000));
@@ -2510,7 +2659,8 @@ window.crearPiano = function() {
                         return;
                     }
 
-                    const keyBajo = window.midiAVexFlow(acorde.rootMidi, acorde.spellings);
+                    const bassMidi = acorde.bassNoteMidi !== undefined ? acorde.bassNoteMidi : acorde.rootMidi;
+                    const keyBajo = window.midiAVexFlow(bassMidi, acorde.spellings);
                     const notaBass = new StaveNote({ keys: [keyBajo], duration: acorde.vexDuration, clef: "bass" });
                     
                     let accBajo = window.obtenerAccidental(keyBajo, fifths);
@@ -2772,11 +2922,25 @@ window.crearPiano = function() {
                 
                 if (Math.abs(clickX - closest.x) < 60 && Math.abs(clickY - closest.yCenter) < 150) {
                     const ac = window.progresion[closest.index];
+                    const distBass   = Math.abs(clickY - closest.yBass);
+                    const distTreble = Math.abs(clickY - closest.yTreble);
+                    const clickBelowCenter = clickY > closest.yCenter;
+                    const isBassClick = (distBass < distTreble || clickBelowCenter) && distBass < 60 && !ac?.isRest;
+
+                    // If bass panel is open and clicking bass of ANY chord → switch to that chord's bass
+                    if (window.indiceBajoSeleccionado !== -1 && isBassClick) {
+                        window.indiceEdicion = closest.index;
+                        window.indiceBajoSeleccionado = closest.index;
+                        window.actualizarTimeline();
+                        window.renderizarPartitura(closest.index, true);
+                        window.mostrarPanelTensionesInline(closest.index);
+                        window.mostrarVoicingSuelto(closest.index);
+                        return;
+                    }
+
                     // Second click on already-selected chord: check if clicking bass note
                     if (window.indiceEdicion === closest.index && !ac?.isRest) {
-                        const distBass   = Math.abs(clickY - closest.yBass);
-                        const distTreble = Math.abs(clickY - closest.yTreble);
-                        if (distBass < distTreble && distBass < 25) {
+                        if (isBassClick) {
                             // Toggle bass note selection
                             if (window.indiceBajoSeleccionado === closest.index) {
                                 window.indiceBajoSeleccionado = -1;
@@ -3014,10 +3178,10 @@ window.crearPiano = function() {
 
             if (prevIndex >= 0) {
                 const prev = window.progresion[prevIndex];
-                window.tocarAcorde([...prev.trebleMidi, prev.rootMidi].map(m => window.midiATone(m, prev.spellings)), 60/bpm, Tone.now());
-                window.tocarAcorde([...previewVoicing, curr.rootMidi].map(m => window.midiATone(m, curr.spellings)), (60/bpm)*1.5, Tone.now() + (60/bpm));
+                window.tocarAcorde([...prev.trebleMidi, prev.bassNoteMidi !== undefined ? prev.bassNoteMidi : prev.rootMidi].map(m => window.midiATone(m, prev.spellings)), 60/bpm, Tone.now());
+                window.tocarAcorde([...previewVoicing, curr.bassNoteMidi !== undefined ? curr.bassNoteMidi : curr.rootMidi].map(m => window.midiATone(m, curr.spellings)), (60/bpm)*1.5, Tone.now() + (60/bpm));
             } else {
-                window.tocarAcorde([...previewVoicing, curr.rootMidi].map(m => window.midiATone(m, curr.spellings)), (60/bpm)*1.5, Tone.now());
+                window.tocarAcorde([...previewVoicing, curr.bassNoteMidi !== undefined ? curr.bassNoteMidi : curr.rootMidi].map(m => window.midiATone(m, curr.spellings)), (60/bpm)*1.5, Tone.now());
             }
         };
 
@@ -3429,24 +3593,47 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
 
         window.indiceBajoSeleccionado = -1;
 
-        window.cambiarOctavaBajo = function(index, direccion) {
+        window.cambiarInversionBajo = function(index, targetMidi) {
             const ac = window.progresion[index];
             if (!ac || ac.isRest) return;
-            const nuevoMidi = ac.rootMidi + (direccion * 12);
-            // Keep bass in reasonable range (MIDI 28-52 = E1-E3)
-            if (nuevoMidi < 28 || nuevoMidi > 52) return;
-            ac.rootMidi = nuevoMidi;
-            if (!ac.bassOctaveOffset) ac.bassOctaveOffset = 0;
-            ac.bassOctaveOffset += direccion;
-            window.recalcularProgresion(index + 1);
+            if (targetMidi === null) {
+                // Reset to fundamental
+                delete ac.bassNoteMidi;
+            } else {
+                ac.bassNoteMidi = targetMidi;
+            }
             window.actualizarTimeline();
             window.renderizarPartitura(index, true);
             window.mostrarPanelTensionesInline(index);
             window.guardarEstado();
             // Play chord with new bass
             const notasTreble = ac.trebleMidi.map(m => Tone.Frequency(m, 'midi').toNote());
-            const notaBass    = Tone.Frequency(ac.rootMidi, 'midi').toNote();
+            const bassPlay = ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi;
+            const notaBass = Tone.Frequency(bassPlay, 'midi').toNote();
             window.tocarAcorde([...notasTreble, notaBass], '2n');
+        };
+
+        window.cambiarOctavaBajo = function(index, direccion) {
+            const ac = window.progresion[index];
+            if (!ac || ac.isRest) return;
+            const currentBass = ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi;
+            const nuevoMidi = currentBass + (direccion * 12);
+            if (nuevoMidi < 28 || nuevoMidi > 52) return;
+            if (ac.bassNoteMidi !== undefined) {
+                ac.bassNoteMidi = nuevoMidi;
+            } else {
+                ac.rootMidi = nuevoMidi;
+                if (!ac.bassOctaveOffset) ac.bassOctaveOffset = 0;
+                ac.bassOctaveOffset += direccion;
+            }
+            window.recalcularProgresion(index + 1);
+            window.actualizarTimeline();
+            window.renderizarPartitura(index, true);
+            window.mostrarPanelTensionesInline(index);
+            window.guardarEstado();
+            const notasTreble = ac.trebleMidi.map(m => Tone.Frequency(m, 'midi').toNote());
+            const bassPlay = ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi;
+            window.tocarAcorde([...notasTreble, Tone.Frequency(bassPlay, 'midi').toNote()], '2n');
         };
 
         window.salirModoEdicion = function() {
@@ -3598,8 +3785,8 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
             const negraSecs = 60 / (parseInt(document.getElementById("tempo-input").value) || 100);
             const c1 = window.progresion[indexObjetivo]; const c2 = window.progresion[indexObjetivo + 1];
             
-            window.tocarAcorde([...c1.trebleMidi, c1.rootMidi].map(m => window.midiATone(m, c1.spellings)), c1.beats * negraSecs, Tone.now());
-            window.tocarAcorde([...c2.trebleMidi, c2.rootMidi].map(m => window.midiATone(m, c2.spellings)), c2.beats * negraSecs, Tone.now() + (c1.beats * negraSecs));
+            window.tocarAcorde([...c1.trebleMidi, c1.bassNoteMidi !== undefined ? c1.bassNoteMidi : c1.rootMidi].map(m => window.midiATone(m, c1.spellings)), c1.beats * negraSecs, Tone.now());
+            window.tocarAcorde([...c2.trebleMidi, c2.bassNoteMidi !== undefined ? c2.bassNoteMidi : c2.rootMidi].map(m => window.midiATone(m, c2.spellings)), c2.beats * negraSecs, Tone.now() + (c1.beats * negraSecs));
             if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
         };
 
@@ -3728,7 +3915,7 @@ window.ingresarSilencio = async function() {
                 await window.inicializarAudio();
                 const ac = window.progresion[indiceParaTocar];
                 if (!ac.isRest) {
-                    let notasParaTocar = [...ac.trebleMidi, ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
+                    let notasParaTocar = [...ac.trebleMidi, ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
                     window.tocarAcorde(notasParaTocar, ac.beats * (60 / (parseInt(document.getElementById("tempo-input").value) || 100)));
                 }
             }
@@ -3804,7 +3991,7 @@ window.ingresarSilencio = async function() {
             await window.inicializarAudio();
             const ac = window.progresion[indiceParaTocar];
             if (!ac.isRest) {
-                let notasParaTocar = [...ac.trebleMidi, ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
+                let notasParaTocar = [...ac.trebleMidi, ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi].map(m => window.midiATone(m, ac.spellings));
                 window.tocarAcorde(notasParaTocar, ac.beats * (60 / (parseInt(document.getElementById("tempo-input").value) || 100)));
             }
         };
@@ -3926,8 +4113,8 @@ window.ingresarSilencio = async function() {
             const negraSecs = 60 / (parseInt(document.getElementById("tempo-input").value) || 100);
             const c1 = window.progresion[indexObjetivo]; const c2 = window.progresion[indexObjetivo + 1];
             
-            window.tocarAcorde([...c1.trebleMidi, c1.rootMidi].map(m => window.midiATone(m, c1.spellings)), c1.beats * negraSecs, Tone.now());
-            window.tocarAcorde([...c2.trebleMidi, c2.rootMidi].map(m => window.midiATone(m, c2.spellings)), c2.beats * negraSecs, Tone.now() + (c1.beats * negraSecs));
+            window.tocarAcorde([...c1.trebleMidi, c1.bassNoteMidi !== undefined ? c1.bassNoteMidi : c1.rootMidi].map(m => window.midiATone(m, c1.spellings)), c1.beats * negraSecs, Tone.now());
+            window.tocarAcorde([...c2.trebleMidi, c2.bassNoteMidi !== undefined ? c2.bassNoteMidi : c2.rootMidi].map(m => window.midiATone(m, c2.spellings)), c2.beats * negraSecs, Tone.now() + (c1.beats * negraSecs));
             if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
         };
 
