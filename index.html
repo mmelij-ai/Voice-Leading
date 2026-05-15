@@ -1271,25 +1271,50 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                     // Build reference for voice leading — match count to targetNotes
                     // Use highest N notes from previous voicing (preserves register of guide tones)
                     let refVoicing = lastTrebleConTension || lastTrebleMidi;
+
+                    // For guide voicing: always use pure guide tones (3rd+7th) from prev chord
+                    // regardless of count — tensions in prev chord distort voice leading register
+                    const tipoVoicingCurrent = document.getElementById('tipo-voicing').value;
+                    if (tipoVoicingCurrent === 'guide') {
+                        let prevAcGuide = null;
+                        for (let k = i - 1; k >= 0; k--) {
+                            if (!window.progresion[k].isRest) { prevAcGuide = window.progresion[k]; break; }
+                        }
+                        if (prevAcGuide) {
+                            const pDict = window.diccionarioActual[prevAcGuide.gradoId];
+                            if (pDict) {
+                                const pRootPC = prevAcGuide.rootMidi % 12;
+                                const p3PC = (pDict.tetrad[1] - pDict.tetrad[0] + 12) % 12;
+                                const p7PC = (pDict.tetrad[3] - pDict.tetrad[0] + 12) % 12;
+                                const g3 = prevAcGuide.trebleMidi.find(m => m % 12 === (pRootPC + p3PC) % 12);
+                                const g7 = prevAcGuide.trebleMidi.find(m => m % 12 === (pRootPC + p7PC) % 12);
+                                const pureGuide = [g3, g7].filter(m => m !== undefined);
+                                if (pureGuide.length === 2) refVoicing = pureGuide.sort((a, b) => a - b);
+                            }
+                        }
+                    }
+
                     if (refVoicing && refVoicing.length !== targetNotes.length) {
-                        // When voicing types differ in note count, build reference by finding
-                        // notes in the previous voicing that share pitch classes with what the
-                        // new voicing will contain (3rd, 5th, 7th for rootless; 3rd+7th for guide)
                         const newRootPC = window.diccionarioActual[ac.gradoId].root % 12;
-                        // Compute the pitch classes that targetNotes will produce
                         const targetPCs = targetNotes.map(interval => (newRootPC + interval) % 12);
-                        // For each target PC, find the best note in refVoicing (closest in register)
                         const refSorted = [...refVoicing].sort((a, b) => a - b);
-                        const midRef = refSorted[Math.floor(refSorted.length / 2)]; // center of register
+
                         const matched = targetPCs.map(pc => {
-                            // Find note in refVoicing with this PC, or build it near center
+                            // First: exact pitch class match in prev voicing — same register
                             const fromRef = refVoicing.find(m => m % 12 === pc);
                             if (fromRef !== undefined) return fromRef;
-                            // Not in prev chord — place near center of ref register
-                            let m = pc + Math.floor(midRef / 12) * 12;
-                            if (m > midRef + 6) m -= 12;
-                            if (m < midRef - 6) m += 12;
-                            return m;
+                            // Fallback: find the octave of this PC closest to ANY note in refVoicing
+                            // (voice leading by proximity — mínimo movimiento even for new notes)
+                            let bestMidi = null, bestDist = Infinity;
+                            refSorted.forEach(ref => {
+                                let m = pc + Math.floor(ref / 12) * 12;
+                                // Adjust to be within a tritone of the ref note
+                                if (m > ref + 6) m -= 12;
+                                if (m < ref - 6) m += 12;
+                                const dist = Math.abs(m - ref);
+                                if (dist < bestDist) { bestDist = dist; bestMidi = m; }
+                            });
+                            return bestMidi;
                         });
                         refVoicing = matched.sort((a, b) => a - b);
                     }
@@ -1305,12 +1330,30 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 // follows voice leading — same pitch class stays in same register.
                 window.reaplicarTensiones(ac, lastTrebleConTension);
                 lastTrebleMidi = diatonicVoicing;
-                lastTrebleConTension = ac.trebleMidi;
+                // For guide voicing, store only pure guide tones (3rd+7th) as reference
+                // so next chord doesn't see tensions in the voice leading reference
+                const tipoVoicingRef = document.getElementById('tipo-voicing').value;
+                if (tipoVoicingRef === 'guide' && ac.tensionesActivas && ac.tensionesActivas.length) {
+                    const dictRef = window.diccionarioActual[ac.gradoId];
+                    if (dictRef) {
+                        const rPC = ac.rootMidi % 12;
+                        const i3PC = (dictRef.tetrad[1] - dictRef.tetrad[0] + 12) % 12;
+                        const i7PC = (dictRef.tetrad[3] - dictRef.tetrad[0] + 12) % 12;
+                        const g3 = ac.trebleMidi.find(m => m % 12 === (rPC + i3PC) % 12);
+                        const g7 = ac.trebleMidi.find(m => m % 12 === (rPC + i7PC) % 12);
+                        const pureGuide = [g3, g7].filter(m => m !== undefined);
+                        lastTrebleConTension = pureGuide.length === 2 ? pureGuide.sort((a,b) => a-b) : ac.trebleMidi;
+                    } else {
+                        lastTrebleConTension = ac.trebleMidi;
+                    }
+                } else {
+                    lastTrebleConTension = ac.trebleMidi;
+                }
             }
         };
 
         window.revisarYCorregirDisonancias = async function() {
-            if (document.getElementById('tipo-voicing').value !== 'tetrad') return false; 
+            const tipoVoicing = document.getElementById('tipo-voicing').value;
             let huboCambios = false;
             for (let i = 0; i < window.progresion.length; i++) {
                 const acorde = window.progresion[i];
@@ -1320,9 +1363,8 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 const sopranoPC = soprano % 12;
                 const rootPC = acorde.rootMidi % 12;
 
-                // ── CASO 1: Fundamental en soprano de acorde maj7 ────────────────────────
-                // Genera segunda menor expuesta con la séptima mayor (semitono entre 7ma y fundamental)
-                if (dictObj && dictObj.isMaj7 && sopranoPC === rootPC) {
+                // ── CASO 1: Fundamental en soprano de acorde maj7 (solo tétradas) ──────────
+                if (tipoVoicing === 'tetrad' && dictObj && dictObj.isMaj7 && sopranoPC === rootPC) {
                     window.renderizarPartitura(i, true);
                     const gradoId6 = acorde.gradoId + "_6";
                     const tiene6 = !!window.diccionarioActual[gradoId6];
@@ -1344,12 +1386,13 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 }
 
                 // ── CASO 2: 9na con 3ra menor en soprano ──────────────────────────────────
-                // La 9na y la 3ra menor están a semitono (ej: Re y Mib en Cm9)
-                // Si la 3ra menor queda en soprano con la 9na activa → segunda menor expuesta
-                else if (acorde.tensionesActivas && acorde.tensionesActivas.some(s => s === 2)) {
-                    const terceraPC = (rootPC + 3) % 12;
-                    const novenaPC  = (rootPC + 2) % 12;
-                    // Check if b3 is soprano AND the 9th is in the voicing
+                // b9(1), 9(2), #9(3) con 3ra menor en soprano → segunda menor/aumentada expuesta
+                else if (acorde.tensionesActivas && acorde.tensionesActivas.some(s => s >= 1 && s <= 3)) {
+                    const terceraPC = (rootPC + 3) % 12; // 3ra menor
+                    const tension9 = acorde.tensionesActivas.find(s => s >= 1 && s <= 3);
+                    const novenaPC  = (rootPC + tension9) % 12;
+                    const nombreTension9 = NOMBRE_TENSION[tension9] || tension9;
+                    // Check if b3 is soprano AND the 9th variant is in the voicing
                     if (sopranoPC === terceraPC && acorde.trebleMidi.some(m => m % 12 === novenaPC)) {
                         window.renderizarPartitura(i, true);
                         const ficha = window.obtenerFichaTensiones(acorde.gradoId);
@@ -1364,19 +1407,19 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
                         const respuesta = await window.mostrarModalSegundaMenor(
                             acorde.nombre,
-                            '3ra menor en soprano con 9na activa',
-                            `La 9na y la 3ra menor están a semitono de distancia. Si la 3ra menor queda en la voz más aguda, se forma una segunda menor expuesta en el extremo superior.`,
+                            `3ra menor en soprano con ${nombreTension9} activa`,
+                            `La ${nombreTension9} y la 3ra menor están a semitono de distancia. Si la 3ra menor queda en la voz más aguda, se forma una segunda menor expuesta en el extremo superior.`,
                             alternativas,
                             'Mantener (segunda menor visible)'
                         );
 
                         if (respuesta === 'quitar9') {
-                            window.aplicarTensionConSustitucion(i, 2); // toggle off
+                            window.aplicarTensionConSustitucion(i, tension9); // toggle off correct variant
                             huboCambios = true;
                         } else if (respuesta && respuesta.startsWith('tension_')) {
                             const nuevoSemitone = parseInt(respuesta.replace('tension_', ''));
-                            window.aplicarTensionConSustitucion(i, 2);           // remove 9th
-                            window.aplicarTensionConSustitucion(i, nuevoSemitone); // add alternative
+                            window.aplicarTensionConSustitucion(i, tension9);       // remove this 9th variant
+                            window.aplicarTensionConSustitucion(i, nuevoSemitone);  // add alternative
                             huboCambios = true;
                         } else {
                             acorde.ignorarDisonancia = true;
@@ -1807,13 +1850,10 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             }
 
             window.renderizarPartitura(index);
-            // Recalcular los acordes SIGUIENTES para que su voice leading parta
-            // desde el voicing actualizado (con tensión) de este acorde
             if (index + 1 < window.progresion.length) {
                 window.recalcularProgresion(index + 1);
             }
             window.guardarEstado();
-            // Re-pintar el panel de tensiones con el estado actualizado
             window.mostrarPanelTensionesInline(index);
             // Reproducir el acorde con la tensión para feedback auditivo inmediato
             if (window.modoActual === 'ingreso') {
@@ -1821,6 +1861,8 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 const notaBass    = Tone.Frequency(ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi, 'midi').toNote();
                 window.tocarAcorde([...notasTreble, notaBass], '2n');
             }
+            // Check for exposed minor 2nd after tension is applied
+            window.auditoriaPedagogica(true);
         };
 
         // Renderizar el panel inline de tensiones (dentro del asistente, en modo edición)
