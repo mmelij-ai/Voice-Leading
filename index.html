@@ -210,6 +210,27 @@
                         </svg>
                     </button>
                 </div>
+                <!-- Selector de modo de botones -->
+                <div class="flex items-center gap-1.5 mb-2">
+                    <span class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Modo:</span>
+                    <button onclick="window.setModoBoton('diat')" id="modo-btn-diat"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-md border transition-all bg-cyan-700/30 border-cyan-600/60 text-cyan-300">
+                        Diatónico
+                    </button>
+                    <button onclick="window.setModoBoton('dom')" id="modo-btn-dom"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-md border transition-all bg-slate-700/40 border-slate-600 text-slate-400 hover:border-rose-500/50 hover:text-rose-300">
+                        Dom. Sec.
+                    </button>
+                    <button onclick="window.setModoBoton('subv7')" id="modo-btn-subv7"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-md border transition-all bg-slate-700/40 border-slate-600 text-slate-400 hover:border-violet-500/50 hover:text-violet-300">
+                        SubV7
+                    </button>
+                    <button onclick="window.setModoBoton('modal')" id="modo-btn-modal"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-md border transition-all bg-slate-700/40 border-slate-600 text-slate-400 hover:border-blue-500/50 hover:text-blue-300">
+                        Intercambio
+                    </button>
+                </div>
+
                 <div id="contenedor-botones-grados" class="grid grid-cols-4 sm:grid-cols-7 gap-2 relative z-10">
                     <div class="flex shadow-sm rounded-xl"><button id="btn-I" onclick="window.agregarAcordeGrado('I')" class="flex-1 bg-slate-700/80 border border-slate-600 hover:border-cyan-400 hover:bg-slate-700 hover:text-cyan-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center"><span class="block text-[9px] font-bold text-slate-400 leading-none mb-0.5 tracking-wide">Imaj7</span><span class="block text-xs font-extrabold leading-none">—</span></button><button onclick="window.toggleSubmenu('I')" class="bg-slate-800 border border-slate-600 border-l-0 hover:bg-slate-600 text-slate-400 hover:text-cyan-400 px-2 rounded-r-xl transition-colors text-xs">▼</button></div>
                     <div class="flex shadow-sm rounded-xl"><button id="btn-II" onclick="window.agregarAcordeGrado('II')" class="flex-1 bg-slate-700/80 border border-slate-600 hover:border-cyan-400 hover:bg-slate-700 hover:text-cyan-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center"><span class="block text-[9px] font-bold text-slate-400 leading-none mb-0.5 tracking-wide">IIm7</span><span class="block text-xs font-extrabold leading-none">—</span></button><button onclick="window.toggleSubmenu('II')" class="bg-slate-800 border border-slate-600 border-l-0 hover:bg-slate-600 text-slate-400 hover:text-cyan-400 px-2 rounded-r-xl transition-colors text-xs">▼</button></div>
@@ -877,6 +898,32 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
         window.formatNotaFromPC = function(pc, spellings = window.nombresNotasActual) { return spellings[pc % 12].charAt(0).toUpperCase() + spellings[pc % 12].slice(1); };
 
+        window.modoBoton = 'diat';
+
+        window.setModoBoton = function(modo) {
+            window.modoBoton = modo;
+            // Update selector visual
+            const colores = {
+                diat:  { bg: 'bg-cyan-700/30',   border: 'border-cyan-600/60',   text: 'text-cyan-300'   },
+                dom:   { bg: 'bg-rose-700/30',    border: 'border-rose-600/60',   text: 'text-rose-300'   },
+                subv7: { bg: 'bg-violet-700/30',  border: 'border-violet-600/60', text: 'text-violet-300' },
+                modal: { bg: 'bg-blue-700/30',    border: 'border-blue-600/60',   text: 'text-blue-300'   },
+            };
+            ['diat','dom','subv7','modal'].forEach(m => {
+                const btn = document.getElementById(`modo-btn-${m}`);
+                if (!btn) return;
+                btn.className = `text-[9px] font-bold px-2 py-0.5 rounded-md border transition-all `;
+                if (m === modo) {
+                    btn.className += `${colores[m].bg} ${colores[m].border} ${colores[m].text}`;
+                } else {
+                    btn.className += 'bg-slate-700/40 border-slate-600 text-slate-400';
+                }
+            });
+            window.actualizarDiccionario();
+            // Close any open submenu
+            document.getElementById('panel-variantes-armonicas')?.classList.add('hidden');
+        };
+
         window.actualizarDiccionario = function() {
             window.tonalidadActual = document.getElementById('select-tonalidad').value;
             const usarTriada = document.getElementById('tipo-voicing').value === 'triad';
@@ -944,12 +991,67 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                         window.diccionarioActual[g.id + "_" + v.tipo + "_2"] = { id: g.id + "_" + v.tipo + "_2", nombre: window.formatNotaFromPC(rMidi2 % 12, sp2) + ext2, root: rMidi2, tetrad: v.c2.tetradMod.map(n => ((rMidi2 % 12) + n) % 12), roman: v.c2.roman, isMaj7: ext2 === 'maj7', spellings: sp2 };
                     });
                 }
+            }); // end gradosDiatonicos.forEach — diccionario now fully built
+
+            // Update buttons AFTER full diccionario is built so cross-grade IDs resolve correctly
+            const DOM_MAP = {
+                'I':   { id: 'IV_IV_V7',   roman: 'V7/IV'  },
+                'II':  { id: 'V_V_V7',     roman: 'V7/V'   },
+                'III': { id: 'VI_VI_V7',   roman: 'V7/VI'  },
+                'IV':  null,
+                'V':   null,
+                'VI':  { id: 'II_II_V7',   roman: 'V7/II'  },
+                'VII': { id: 'III_III_V7', roman: 'V7/III' },
+            };
+            // SubV7: tritone substitution — I=disabled, II=Db7(subV7/I), III=Eb7(subV7/II),
+            // IV=disabled, V=Gb7(subV7/IV), VI=Ab7(subV7/V), VII=disabled
+            const SUBV7_MAP = {
+                'I':   null,
+                'II':  { id: 'I_I_subV7',   roman: 'subV7'    },
+                'III': { id: 'II_II_subV7',  roman: 'subV7/II' },
+                'IV':  null,
+                'V':   { id: 'IV_IV_subV7',  roman: 'subV7/IV' },
+                'VI':  { id: 'V_V_subV7',    roman: 'subV7/V'  },
+                'VII': null,
+            };
+            const MODAL_MAP = {
+                'I':   { id: 'I_I_modal',       roman: 'Im7'      },
+                'II':  { id: 'II_II_modal_1',   roman: 'IIm7b5'   },
+                'III': { id: 'III_III_modal_1', roman: 'bIIImaj7' },
+                'IV':  { id: 'IV_IV_modal_1',   roman: 'IVm7'     },
+                'V':   { id: 'V_V_modal',       roman: 'Vm7'      },
+                'VI':  { id: 'VI_VI_modal_1',   roman: 'bVImaj7'  },
+                'VII': { id: 'VII_VII_modal_1', roman: 'bVII7'    },
+            };
+            const modo = window.modoBoton || 'diat';
+            gradosDiatonicos.forEach(g => {
                 const btn = document.getElementById(`btn-${g.id}`);
-                if (btn) {
-                    const roman = window.diccionarioActual[g.id].roman;
-                    const nombre = window.diccionarioActual[g.id].nombre;
-                    btn.innerHTML = `<span class="block text-[9px] font-bold text-slate-400 leading-none mb-0.5 tracking-wide">${roman}</span><span class="block text-xs font-extrabold leading-none">${nombre}</span>`;
+                if (!btn) return;
+                let chordId = g.id, roman = window.diccionarioActual[g.id]?.roman || g.id;
+                let nombre = window.diccionarioActual[g.id]?.nombre || g.id, disabled = false;
+                if (modo === 'dom') {
+                    const entry = DOM_MAP[g.id];
+                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; }
+                    else { disabled = true; roman = '—'; nombre = '—'; }
+                } else if (modo === 'subv7') {
+                    const entry = SUBV7_MAP[g.id];
+                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; }
+                    else { disabled = true; roman = '—'; nombre = '—'; }
+                } else if (modo === 'modal') {
+                    const entry = MODAL_MAP[g.id];
+                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; }
+                    else { disabled = true; roman = '—'; nombre = '—'; }
                 }
+                btn.onclick = disabled ? null : () => window.agregarAcordeGrado(chordId);
+                if (disabled) btn.removeAttribute('onclick');
+                btn.disabled = disabled;
+                btn.className = disabled
+                    ? 'flex-1 bg-slate-800/40 border border-slate-700 text-slate-600 font-bold py-2 px-2 rounded-l-xl text-center cursor-not-allowed opacity-50'
+                    : modo === 'dom'   ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-rose-400 hover:bg-slate-700 hover:text-rose-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
+                    : modo === 'subv7' ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-violet-400 hover:bg-slate-700 hover:text-violet-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
+                    : modo === 'modal' ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-blue-400 hover:bg-slate-700 hover:text-blue-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
+                    :                   'flex-1 bg-slate-700/80 border border-slate-600 hover:border-cyan-400 hover:bg-slate-700 hover:text-cyan-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center';
+                btn.innerHTML = `<span class="block text-[9px] font-bold text-slate-400 leading-none mb-0.5 tracking-wide">${roman}</span><span class="block text-xs font-extrabold leading-none">${nombre}</span>`;
             });
         };
 
@@ -3370,6 +3472,7 @@ window.crearPiano = function() {
             
             if (gObj.megaMenu) {
                 const gradoNombre = window.diccionarioActual[gradoId]?.nombre || gradoId;
+                const romano      = window.diccionarioActual[gradoId]?.roman  || gradoId;
 
                 // ── helpers ──────────────────────────────────────────────────────────
                 const btnAcorde = (id, nombre, roman, colorCls) =>
@@ -3411,18 +3514,8 @@ window.crearPiano = function() {
                         'bg-emerald-900/20 border-emerald-700/40 hover:bg-emerald-900/40 hover:border-emerald-500');
                 });
 
-                // ── Dominantes (principales + sustitutos) ────────────────────────────
+                // ── Cadencias al grado (solo cadencias, sin acordes solos) ──────────────
                 let htmlDom = '';
-
-                // V7 / dominantes secundarios
-                const domPrinc = gObj.areas.dominantes.filter(d => !d.name.toLowerCase().includes('sub'));
-                const domSubs  = gObj.areas.dominantes.filter(d =>  d.name.toLowerCase().includes('sub'));
-
-                domPrinc.forEach(v => {
-                    const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
-                    if (c) htmlDom += btnAcorde(c.id, c.nombre, v.name,
-                        'bg-rose-900/25 border-rose-700/50 hover:bg-rose-900/50 hover:border-rose-500 font-bold');
-                });
 
                 // Cadencias con V7
                 const cadPrinc = gObj.areas.cadencias.filter(c => !c.c2.roman.toLowerCase().includes('sub'));
@@ -3434,14 +3527,10 @@ window.crearPiano = function() {
                         'bg-slate-800/80 border-slate-700 hover:bg-slate-700 hover:border-rose-400');
                 });
 
-                if (domSubs.length > 0) {
-                    htmlDom += `<div class="h-px bg-slate-700/60 my-0.5"></div>`;
-                    domSubs.forEach(v => {
-                        const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
-                        if (c) htmlDom += btnAcorde(c.id, c.nombre, v.name,
-                            'bg-rose-900/25 border-rose-700/50 hover:bg-rose-900/50 hover:border-rose-500');
-                    });
-                    const cadSubs = gObj.areas.cadencias.filter(c => c.c2.roman.toLowerCase().includes('sub'));
+                // Cadencias con subV7
+                const cadSubs = gObj.areas.cadencias.filter(c => c.c2.roman.toLowerCase().includes('sub'));
+                if (cadSubs.length > 0) {
+                    if (cadPrinc.length > 0) htmlDom += `<div class="h-px bg-slate-700/60 my-0.5"></div>`;
                     cadSubs.forEach(v => {
                         const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"];
                         const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"];
@@ -3463,9 +3552,9 @@ window.crearPiano = function() {
                     </button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    ${seccion('Intercambio Modal',   'bg-blue-400',    'border-blue-700/30', htmlModal)}
-                    ${seccion('Disminuidos',         'bg-emerald-400', 'border-emerald-700/30', htmlDim)}
-                    ${seccion('Dominantes y Cadencias', 'bg-rose-400', 'border-rose-700/30', htmlDom)}
+                    ${seccion('Intercambio Modal',          'bg-blue-400',    'border-blue-700/30',    htmlModal)}
+                    ${seccion('Disminuidos',                'bg-emerald-400', 'border-emerald-700/30', htmlDim)}
+                    ${seccion(`Cadencias al ${romano}`,     'bg-rose-400',    'border-rose-700/30',    htmlDom)}
                 </div>`;
 
                 panel.innerHTML = html;
