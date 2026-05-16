@@ -840,6 +840,41 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             return infoTonalidades[circleOfFifths[targetIdx]]?.notas || infoTonalidades[baseKey].notas;
         };
 
+        // Spellings for diminished chords — arpeggio notes use simplest enharmonic
+        // Ascending (#I°7 etc): root keeps sharp; b3, b5, °7 use flat preferred
+        // Descending (bIII°7 etc): root also uses flat (Eb not D#, Ab not G#)
+        // Auxiliary: root keeps key spelling; b3, b5, °7 use flat preferred
+        window.getDimSpellings = function(rootMidi, fixRoot = false) {
+            const rootPC = rootMidi % 12;
+            const dimPreferred = {
+                0:'c', 1:'db', 2:'d', 3:'eb', 4:'e',
+                5:'f', 6:'gb', 7:'g', 8:'ab', 9:'a', 10:'bb', 11:'b'
+            };
+            // Sharp preferred names for notes that have both enharmonics
+            const dimSharp = {
+                1:'c#', 3:'d#', 6:'f#', 8:'g#', 10:'a#'
+            };
+            const sp = [...window.nombresNotasActual];
+            // Fix root for descending dims (bIII°7, bVI°7)
+            if (fixRoot && dimPreferred[rootPC] && sp[rootPC] !== dimPreferred[rootPC]) {
+                sp[rootPC] = dimPreferred[rootPC];
+            }
+            // Determine if root uses sharp (ascending dim) — b3 should match
+            const rootUsesSharp = sp[rootPC] && sp[rootPC].includes('#');
+            // Fix b3, b5, °7
+            [3, 6, 9].forEach(interval => {
+                const pc = (rootPC + interval) % 12;
+                if (interval === 3 && rootUsesSharp && dimSharp[pc]) {
+                    // b3 follows root's sharp convention
+                    if (sp[pc] !== dimSharp[pc]) sp[pc] = dimSharp[pc];
+                } else {
+                    const preferred = dimPreferred[pc];
+                    if (preferred && sp[pc] !== preferred) sp[pc] = preferred;
+                }
+            });
+            return sp;
+        };
+
         window.formatNotaFromPC = function(pc, spellings = window.nombresNotasActual) { return spellings[pc % 12].charAt(0).toUpperCase() + spellings[pc % 12].slice(1); };
 
         window.actualizarDiccionario = function() {
@@ -877,9 +912,10 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                             let ext2 = usarTriada ? v.c2.triadExt : v.c2.tetradExt;
                             window.diccionarioActual[g.id + "_cad2"] = { id: g.id + "_cad2", nombre: window.formatNotaFromPC(rMidi2 % 12, sp2) + ext2, root: rMidi2, tetrad: v.c2.tetradMod.map(n => ((rMidi2 % 12) + n) % 12), roman: v.c2.roman, isMaj7: ext2 === 'maj7', spellings: sp2 };
                         } else {
-                            let sp = window.getModeSpellings(window.tonalidadActual, v.modeShift || 0);
                             let rMidi = chordRootMidi + (v.rootOffset || 0); while (rMidi > 51) rMidi -= 12; while (rMidi < 40) rMidi += 12;
                             let ext = usarTriada ? v.triadExt : v.tetradExt;
+                            let sp = (ext === 'dim7') ? window.getDimSpellings(rMidi, (v.rootOffset || 0) < 0)
+                                     : window.getModeSpellings(window.tonalidadActual, v.modeShift || 0);
                             window.diccionarioActual[g.id + "_" + v.tipo] = { id: g.id + "_" + v.tipo, nombre: window.formatNotaFromPC(rMidi % 12, sp) + ext, root: rMidi, tetrad: v.tetrad.map(n => ((rMidi % 12) + n) % 12), roman: v.name, isMaj7: ext === 'maj7', spellings: sp };
                         }
                     });
@@ -888,9 +924,11 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 if (g.megaMenu) {
                     ['intercambio', 'disminuidos', 'dominantes'].forEach(area => {
                         g.areas[area].forEach(v => {
-                            let sp = window.getModeSpellings(window.tonalidadActual, v.modeShift || 0);
                             let rMidi = chordRootMidi + (v.rootOffset || 0); while (rMidi > 51) rMidi -= 12; while (rMidi < 40) rMidi += 12;
                             let ext = usarTriada ? v.triadExt : v.tetradExt;
+                            // For diminished: fix root spelling too if rootOffset is negative (bIII°7, bVI°7)
+                            let sp = (ext === 'dim7') ? window.getDimSpellings(rMidi, (v.rootOffset || 0) < 0)
+                                     : window.getModeSpellings(window.tonalidadActual, v.modeShift || 0);
                             window.diccionarioActual[g.id + "_" + v.tipo] = { id: g.id + "_" + v.tipo, nombre: window.formatNotaFromPC(rMidi % 12, sp) + ext, root: rMidi, tetrad: v.tetrad.map(n => ((rMidi % 12) + n) % 12), roman: v.name, isMaj7: ext === 'maj7', spellings: sp };
                         });
                     });
@@ -1548,14 +1586,25 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
             // ── ACORDES DISMINUIDOS ────────────────────────────────────────────────
             // Todos → Escala Disminuida (b9, #9, #11, 13)
-            'I_I_dimAux':      { escala: 'Disminuida',        t: [1,3,6,9], ev: [],    constitutivas: [0,3,6,9] },
-            'I_I_dimPaso':     { escala: 'Disminuida',        t: [1,3,6,9], ev: [],    constitutivas: [0,3,6,9] },
-            'II_II_dimUp':     { escala: 'Disminuida',        t: [1,3,6,9], ev: [],    constitutivas: [0,3,6,9] },
-            'III_III_dim':     { escala: 'Disminuida',        t: [1,3,6,9], ev: [],    constitutivas: [0,3,6,9] },
-            'IV_IV_dimUp':     { escala: 'Disminuida',        t: [1,3,6,9], ev: [],    constitutivas: [0,3,6,9] },
-            'V_V_dimUp':       { escala: 'Disminuida',        t: [1,3,6,9], ev: [],    constitutivas: [0,3,6,9] },
-            'V_V_dimAux':      { escala: 'Disminuida',        t: [1,3,6,9], ev: [],    constitutivas: [0,3,6,9] },
-            'VI_VI_dim':       { escala: 'Disminuida',        t: [1,3,6,9], ev: [],    constitutivas: [0,3,6,9] },
+            // ── DISMINUIDOS ──────────────────────────────────────────────────────────
+            // Escala: Diatónica Disminuida. Tensiones = notas a TONO sobre notas del arpegio.
+            // Arpegio no sustituible: b5(6) y °7(9). Constitutivas: 1(0), b3(3), b5(6), °7(9).
+            // T11(5) puede agregar O sustituir b3. T7(11) puede agregar O sustituir fundamental.
+            // Tb13(8) y T9(2) solo agregan (no sustituyen b5 ni °7).
+            //
+            // Ascendentes (#I°7, #II°7, #V°7): Tb13(8), T7(11)
+            'I_I_dimPaso':     { escala: 'Diatónica Disminuida', t: [8,11],    ev: [],  constitutivas: [0,3,6,9] },
+            'II_II_dimUp':     { escala: 'Diatónica Disminuida', t: [8,11],    ev: [],  constitutivas: [0,3,6,9] },
+            'V_V_dimUp':       { escala: 'Diatónica Disminuida', t: [8,11],    ev: [],  constitutivas: [0,3,6,9] },
+            // Ascendente especial (#IV°7): T11(5), Tb13(8), T7(11)
+            'IV_IV_dimUp':     { escala: 'Diatónica Disminuida', t: [5,8,11],  ev: [],  constitutivas: [0,3,6,9] },
+            // Descendentes (bIII°7, bVI°7): Tb13(8), T7(11)
+            'III_III_dim':     { escala: 'Diatónica Disminuida', t: [8,11],    ev: [],  constitutivas: [0,3,6,9] },
+            'VI_VI_dim':       { escala: 'Diatónica Disminuida', t: [8,11],    ev: [],  constitutivas: [0,3,6,9] },
+            // Auxiliar I°7: T9(2), T11(5), T7(11) — sin Tb13
+            'I_I_dimAux':      { escala: 'Diatónica Disminuida', t: [2,5,11],  ev: [],  constitutivas: [0,3,6,9] },
+            // Auxiliar V°7: T9(2), T11(5) — sin Tb13 ni T7
+            'V_V_dimAux':      { escala: 'Diatónica Disminuida', t: [2,5],     ev: [],  constitutivas: [0,3,6,9] },
 
             // ── CADENCIAS (acordes de preparación y dominantes en contexto de cadencia) ──
             // _1 = preparación (IIm7-type o m7b5)   _2 = dominante (V7 o subV7)
@@ -1606,7 +1655,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
         };
 
         // Nombres de tensión por semitono desde root
-        const NOMBRE_TENSION = { 1: 'b9', 2: '9', 3: '#9', 5: '11', 6: '#11', 8: 'b13', 9: '13' };
+        const NOMBRE_TENSION = { 1: 'b9', 2: '9', 3: '#9', 5: '11', 6: '#11', 8: 'b13', 9: '13', 11: 'T7' };
         // Nombres de notas a evitar por semitono desde root
         const NOMBRE_EVITAR_TENSION = { 1: 'b2', 2: '2', 3: '#2', 4: 'M3', 5: '4', 6: '#4', 7: '5', 8: 'b6', 9: '6', 10: 'b7', 11: '7' };
 
@@ -1743,7 +1792,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
         //   9nas  → sustituyen la FUNDAMENTAL (PC root) en el voicing
         //   11nas/13nas → sustituyen la QUINTA (PC root+7) en el voicing
         // ─────────────────────────────────────────────────────────────
-        window.aplicarTensionConSustitucion = function(index, semitone) {
+        window.aplicarTensionConSustitucion = function(index, semitone, mode = 'auto') {
             const ac = window.progresion[index];
             if (!ac || ac.isRest) return;
 
@@ -1781,11 +1830,25 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
             } else {
                 // ── AGREGAR TENSIÓN ──
-                const esTension9 = semitone <= 3;
-                const slotPC = esTension9 ? rootPC : quintaPC;
+                // Determine slot based on mode and chord type
+                let esTension9 = semitone <= 3;
+                let slotPC;
 
-                // Buscar el MIDI de la nota a sustituir (fundamental o quinta) en el voicing actual
-                const idxSlot = voicing.findIndex(m => m % 12 === slotPC);
+                if (mode === 'add') {
+                    // Force "add voice" mode — no substitution, push as extra note
+                    slotPC = null; // will fall to idxSlot === -1 path
+                } else if (mode === 'sub') {
+                    // Force substitution mode for dual-mode tensions (T11→b3, T7→1)
+                    slotPC = semitone === 5 ? (rootPC + 3) % 12  // T11 substitutes b3
+                           : semitone === 11 ? rootPC              // T7 substitutes fundamental
+                           : esTension9 ? rootPC : quintaPC;
+                } else {
+                    // Auto mode: standard behavior
+                    slotPC = esTension9 ? rootPC : quintaPC;
+                }
+
+                // Buscar el MIDI de la nota a sustituir en el voicing actual
+                const idxSlot = slotPC !== null ? voicing.findIndex(m => m % 12 === slotPC) : -1;
                 if (idxSlot === -1) {
                     // La nota a sustituir no está en el voicing (ej. quinta ya reemplazada por otra tensión)
                     // Prefer common tone octave from previous chord if available
@@ -2067,28 +2130,42 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             const rootPC = ac.rootMidi % 12;
             const sp = ac.spellings || window.nombresNotasActual;
 
+            // Detect diminished chord — tetrad [0,3,6,9] relative intervals
+            const dictObjDim = window.diccionarioActual[ac.gradoId];
+            const esDim = dictObjDim && dictObjDim.tetrad &&
+                (() => { const rPC = ac.rootMidi % 12; const t = dictObjDim.tetrad;
+                    return [(t[1]-t[0]+12)%12,(t[2]-t[0]+12)%12,(t[3]-t[0]+12)%12].join(',') === '3,6,9'; })();
+
             ficha.t.forEach(semitone => {
                 const tensionPC = (rootPC + semitone) % 12;
                 const notaNombre = window.formatNotaFromPC(tensionPC, sp);
                 const nombreT = NOMBRE_TENSION[semitone] || semitone;
+
+                // For diminished: T11(5) and T7(11) have dual mode (add OR substitute)
+                const isDualMode = esDim && (semitone === 5 || semitone === 11);
+                // Standard slot labels
                 const esTension9 = semitone <= 3;
-                const slotLabel = esTension9 ? 'sustituye 1' : 'sustituye 5';
+                const slotLabel = esDim
+                    ? (semitone === 5 ? 'sustituye b3' : semitone === 11 ? 'sustituye 1' : 'agrega voz')
+                    : (esTension9 ? 'sustituye 1' : 'sustituye 5');
 
                 // ¿Está ya activa en el voicing?
                 const activa = ac.trebleMidi.some(m => m % 12 === tensionPC);
 
-                // ¿Es nota común con el acorde anterior? (pitch class match en trebleMidi o rootMidi del prev)
+                // ¿Es nota común con el acorde anterior?
                 const prevAcorde = index > 0 ? window.progresion[index - 1] : null;
                 const esNotaComun = prevAcorde && !prevAcorde.isRest && (
                     prevAcorde.trebleMidi && prevAcorde.trebleMidi.some(m => m % 12 === tensionPC)
                 );
 
                 // Color según tipo de tensión
-                const colorActivo = semitone <= 3
-                    ? 'bg-sky-600 border-sky-400 text-white shadow-sky-500/30 shadow-md'
-                    : semitone === 5 || semitone === 6
-                        ? 'bg-violet-600 border-violet-400 text-white shadow-violet-500/30 shadow-md'
-                        : 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-500/30 shadow-md';
+                const colorActivo = semitone === 11
+                    ? 'bg-amber-600 border-amber-400 text-white shadow-amber-500/30 shadow-md'
+                    : semitone <= 3
+                        ? 'bg-sky-600 border-sky-400 text-white shadow-sky-500/30 shadow-md'
+                        : semitone === 5 || semitone === 6
+                            ? 'bg-violet-600 border-violet-400 text-white shadow-violet-500/30 shadow-md'
+                            : 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-500/30 shadow-md';
                 const colorInactivo = esNotaComun
                     ? 'bg-slate-700 border-amber-400/70 text-amber-300 hover:border-amber-400 hover:bg-slate-600 ring-1 ring-amber-400/40'
                     : 'bg-slate-700 border-slate-500 text-slate-200 hover:border-violet-400 hover:text-violet-300 hover:bg-slate-600';
@@ -2098,6 +2175,28 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                     ? `<span class="text-[8px] font-bold text-amber-400 leading-none mt-0.5 uppercase tracking-wide">≈ común</span>`
                     : '';
 
+                if (isDualMode && !activa) {
+                    // Dual mode: same card style as regular button, with two sub-action buttons at bottom
+                    const subLabelText = semitone === 5 ? 'sustituye b3' : 'sustituye 1';
+                    btnContainer.innerHTML += `
+                        <div class="flex flex-col items-center gap-0.5 px-3.5 py-2 rounded-xl border min-w-[72px] text-center select-none ${colorInactivo}">
+                            <span class="text-sm font-extrabold leading-none">${nombreT}</span>
+                            <span class="text-[10px] font-semibold opacity-70 leading-none">${notaNombre}</span>
+                            ${notaComunTag}
+                            <div class="flex gap-1 mt-1.5 w-full justify-center">
+                                <button onclick="window.aplicarTensionConSustitucion(${index}, ${semitone}, 'add')"
+                                    title="Agregar ${nombreT} como voz extra"
+                                    class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-slate-600/60 hover:bg-slate-500/60 border border-slate-500/50 transition-all">
+                                    + voz
+                                </button>
+                                <button onclick="window.aplicarTensionConSustitucion(${index}, ${semitone}, 'sub')"
+                                    title="${subLabelText}"
+                                    class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-slate-600/60 hover:bg-slate-500/60 border border-slate-500/50 transition-all">
+                                    × ${semitone === 5 ? 'b3' : '1'}
+                                </button>
+                            </div>
+                        </div>`;
+                } else {
                 btnContainer.innerHTML += `
                     <button onclick="window.aplicarTensionConSustitucion(${index}, ${semitone})"
                         title="${activa ? 'Quitar ' : 'Agregar '}${nombreT} · ${slotLabel}${esNotaComun ? ' · Nota común con acorde anterior' : ''}"
@@ -2108,6 +2207,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                         <span class="text-[9px] opacity-50 leading-none mt-0.5">${slotLabel}</span>
                         ${notaComunTag}
                     </button>`;
+                } // end isDualMode else
             });
         };
 
