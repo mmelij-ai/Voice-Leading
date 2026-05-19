@@ -256,33 +256,6 @@
                 <span id="badge-figura-label" class="text-[10px] font-bold text-slate-300 leading-none min-w-[36px]"></span>
             </div>
 
-            <!-- Panel de tensiones / bajo — overlay flotante sobre la partitura -->
-            <div id="panel-tensiones-inline"
-                 class="hidden absolute z-30 hide-on-print
-                        bg-slate-800 border border-violet-600/50 rounded-2xl
-                        px-3 py-2.5 shadow-2xl
-                        bottom-3 left-3 right-3">
-                <!-- Fila única: todo en horizontal -->
-                <div class="flex flex-wrap items-center gap-2.5">
-                    <!-- Título + escala/bajo — sin ícono "Tensiones" en modo bajo -->
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span id="tension-panel-icon" class="text-violet-400">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                        </span>
-                        <span id="tension-panel-label" class="text-violet-400 font-extrabold text-[10px] uppercase tracking-widest">Tensiones</span>
-                        <span id="tension-escala-tag" class="text-[10px] font-bold text-slate-300 bg-slate-700 px-2 py-0.5 rounded-md border border-slate-600"></span>
-                    </div>
-                    <!-- Separador -->
-                    <div class="w-px h-4 bg-slate-700 shrink-0"></div>
-                    <!-- Botones de tensión / inversión -->
-                    <div id="tension-botones" class="flex flex-wrap gap-1.5"></div>
-                    <!-- Nota a evitar -->
-                    <div id="tension-evitar-tag" class="hidden ml-auto shrink-0 text-[10px] font-bold text-rose-400 bg-rose-900/30 border border-rose-700/50 px-2 py-1 rounded-lg flex items-center gap-1">
-                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
-                        Evitar: <span id="tension-evitar-notas"></span>
-                    </div>
-                </div>
-            </div>
             <div id="scroll-partitura" class="w-full overflow-x-auto pb-4 pt-4 scroll-smooth scrollbar-thin scrollbar-thumb-slate-400 relative z-0 text-center">
                 <div id="contenedor-partitura" class="inline-block text-left text-slate-900 mt-6 px-4 md:px-8">
                     <p class="text-slate-500 text-center mt-20 font-medium italic text-lg">Agrega acordes para visualizar el Voice Leading...</p>
@@ -295,6 +268,28 @@
                     <span class="flex items-center gap-2"><div class="w-3 h-3 bg-red-500 rounded-full shadow-sm"></div> Mano Der.</span>
                 </div>
             </div>
+        </div>
+
+        <!-- Panel de tensiones / bajo — debajo de la partitura -->
+        <div id="panel-tensiones-inline"
+             class="hidden bg-slate-800 border border-violet-600/50 rounded-2xl
+                    px-3 py-2 shadow-lg hide-on-print mb-2">
+            <!-- Header row -->
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="flex items-center gap-2 shrink-0">
+                    <span id="tension-panel-icon" class="text-violet-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                    </span>
+                    <span id="tension-panel-label" class="text-violet-400 font-extrabold text-[10px] uppercase tracking-widest">Tensiones</span>
+                    <span id="tension-escala-tag" class="text-[10px] font-bold text-slate-300 bg-slate-700 px-2 py-0.5 rounded-md border border-slate-600"></span>
+                </div>
+                <div class="w-px h-4 bg-slate-700 shrink-0"></div>
+                <div id="tension-evitar-tag" class="hidden text-[10px] font-bold text-rose-400 bg-rose-900/30 border border-rose-700/50 px-2 py-1 rounded-lg flex items-center gap-1">
+                    <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+                    Evitar: <span id="tension-evitar-notas"></span>
+                </div>
+            </div>
+            <div id="tension-botones" class="flex flex-wrap gap-1.5 items-start"></div>
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════
@@ -503,6 +498,14 @@
         window.vistaVertical = false; window.logicalZoom = 1.0; window.baseScale = 0.81; 
         window.mostrarPianoVisible = false; window.isPrinting = false; window.portapapeles = null;
 
+        // ============================================================
+        // MODULE: STATE MANAGEMENT
+        // Responsabilidad: historial de deshacer/rehacer, serialización
+        // del estado completo (progresión, tonalidad, voicing, tensiones)
+        // a JSON, y restauración desde snapshot.
+        // Futuro: extraer como StateManager class con métodos
+        // save(), undo(), redo(), serialize(), deserialize()
+        // ============================================================
         window.guardarEstado = function() {
             if (window.omitirGuardado) return;
             if (window.pasoActual < window.historial.length - 1) window.historial = window.historial.slice(0, window.pasoActual + 1);
@@ -529,6 +532,12 @@
             window.omitirGuardado = false; 
         };
 
+        // ============================================================
+        // MODULE: RHYTHM & DURATION
+        // Responsabilidad: gestión de figura rítmica seleccionada
+        // (redonda, blanca, negra, corchea) y badge visual de figura.
+        // Futuro: extraer como RhythmController
+        // ============================================================
         window.cambiarDuracionSeleccionada = function(ritmoNuevo) {
             const radio = document.querySelector(`input[name="ritmo"][value="${ritmoNuevo}"]`);
             if (radio) radio.checked = true;
@@ -702,6 +711,15 @@
 const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3:{min:48,nombre:"3ra menor"},4:{min:46,nombre:"3ra Mayor"},5:{min:41,nombre:"4ta Justa"},6:{min:40,nombre:"Tritono"},7:{min:37,nombre:"5ta Justa"},8:{min:36,nombre:"6ta menor"},9:{min:36,nombre:"6ta Mayor"},10:{min:36,nombre:"7ma menor"},11:{min:36,nombre:"7ma Mayor"},13:{min:36,nombre:"9na menor"},14:{min:36,nombre:"9na Mayor"},15:{min:36,nombre:"10ma menor"},16:{min:36,nombre:"10ma Mayor"}};
         const infoTonalidades={"C":{fifths:0,rootMidi:48,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"G":{fifths:1,rootMidi:43,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"D":{fifths:2,rootMidi:50,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"A":{fifths:3,rootMidi:45,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"E":{fifths:4,rootMidi:40,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"B":{fifths:5,rootMidi:47,notas:["c","c#","d","d#","e","f","f#","g","g#","a","a#","b"]},"F":{fifths:-1,rootMidi:41,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Bb":{fifths:-2,rootMidi:46,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Eb":{fifths:-3,rootMidi:51,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Ab":{fifths:-4,rootMidi:44,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Db":{fifths:-5,rootMidi:49,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","b"]},"Gb":{fifths:-6,rootMidi:42,notas:["c","db","d","eb","e","f","gb","g","ab","a","bb","cb"]}};
         
+        // ============================================================
+        // MODULE: MUSIC THEORY DATA  ← CORE ENGINE DATA
+        // Responsabilidad: definición declarativa de todos los grados
+        // diatónicos, sus tipos de acorde, tetrads (intervalos relativos),
+        // y megaMenu (intercambio modal, disminuidos, variantes, cadencias).
+        // Sin dependencias de DOM ni de estado de la app.
+        // Futuro: extraer como harmonyData.js — importable por cualquier
+        // app (modo estudio, intérprete, generador, etc.)
+        // ============================================================
         const gradosDiatonicos = [
             {
                 id: "I", interval: 0, triadType: "", tetradType: "maj7", triadRoman: "I", tetradRoman: "Imaj7", tetrad: [0, 4, 7, 11],
@@ -772,8 +790,9 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                 megaMenu: true,
                 areas: {
                     intercambio: [
-                        { tipo: 'IV_modal_1', name: "IVm7", rootOffset: 0, triadExt: "m", tetradExt: "m7", tetrad: [0, 3, 7, 10], modeShift: 3 },
-                        { tipo: 'IV_modal_2', name: "IV7", rootOffset: 0, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 2 }
+                        { tipo: 'IV_modal_1',    name: "IVm7",       rootOffset: 0, triadExt: "m",      tetradExt: "m7",     tetrad: [0, 3, 7, 10], modeShift: 3 },
+                        { tipo: 'IV_modal_2',    name: "IV7",        rootOffset: 0, triadExt: "",        tetradExt: "7",      tetrad: [0, 4, 7, 10], modeShift: 2 },
+                        { tipo: 'IV_modal_mmaj7', name: "IVm(maj7)", rootOffset: 0, triadExt: "m(maj7)", tetradExt: "m(maj7)", tetrad: [0, 3, 7, 11], modeShift: 4 }
                     ],
                     disminuidos: [
                         { tipo: 'IV_dimUp', name: "#IV°7", rootOffset: 1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: -1 }
@@ -795,7 +814,9 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                 megaMenu: true,
                 areas: {
                     intercambio: [
-                        { tipo: 'V_modal', name: "Vm7", rootOffset: 0, triadExt: "m", tetradExt: "m7", tetrad: [0, 3, 7, 10], modeShift: 1 }
+                        { tipo: 'V_modal', name: "Vm7", rootOffset: 0, triadExt: "m", tetradExt: "m7", tetrad: [0, 3, 7, 10], modeShift: 1 },
+                        { tipo: 'V_sus4a', name: "V7sus4", rootOffset: 0, triadExt: "7sus4", tetradExt: "7sus4", tetrad: [0, 5, 7, 10], modeShift: 0, sus4: true, sus4Voicing: 'fmaj7' },
+                        { tipo: 'V_sus4b', name: "V7sus4", rootOffset: 0, triadExt: "7sus4", tetradExt: "7sus4", tetrad: [0, 5, 7, 10], modeShift: 0, sus4: true, sus4Voicing: 'dm7' }
                     ],
                     disminuidos: [
                         { tipo: 'V_dimUp', name: "#V°7", rootOffset: 1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: -3 },
@@ -818,6 +839,7 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                 megaMenu: true,
                 areas: {
                     intercambio: [
+                        { tipo: 'VI_modal_bVI7', name: "bVI7", rootOffset: -1, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: 5 },
                         { tipo: 'VI_modal_1', name: "bVImaj7", rootOffset: -1, triadExt: "", tetradExt: "maj7", tetrad: [0, 4, 7, 11], modeShift: 3 }
                     ],
                     disminuidos: [
@@ -853,7 +875,27 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
          *  Diccionario dinámico de acordes, cálculo de voicings, enlace óptimo entre acordes, auditoría pedagógica (disonancias y LIL). Conversores MIDI↔VexFlow↔Tone.
          * ============================================================ */
 
-window.getModeSpellings = function(baseKey, flatAdded) {
+// Patch b5 spelling: tritone (semitone 6) always uses flat enharmonic (Ab not G#)
+        // ============================================================
+        // MODULE: SPELLING UTILITIES  ← CORE ENGINE PURE FUNCTIONS
+        // Responsabilidad: cálculo de nombres enarmónicos correctos
+        // para notas en contexto tonal. Funciones puras (sin side effects):
+        // patchB5Spellings, getModeSpellings, getDimSpellings,
+        // getSharp9VexName, formatNotaFromPC, midiAVexFlow, midiATone,
+        // obtenerAccidental, obtenerAccidentalConContexto.
+        // Sin dependencias de DOM. Reutilizables directamente.
+        // Futuro: extraer como spellingEngine.js
+        // ============================================================
+        window.patchB5Spellings = function(sp, chordRootPC) {
+            const b5PC = (chordRootPC + 6) % 12;
+            const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+            if ([1,3,6,8,10].includes(b5PC) && sp[b5PC] !== flatNamesArr[b5PC]) {
+                sp = [...sp];
+                sp[b5PC] = flatNamesArr[b5PC];
+            }
+            return sp;
+        };
+        window.getModeSpellings = function(baseKey, flatAdded) {
             if (!flatAdded) return infoTonalidades[baseKey].notas;
             const circleOfFifths = ["Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B"];
             let targetIdx = circleOfFifths.indexOf(baseKey) - flatAdded;
@@ -898,25 +940,59 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
         window.formatNotaFromPC = function(pc, spellings = window.nombresNotasActual) { return spellings[pc % 12].charAt(0).toUpperCase() + spellings[pc % 12].slice(1); };
 
+        // modoBoton: 'diat' is always the base. Non-diat modes toggle independently.
+        // Active non-diat modes stored in a Set; priority: dom > subv7 > modal > diat
         window.modoBoton = 'diat';
+        window.modosActivos = new Set(); // non-diat active modes
 
+        // ============================================================
+        // MODULE: UI — DEGREE BUTTON MODE SELECTOR
+        // Responsabilidad: gestión de los modos de ingreso (Diatónico,
+        // Dom. Sec., SubV7, Intercambio) como toggles independientes,
+        // y actualización visual de los botones de grado según modo activo.
+        // Mezcla UI + llamada a actualizarDiccionario (acoplamiento).
+        // Futuro: separar en ModeController (lógica) + ButtonRenderer (UI)
+        // ============================================================
         window.setModoBoton = function(modo) {
-            window.modoBoton = modo;
-            // Update selector visual
+            if (modo === 'diat') {
+                // Clicking Diatónico resets all other modes
+                window.modosActivos.clear();
+                window.modoBoton = 'diat';
+            } else {
+                // Toggle the clicked mode
+                if (window.modosActivos.has(modo)) {
+                    window.modosActivos.delete(modo);
+                } else {
+                    window.modosActivos.add(modo);
+                }
+                // Determine effective single mode by priority: dom > subv7 > modal > diat
+                if      (window.modosActivos.has('dom'))   window.modoBoton = 'dom';
+                else if (window.modosActivos.has('subv7')) window.modoBoton = 'subv7';
+                else if (window.modosActivos.has('modal')) window.modoBoton = 'modal';
+                else                                        window.modoBoton = 'diat';
+            }
+
+            // Update button visuals
             const colores = {
                 diat:  { bg: 'bg-cyan-700/30',   border: 'border-cyan-600/60',   text: 'text-cyan-300'   },
                 dom:   { bg: 'bg-rose-700/30',    border: 'border-rose-600/60',   text: 'text-rose-300'   },
                 subv7: { bg: 'bg-violet-700/30',  border: 'border-violet-600/60', text: 'text-violet-300' },
                 modal: { bg: 'bg-blue-700/30',    border: 'border-blue-600/60',   text: 'text-blue-300'   },
             };
+            const hoverColors = {
+                dom:   'hover:border-rose-500/50 hover:text-rose-300',
+                subv7: 'hover:border-violet-500/50 hover:text-violet-300',
+                modal: 'hover:border-blue-500/50 hover:text-blue-300',
+            };
             ['diat','dom','subv7','modal'].forEach(m => {
                 const btn = document.getElementById(`modo-btn-${m}`);
                 if (!btn) return;
+                const isActive = m === 'diat' ? window.modosActivos.size === 0 : window.modosActivos.has(m);
                 btn.className = `text-[9px] font-bold px-2 py-0.5 rounded-md border transition-all `;
-                if (m === modo) {
+                if (isActive) {
                     btn.className += `${colores[m].bg} ${colores[m].border} ${colores[m].text}`;
                 } else {
-                    btn.className += 'bg-slate-700/40 border-slate-600 text-slate-400';
+                    btn.className += `bg-slate-700/40 border-slate-600 text-slate-400 ${hoverColors[m] || ''}`;
                 }
             });
             window.actualizarDiccionario();
@@ -924,6 +1000,41 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             document.getElementById('panel-variantes-armonicas')?.classList.add('hidden');
         };
 
+        // Calculate the correct diatonic #9 note name for a dominant chord
+        // #9 = diatonic 9th (major 2nd from root) raised by one semitone
+        // Uses the chord's own spellings to get the correct enharmonic
+        window.getSharp9VexName = function(rootMidi, spellings) {
+            const rootPC   = rootMidi % 12;
+            const rootName = spellings[rootPC]; // e.g. 'g', 'e', 'bb'
+            const rootLetter = rootName[0];
+            const letters = ['c','d','e','f','g','a','b'];
+            const rootLetterIdx = letters.indexOf(rootLetter);
+            // Diatonic 9th: next letter up
+            const ninthLetter = letters[(rootLetterIdx + 1) % 7];
+            // Find what accidental the chord's spelling gives for that letter's PC
+            // The diatonic 9th PC = rootPC + 2 (major 2nd)
+            const ninthPC = (rootPC + 2) % 12;
+            const ninthSpelling = spellings[ninthPC]; // e.g. 'f#' for E7
+            // #9 = ninthSpelling + '#' if ninthSpelling starts with ninthLetter
+            // Otherwise use ninthLetter + '#' as fallback
+            let sharp9Name;
+            if (ninthSpelling && ninthSpelling[0] === ninthLetter) {
+                // Add sharp to whatever accidental the 9th already has
+                sharp9Name = ninthSpelling + '#'; // 'f#'→'f##', 'a'→'a#', 'f'→'f#'
+            } else {
+                sharp9Name = ninthLetter + '#';
+            }
+            return sharp9Name; // e.g. 'f##', 'a#', 'd#'
+        };
+
+        // ============================================================
+        // MODULE: CHORD DICTIONARY BUILDER  ← CORE ENGINE
+        // Responsabilidad: construir window.diccionarioActual — el mapa
+        // completo de acordes disponibles en la tonalidad actual, con sus
+        // tetrads (PCs absolutos), spellings, nombres y romanos.
+        // ACOPLAMIENTO ACTUAL: también actualiza los botones del DOM.
+        // Futuro: separar en buildDictionary() (puro) + updateButtons() (UI)
+        // ============================================================
         window.actualizarDiccionario = function() {
             window.tonalidadActual = document.getElementById('select-tonalidad').value;
             const usarTriada = document.getElementById('tipo-voicing').value === 'triad';
@@ -940,7 +1051,9 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 let roman = usarTriada ? g.triadRoman : g.tetradRoman;
                 let chordTetrad = g.tetrad.map(v => (chordRootPC + v) % 12);
                 
-                window.diccionarioActual[g.id] = { id: g.id, nombre: window.formatNotaFromPC(chordRootPC) + type, root: chordRootMidi, tetrad: chordTetrad, roman: roman, isMaj7: type === 'maj7', spellings: window.nombresNotasActual };
+                let spDiat = window.nombresNotasActual;
+                if (type === 'm7b5' || type === 'dim') spDiat = window.patchB5Spellings(spDiat, chordRootPC);
+                window.diccionarioActual[g.id] = { id: g.id, nombre: window.formatNotaFromPC(chordRootPC) + type, root: chordRootMidi, tetrad: chordTetrad, roman: roman, isMaj7: type === 'maj7', spellings: spDiat };
 
                 if (!usarTriada && type === "maj7") {
                     let tetrad6 = [...chordTetrad]; tetrad6[3] = (chordRootPC + 9) % 12; 
@@ -963,7 +1076,14 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                             let ext = usarTriada ? v.triadExt : v.tetradExt;
                             let sp = (ext === 'dim7') ? window.getDimSpellings(rMidi, (v.rootOffset || 0) < 0)
                                      : window.getModeSpellings(window.tonalidadActual, v.modeShift || 0);
-                            window.diccionarioActual[g.id + "_" + v.tipo] = { id: g.id + "_" + v.tipo, nombre: window.formatNotaFromPC(rMidi % 12, sp) + ext, root: rMidi, tetrad: v.tetrad.map(n => ((rMidi % 12) + n) % 12), roman: v.name, isMaj7: ext === 'maj7', spellings: sp };
+                            if (ext === 'm7b5' || ext === 'dim') sp = window.patchB5Spellings(sp, rMidi % 12);
+                            const dictId = g.id + "_" + v.tipo;
+                            const chordTetradMod = v.tetrad.map(n => ((rMidi % 12) + n) % 12);
+                            window.diccionarioActual[dictId] = { id: dictId, nombre: window.formatNotaFromPC(rMidi % 12, sp) + ext, root: rMidi, tetrad: chordTetradMod, roman: v.name, isMaj7: ext === 'maj7', spellings: sp };
+                            if (!usarTriada && ext === 'maj7') {
+                                const tetrad6mod = [...chordTetradMod]; tetrad6mod[3] = ((rMidi % 12) + 9) % 12;
+                                window.diccionarioActual[dictId + "_6"] = { id: dictId + "_6", nombre: window.formatNotaFromPC(rMidi % 12, sp) + "6", root: rMidi, tetrad: tetrad6mod, roman: v.name.replace("maj7","6"), isMaj7: false, spellings: sp };
+                            }
                         }
                     });
                 }
@@ -976,18 +1096,32 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                             // For diminished: fix root spelling too if rootOffset is negative (bIII°7, bVI°7)
                             let sp = (ext === 'dim7') ? window.getDimSpellings(rMidi, (v.rootOffset || 0) < 0)
                                      : window.getModeSpellings(window.tonalidadActual, v.modeShift || 0);
-                            window.diccionarioActual[g.id + "_" + v.tipo] = { id: g.id + "_" + v.tipo, nombre: window.formatNotaFromPC(rMidi % 12, sp) + ext, root: rMidi, tetrad: v.tetrad.map(n => ((rMidi % 12) + n) % 12), roman: v.name, isMaj7: ext === 'maj7', spellings: sp };
+                            if (ext === 'm7b5' || ext === 'dim') sp = window.patchB5Spellings(sp, rMidi % 12);
+                            const dictIdMM = g.id + "_" + v.tipo;
+                            const chordTetradMM = v.tetrad.map(n => ((rMidi % 12) + n) % 12);
+                            // sus4 chords: nombre uses root name + '7sus4', roman = 'V7sus4'
+                            const nombreMM = v.sus4
+                                ? window.formatNotaFromPC(rMidi % 12, sp) + '7sus4'
+                                : window.formatNotaFromPC(rMidi % 12, sp) + ext;
+                            const romanMM = v.sus4 ? 'V7sus4' : v.name;
+                            window.diccionarioActual[dictIdMM] = { id: dictIdMM, nombre: nombreMM, root: rMidi, tetrad: chordTetradMM, roman: romanMM, isMaj7: false, spellings: sp, sus4: v.sus4 || false, sus4Voicing: v.sus4Voicing || null };
+                            if (!usarTriada && ext === 'maj7') {
+                                const tetrad6MM = [...chordTetradMM]; tetrad6MM[3] = ((rMidi % 12) + 9) % 12;
+                                window.diccionarioActual[dictIdMM + "_6"] = { id: dictIdMM + "_6", nombre: window.formatNotaFromPC(rMidi % 12, sp) + "6", root: rMidi, tetrad: tetrad6MM, roman: v.name.replace("maj7","6"), isMaj7: false, spellings: sp };
+                            }
                         });
                     });
                     g.areas.cadencias.forEach(v => {
                         let sp1 = window.getModeSpellings(window.tonalidadActual, v.c1.modeShift || 0);
                         let rMidi1 = chordRootMidi + (v.c1.rootOffset || 0); while (rMidi1 > 51) rMidi1 -= 12; while (rMidi1 < 40) rMidi1 += 12;
                         let ext1 = usarTriada ? v.c1.triadExt : v.c1.tetradExt;
+                        if (ext1 === 'm7b5' || ext1 === 'dim') sp1 = window.patchB5Spellings(sp1, rMidi1 % 12);
                         window.diccionarioActual[g.id + "_" + v.tipo + "_1"] = { id: g.id + "_" + v.tipo + "_1", nombre: window.formatNotaFromPC(rMidi1 % 12, sp1) + ext1, root: rMidi1, tetrad: v.c1.tetradMod.map(n => ((rMidi1 % 12) + n) % 12), roman: v.c1.roman, isMaj7: ext1 === 'maj7', spellings: sp1 };
 
                         let sp2 = window.getModeSpellings(window.tonalidadActual, v.c2.modeShift || 0);
                         let rMidi2 = chordRootMidi + (v.c2.rootOffset || 0); while (rMidi2 > 51) rMidi2 -= 12; while (rMidi2 < 40) rMidi2 += 12;
                         let ext2 = usarTriada ? v.c2.triadExt : v.c2.tetradExt;
+                        if (ext2 === 'm7b5' || ext2 === 'dim') sp2 = window.patchB5Spellings(sp2, rMidi2 % 12);
                         window.diccionarioActual[g.id + "_" + v.tipo + "_2"] = { id: g.id + "_" + v.tipo + "_2", nombre: window.formatNotaFromPC(rMidi2 % 12, sp2) + ext2, root: rMidi2, tetrad: v.c2.tetradMod.map(n => ((rMidi2 % 12) + n) % 12), roman: v.c2.roman, isMaj7: ext2 === 'maj7', spellings: sp2 };
                     });
                 }
@@ -1023,34 +1157,41 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 'VI':  { id: 'VI_VI_modal_1',   roman: 'bVImaj7'  },
                 'VII': { id: 'VII_VII_modal_1', roman: 'bVII7'    },
             };
+            const modosActivos = window.modosActivos || new Set();
             const modo = window.modoBoton || 'diat';
             gradosDiatonicos.forEach(g => {
                 const btn = document.getElementById(`btn-${g.id}`);
                 if (!btn) return;
                 let chordId = g.id, roman = window.diccionarioActual[g.id]?.roman || g.id;
                 let nombre = window.diccionarioActual[g.id]?.nombre || g.id, disabled = false;
-                if (modo === 'dom') {
+                let activeModo = 'diat';
+
+                // Try each active mode by priority: dom > subv7 > modal
+                if (modosActivos.has('dom')) {
                     const entry = DOM_MAP[g.id];
-                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; }
-                    else { disabled = true; roman = '—'; nombre = '—'; }
-                } else if (modo === 'subv7') {
+                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; activeModo = 'dom'; }
+                    else if (!modosActivos.has('subv7') && !modosActivos.has('modal')) { disabled = true; roman = '—'; nombre = '—'; }
+                }
+                if (activeModo === 'diat' && modosActivos.has('subv7')) {
                     const entry = SUBV7_MAP[g.id];
-                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; }
-                    else { disabled = true; roman = '—'; nombre = '—'; }
-                } else if (modo === 'modal') {
+                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; activeModo = 'subv7'; }
+                    else if (!modosActivos.has('modal')) { disabled = true; roman = '—'; nombre = '—'; }
+                }
+                if (activeModo === 'diat' && modosActivos.has('modal')) {
                     const entry = MODAL_MAP[g.id];
-                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; }
+                    if (entry && window.diccionarioActual[entry.id]) { chordId = entry.id; roman = entry.roman; nombre = window.diccionarioActual[entry.id].nombre; activeModo = 'modal'; }
                     else { disabled = true; roman = '—'; nombre = '—'; }
                 }
+
                 btn.onclick = disabled ? null : () => window.agregarAcordeGrado(chordId);
                 if (disabled) btn.removeAttribute('onclick');
                 btn.disabled = disabled;
                 btn.className = disabled
                     ? 'flex-1 bg-slate-800/40 border border-slate-700 text-slate-600 font-bold py-2 px-2 rounded-l-xl text-center cursor-not-allowed opacity-50'
-                    : modo === 'dom'   ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-rose-400 hover:bg-slate-700 hover:text-rose-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
-                    : modo === 'subv7' ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-violet-400 hover:bg-slate-700 hover:text-violet-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
-                    : modo === 'modal' ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-blue-400 hover:bg-slate-700 hover:text-blue-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
-                    :                   'flex-1 bg-slate-700/80 border border-slate-600 hover:border-cyan-400 hover:bg-slate-700 hover:text-cyan-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center';
+                    : activeModo === 'dom'   ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-rose-400 hover:bg-slate-700 hover:text-rose-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
+                    : activeModo === 'subv7' ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-violet-400 hover:bg-slate-700 hover:text-violet-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
+                    : activeModo === 'modal' ? 'flex-1 bg-slate-700/80 border border-slate-600 hover:border-blue-400 hover:bg-slate-700 hover:text-blue-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center'
+                    :                         'flex-1 bg-slate-700/80 border border-slate-600 hover:border-cyan-400 hover:bg-slate-700 hover:text-cyan-300 text-slate-200 font-bold py-2 px-2 rounded-l-xl transition-all text-center';
                 btn.innerHTML = `<span class="block text-[9px] font-bold text-slate-400 leading-none mb-0.5 tracking-wide">${roman}</span><span class="block text-xs font-extrabold leading-none">${nombre}</span>`;
             });
         };
@@ -1102,7 +1243,8 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                     if (recompute) window.recalcularProgresion(0);
                 }
 
-                window.actualizarTimeline(); 
+                window.actualizarTimeline();
+                await window.auditoriaPedagogica(false);
                 window.renderizarPartitura();
                 window.guardarEstado();
                 window.mostrarToast("Tonalidad transpuesta y optimizada al registro central.", "success");
@@ -1179,6 +1321,17 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             if (debeRenderizar) window.alCambiarPosicionSoprano();
         };
 
+        // ============================================================
+        // MODULE: VOICING ENGINE  ← CORE ENGINE
+        // Responsabilidad: generación y optimización de voicings.
+        // getEstructuraVoicing: filtra notas según tipo (triad/tetrad/rootless/guide)
+        // generarVoicingInicial: coloca voces en registro óptimo
+        // generarVoicingCerradoDesdeSoprano: voicing cerrado desde soprano dado
+        // enlazarAcordeOpciones: voice leading entre acordes (mínimo movimiento)
+        // calcularMejorPosicionSoprano: opciones de soprano para el primer acorde
+        // Sin dependencias de DOM (excepto recalcularProgresion que lee tipo-voicing).
+        // Futuro: extraer como voicingEngine.js, recibir tipoVoicing como parámetro
+        // ============================================================
         window.getEstructuraVoicing = function(tetradCompleta, tipoVoicing) {
             if (tipoVoicing === 'triad') return [tetradCompleta[0], tetradCompleta[1], tetradCompleta[2]];
             if (tipoVoicing === 'rootless') return [tetradCompleta[1], tetradCompleta[2], tetradCompleta[3]];
@@ -1287,9 +1440,13 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                     
                     let currVoicing = window.generarVoicingCerradoDesdeSoprano(sop, targetNotes, i);
                     let distAbs = 0; let notasComunes = 0; let maxSalto = 0;
+                    const prevPCs = prevRef.map(m => m % 12);
                     for (let v = 0; v < currVoicing.length; v++) {
                         let dist = Math.abs(currVoicing[v] - prevRef[v]);
-                        distAbs += dist; if (dist === 0) notasComunes++; if (dist > maxSalto) maxSalto = dist;
+                        distAbs += dist;
+                        // Common tone: same pitch class appears in prev voicing (any voice)
+                        if (prevPCs.includes(currVoicing[v] % 12)) notasComunes++;
+                        if (dist > maxSalto) maxSalto = dist;
                     }
                     if(!todasLasOpciones.find(o => o.voicing.join(',') === currVoicing.join(','))) {
                         todasLasOpciones.push({ voicing: currVoicing, distancia: distAbs, score: distAbs - (notasComunes * 6) + (maxSalto > 5 ? (maxSalto - 5) * 10 : 0), notasComunes: notasComunes });
@@ -1376,6 +1533,16 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
         };
 
+        // ============================================================
+        // MODULE: PROGRESSION ENGINE  ← CORE ENGINE
+        // Responsabilidad: orquestador principal del motor armónico.
+        // Recalcula trebleMidi de cada acorde desde desdeIndex usando
+        // voice leading, tensiones activas, e inversiones.
+        // Llama: getEstructuraVoicing, generarVoicingInicial,
+        // enlazarAcordeOpciones, reaplicarTensiones, auditoriaPedagogica.
+        // ACOPLAMIENTO ACTUAL: lee document.getElementById('tipo-voicing')
+        // Futuro: recibir tipoVoicing como parámetro externo
+        // ============================================================
         window.recalcularProgresion = function(desdeIndex = 0) {
             if (window.progresion.length === 0) return;
             const topDegreeIndex = parseInt(document.getElementById('posicion-inicial').value) || 0;
@@ -1398,8 +1565,46 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
             for (let i = desdeIndex; i < window.progresion.length; i++) {
                 const ac = window.progresion[i];
-                if (ac.isRest) continue; 
-                
+                if (ac.isRest) continue;
+
+                // ── sus4 chords: fixed treble voicing, bass always at V root ──────────
+                const dictSus4 = window.diccionarioActual[ac.gradoId];
+                if (dictSus4 && dictSus4.sus4) {
+                    // dictSus4.tetrad = absolute PCs [rootPC, ...treblePCs]
+                    // sus4Voicing stores relative intervals for treble reconstruction
+                    const rootPC = ac.rootMidi % 12;
+                    // Relative treble intervals from root (from original v.tetrad, skipping 0)
+                    const relIntervals = dictSus4.sus4Voicing === 'fmaj7'
+                        ? [10, 2, 5, 9]   // Fmaj7/G: b7, 9, sus4, 13
+                        : [7, 10, 2, 5];  // Dm7/G:   5th, b7, 9, sus4
+                    // Place treble notes in register 57-79
+                    const trebleMidis = relIntervals.map(interval => {
+                        const pc = (rootPC + interval) % 12;
+                        const base = Math.floor(ac.rootMidi / 12) * 12;
+                        const candidates = [base - 12 + pc, base + pc, base + 12 + pc, base + 24 + pc];
+                        return candidates.find(m => m >= 57 && m <= 79) || (base + 12 + pc);
+                    });
+                    const sus4Base = trebleMidis.sort((a, b) => a - b);
+                    // enlazarAcordeOpciones expects PCs (pitch classes), not absolute MIDIs
+                    // Extract PCs from the base voicing to pass as targetNotes
+                    const sus4PCs = sus4Base.map(m => m % 12);
+                    if (lastTrebleMidi) {
+                        const sus4Opts = window.enlazarAcordeOpciones(lastTrebleConTension || lastTrebleMidi, sus4PCs);
+                        ac.voicingsDisponibles = sus4Opts;
+                        const sel = (ac.voicingSeleccionado !== undefined && sus4Opts[ac.voicingSeleccionado])
+                            ? ac.voicingSeleccionado : 0;
+                        ac.voicingSeleccionado = sel;
+                        ac.trebleMidi = [...sus4Opts[sel].voicing].sort((a, b) => a - b);
+                    } else {
+                        ac.trebleMidi = sus4Base;
+                        ac.voicingsDisponibles = [{ voicing: [...sus4Base], distancia: 0, notasComunes: 0 }];
+                        ac.voicingSeleccionado = 0;
+                    }
+                    lastTrebleConTension = ac.trebleMidi;
+                    lastTrebleMidi = [...ac.trebleMidi].sort((a, b) => a - b);
+                    continue;
+                }
+
                 const targetNotes = window.getEstructuraVoicing(window.diccionarioActual[ac.gradoId].tetrad, document.getElementById('tipo-voicing').value);
                 let diatonicVoicing;
                 if (!lastTrebleMidi) {
@@ -1527,13 +1732,18 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
                 // ── CASO 2: 9na con 3ra menor en soprano ──────────────────────────────────
                 // b9(1), 9(2), #9(3) con 3ra menor en soprano → segunda menor/aumentada expuesta
-                else if (acorde.tensionesActivas && acorde.tensionesActivas.some(s => s >= 1 && s <= 3)) {
+                // Guard: only applies when the chord actually has a minor 3rd (b3 in tetrad).
+                // Dominant chords have maj3 — their #9 shares PC with b3 but is a tension,
+                // not a chord tone. Soprano=#9 on a dominant must NOT trigger this warning.
+                else if (acorde.tensionesActivas && acorde.tensionesActivas.some(s => s >= 1 && s <= 2)) {
                     const terceraPC = (rootPC + 3) % 12; // 3ra menor
-                    const tension9 = acorde.tensionesActivas.find(s => s >= 1 && s <= 3);
+                    const tension9 = acorde.tensionesActivas.find(s => s >= 1 && s <= 2);
                     const novenaPC  = (rootPC + tension9) % 12;
                     const nombreTension9 = NOMBRE_TENSION[tension9] || tension9;
+                    // Verify the chord actually contains a minor 3rd as a chord tone (not just #9)
+                    const chordHasMinorThird = dictObj && dictObj.tetrad && dictObj.tetrad.includes(terceraPC);
                     // Check if b3 is soprano AND the 9th variant is in the voicing
-                    if (sopranoPC === terceraPC && acorde.trebleMidi.some(m => m % 12 === novenaPC)) {
+                    if (chordHasMinorThird && sopranoPC === terceraPC && acorde.trebleMidi.some(m => m % 12 === novenaPC)) {
                         window.renderizarPartitura(i, true);
                         const ficha = window.obtenerFichaTensiones(acorde.gradoId);
                         // Build alternatives: other available tensions or remove tension
@@ -1563,6 +1773,39 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                             huboCambios = true;
                         } else {
                             acorde.ignorarDisonancia = true;
+                        }
+                    }
+                } // end CASO 2
+                // ── CASO 3: #9 con 3ra mayor adyacentes — segunda menor expuesta ─────
+                // #9 (semitone 3) y 3ra mayor (semitone 4) están a semitono.
+                // Dos variantes:
+                //   A) soprano=3ra mayor, #9 debajo → bajar 3ra una octava
+                //   B) soprano=#9, 3ra mayor justo debajo (penúltima) → bajar 3ra una octava
+                // Guard: chord must have maj3rd as a chord tone (dominant V7) AND #9 active
+                else if (acorde.tensionesActivas && acorde.tensionesActivas.includes(3) &&
+                         dictObj && dictObj.tetrad && dictObj.tetrad.includes((rootPC + 4) % 12)) {
+                    const terceraMayorPC = (rootPC + 4) % 12;
+                    const sharp9PC       = (rootPC + 3) % 12;
+                    const vLen           = acorde.trebleMidi.length;
+                    const penultimaPC    = vLen > 1 ? acorde.trebleMidi[vLen - 2] % 12 : -1;
+
+                    const sopranoIsThird  = sopranoPC === terceraMayorPC;
+                    const sopranoIsSharp9 = sopranoPC === sharp9PC;
+                    const sharp9InVoicing = acorde.trebleMidi.some(m => m % 12 === sharp9PC && m < acorde.trebleMidi[vLen - 1]);
+                    const thirdIsPenultima = penultimaPC === terceraMayorPC;
+                    // Variante A: soprano=3ra, #9 en cualquier voz debajo
+                    // Variante B: soprano=#9, 3ra mayor en penúltima (directamente adyacente)
+                    const triggerA = sopranoIsThird && sharp9InVoicing;
+                    const triggerB = sopranoIsSharp9 && thirdIsPenultima;
+
+                    if (triggerA || triggerB) {
+                        // Auto-fix: lower the major 3rd by one octave
+                        const idxThird = acorde.trebleMidi.findIndex(m => m % 12 === terceraMayorPC);
+                        if (idxThird !== -1 && acorde.trebleMidi[idxThird] - 12 > acorde.rootMidi) {
+                            acorde.trebleMidi[idxThird] -= 12;
+                            acorde.trebleMidi.sort((a, b) => a - b);
+                            window.renderizarPartitura(i, true);
+                            huboCambios = true;
                         }
                     }
                 }
@@ -1604,8 +1847,16 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
         window.auditoriaPedagogica = async function(canCancel = true) { await window.revisarYCorregirDisonancias(); return await window.revisarLimitesGraves(canCancel); };
         window.recalcularYRenderizar = async function() { if (window.progresion.length > 0) { window.recalcularProgresion(0); await window.auditoriaPedagogica(false); window.renderizarPartitura(); } };
-        window.midiAVexFlow = function(midi, spellings = window.nombresNotasActual) { let o = Math.floor(midi / 12) - 1; if(spellings[midi % 12] === "cb") o++; return `${spellings[midi % 12]}/${o}`; };
-        window.midiATone = function(midi, spellings = window.nombresNotasActual) { let o = Math.floor(midi / 12) - 1; let n = spellings[midi % 12]; if(n === "cb") o++; return `${n.charAt(0).toUpperCase() + n.slice(1)}${o}`; };
+        window.midiAVexFlow = function(midi, spellings = window.nombresNotasActual) {
+            let o = Math.floor(midi / 12) - 1;
+            const name = spellings[midi % 12];
+            if (name === 'cb') o++;       // Cb written one octave higher (Cb5 = B4)
+            if (name === 'b#') o--;       // B# written one octave lower  (B#3 = C4)
+            // Double sharps: the written note is one letter below, same octave
+            // e.g. f## sounds as G but is written on F line — octave unchanged
+            return `${name}/${o}`;
+        };
+        window.midiATone = function(midi, spellings = window.nombresNotasActual) { let o = Math.floor(midi / 12) - 1; let n = spellings[midi % 12]; if(n === "cb") o++; if(n === "b#") o--; return `${n.charAt(0).toUpperCase() + n.slice(1)}${o}`; };
 
         let synthFM = null; let synthAcoustic = null; let reverbGlobal = null; window.pianoAcousticLoaded = false;
 
@@ -1626,12 +1877,26 @@ window.getModeSpellings = function(baseKey, flatAdded) {
         // constitutivas: pitch class offsets que son notas propias del acorde (no tensiones)
         //   → usadas para excluir del nombre display cualquier nota constitutiva que coincida
         //     con un semitono de tensión (ej: en acorde 6, la 6ta = semitono 9 es constitutiva)
+        // ============================================================
+        // MODULE: TENSION DATA  ← CORE ENGINE DATA
+        // Responsabilidad: definición declarativa de tensiones disponibles
+        // por grado/acorde: escala, tensiones (t[]), notas a evitar (ev[]),
+        // notas constitutivas, sustituciones, escalas alternativas (escalasAlt),
+        // spellings especiales (sharpSpellings, flatFor9and13).
+        // Sin dependencias. Reutilizable directamente.
+        // Futuro: extraer junto a gradosDiatonicos en harmonyData.js
+        // ============================================================
         const TENSIONES_DIATONICAS = {
             'I':    { escala: 'Jónica',    t: [2, 9],    ev: [5],    constitutivas: [0,4,7,11] },  // 9, 13  | evitar 4
             'II':   { escala: 'Dórica',    t: [2, 5],    ev: [9],    constitutivas: [0,3,7,10] },  // 9, 11  | evitar 6
             'III':  { escala: 'Frigia',    t: [5],       ev: [1, 8], constitutivas: [0,3,7,10] },  // 11     | evitar b2, b6
             'IV':   { escala: 'Lidia',     t: [2, 6, 9], ev: [],     constitutivas: [0,4,7,11] },  // 9,#11,13 | sin restricciones
-            'V':    { escala: 'Mixolidia', t: [2, 9],    ev: [5],    constitutivas: [0,4,7,10] },  // 9, 13  | evitar 4
+            'V':    { escala: 'Mixolidia', t: [2, 9], ev: [5], constitutivas: [0,4,7,10],
+                      escalasAlt: [
+                          { escala: 'Mixolidia b9 b13', t: [1, 8], ev: [5], constitutivas: [0,4,7,10], flatSpellings: true },
+                          { escala: 'Alterada',         t: [3, 8], ev: [],  constitutivas: [0,4,7,10], sharpSpellings: true }
+                      ]
+                    },  // 9, 13 | Mixolidia. Alt: b9, b13 | Mixolidia b9 b13. Alt: #9, b13 | Alterada
             'VI':   { escala: 'Eólica',    t: [2, 5],    ev: [8],    constitutivas: [0,3,7,10] },  // 9, 11  | evitar b6
             'VII':  { escala: 'Locria',    t: [5],       ev: [1, 8], constitutivas: [0,3,6,10] },  // 11     | evitar b2, b6
             // Acordes de 6ta (sustitución del maj7 cuando queda fundamental en soprano)
@@ -1646,6 +1911,10 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             'IV_IV_modal_1':   { escala: 'Dórica',           t: [2,5,9],   ev: [],    constitutivas: [0,3,7,10] },
             // IVm6 prestado → Dórica (9, 11 | evitar b7: la 6ta es constitutiva, no tensión)
             'IV_IV_modal_m6':  { escala: 'Dórica',           t: [2,5],     ev: [10],  constitutivas: [0,3,7,9]  },
+            // IVm(maj7) → Menor Melódica (9, 11, 13 | sin restricciones)
+            // Sustituciones: 9→1 (sustituye fundamental), 11 y 13 →5 (sustituyen quinta)
+            'IV_IV_modal_mmaj7': { escala: 'Menor Melódica', t: [2,5,9], ev: [], constitutivas: [0,3,7,11],
+                                   sustituye: { 2: 0, 5: 7, 9: 7 } },
             // IV7 prestado → Mixolidia (9, 13 | evitar 4)
             'IV_IV_modal_2':   { escala: 'Mixolidia',        t: [2,9],     ev: [5],   constitutivas: [0,4,7,10] },
             // Vm7 prestado (intercambio modal) → Dórica (9, 11, 13 sin restricciones)
@@ -1653,6 +1922,11 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             'V_V_modal':       { escala: 'Dórica',            t: [2,5,9],   ev: [],    constitutivas: [0,3,7,10] },
             // bIIImaj7 prestado → Lidia (9, #11, 13)
             'III_III_modal_1': { escala: 'Lidia',             t: [2,6,9],   ev: [],    constitutivas: [0,4,7,11] },
+            // bVI7 → Lidia b7 (9, #11, 13 | sin restricciones)
+            // sharpSpellings para #11; 9 y 13 usan bemol cuando corresponde
+            'VI_VI_modal_bVI7': { escala: 'Lidia b7', t: [2,6,9], ev: [], constitutivas: [0,4,7,10],
+                                  sharpSpellings: true, flatFor9and13: true,
+                                  sustituye: { 2: 0, 6: 7, 9: 7 } },
             // bVImaj7 prestado → Lidia (9, #11, 13)
             'VI_VI_modal_1':   { escala: 'Lidia',             t: [2,6,9],   ev: [],    constitutivas: [0,4,7,11] },
             // bIImaj7 prestado → Lidia (9, #11, 13)
@@ -1771,20 +2045,29 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             const ficha = window.obtenerFichaTensiones(acorde.gradoId);
             
             let nombreBase = base;
-            if (ficha && ficha.t.length) {
+            if (ficha) {
+                // Collect all available tensions from main + alt scales
+                const allT = [...(ficha.t || [])];
+                (ficha.escalasAlt || []).forEach(alt => alt.t.forEach(s => { if (!allT.includes(s)) allT.push(s); }));
+                const allConstitutivas = ficha.constitutivas || [];
+
                 let semitones = [];
                 if (acorde.tensionesActivas && acorde.tensionesActivas.length) {
-                    semitones = acorde.tensionesActivas.filter(s => ficha.t.includes(s));
+                    semitones = acorde.tensionesActivas.filter(s => allT.includes(s));
                 } else {
                     const rootPC = acorde.rootMidi % 12;
-                    semitones = ficha.t.filter(s => {
+                    semitones = allT.filter(s => {
                         const tPC = (rootPC + s) % 12;
                         return acorde.trebleMidi && acorde.trebleMidi.some(m => m % 12 === tPC);
                     });
                 }
-                if (ficha.constitutivas) semitones = semitones.filter(s => !ficha.constitutivas.includes(s));
+                semitones = semitones.filter(s => !allConstitutivas.includes(s));
                 if (semitones.length) {
-                    const nombresT = [...semitones].sort((a, b) => a - b).map(s => NOMBRE_TENSION[s] || s);
+                    const isDimChord = allConstitutivas.join(',') === '0,3,6,9';
+                    const nombresT = [...semitones].sort((a, b) => a - b).map(s => {
+                        if (s === 11 && isDimChord) return 'maj7';
+                        return NOMBRE_TENSION[s] || s;
+                    });
                     nombreBase = `${base}(${nombresT.join(',')})`;
                 }
             }
@@ -1807,6 +2090,16 @@ window.getModeSpellings = function(baseKey, flatAdded) {
         // Obtener la ficha de tensiones para un gradoId.
         // Lookup exacto primero; para variantes sin entrada propia devuelve null.
         // El fallback al grado base SOLO aplica a los 7 grados diatónicos puros (sin sufijo).
+        // ============================================================
+        // MODULE: TENSION ENGINE  ← CORE ENGINE
+        // Responsabilidad: gestión completa de tensiones por acorde.
+        // obtenerFichaTensiones: lookup de ficha en TENSIONES_DIATONICAS
+        // reaplicarTensiones: re-aplica tensiones activas tras cambio de voicing
+        // calcularTensionesActivas: lista tensiones actualmente en el voicing
+        // aplicarTensionConSustitucion: agrega/quita tensión con voice leading
+        // tipoVoicingAceptaTensiones: guard para tipos que no admiten tensiones
+        // Futuro: extraer como tensionEngine.js
+        // ============================================================
         window.obtenerFichaTensiones = function(gradoId) {
             if (!gradoId) return null;
             // 1. Lookup exacto (cubre I_6, IV_6, I_I_V7, II_II_modal_1, etc.)
@@ -1826,6 +2119,9 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             const rootPC   = acorde.rootMidi % 12;
             const quintaPC = (rootPC + 7) % 12;
             let voicing = [...acorde.trebleMidi];
+            // Get all valid tensions including alt scales
+            const ficha = window.obtenerFichaTensiones(acorde.gradoId);
+            const allValidT = ficha ? [...(ficha.t || []), ...(ficha.escalasAlt || []).flatMap(a => a.t)] : [];
 
             acorde.tensionesActivas.forEach(semitone => {
                 const tensionPC = (rootPC + semitone) % 12;
@@ -1849,22 +2145,34 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 if (idxSlot === -1) {
                     // slot no existe (rootless) → agregar junto a soprano
                     const ref = refMidi !== null ? refMidi : (voicing[voicing.length - 1] || 65);
-                    let tMidi = tensionPC + Math.floor(ref / 12) * 12;
-                    if (tMidi > ref + 6) tMidi -= 12;
-                    if (tMidi < ref - 6) tMidi += 12;
-                    voicing.push(tMidi);
+                    const baseOct2 = Math.floor(ref / 12) * 12;
+                    const cands2 = [baseOct2 - 12 + tensionPC, baseOct2 + tensionPC, baseOct2 + 12 + tensionPC];
+                    let tMidi2 = cands2.reduce((best, m) => Math.abs(m - ref) < Math.abs(best - ref) ? m : best);
+                    // #9 only on dominant chords: cap below soprano if maj3rd is soprano
+                    if (semitone === 3 && dictObj && dictObj.tetrad && dictObj.tetrad.includes((acorde.rootMidi % 12 + 4) % 12)) {
+                        const currentSoprano = voicing.length > 0 ? Math.max(...voicing) : tMidi2;
+                        const sopranoPC = currentSoprano % 12;
+                        const terceraMajPC = (acorde.rootMidi % 12 + 4) % 12;
+                        if (tMidi2 > currentSoprano && sopranoPC === terceraMajPC) tMidi2 -= 12;
+                    }
+                    voicing.push(tMidi2);
                 } else {
                     let tMidi;
                     if (refMidi !== null) {
-                        // Voice-leading reference found in prev chord: use that exact MIDI
-                        // (same pitch class, same octave = true common tone, no octave shift)
                         tMidi = refMidi;
                     } else {
-                        // No reference: calculate from slot octave
                         const midiSlot = voicing[idxSlot];
-                        tMidi = tensionPC + Math.floor(midiSlot / 12) * 12;
-                        if (tMidi > midiSlot + 6) tMidi -= 12;
-                        if (tMidi < midiSlot - 6) tMidi += 12;
+                        const baseOct = Math.floor(midiSlot / 12) * 12;
+                        const cands = [baseOct - 12 + tensionPC, baseOct + tensionPC, baseOct + 12 + tensionPC];
+                        tMidi = cands.reduce((best, m) => Math.abs(m - midiSlot) < Math.abs(best - midiSlot) ? m : best);
+                    }
+                    // #9 only on dominant chords: cap below soprano if maj3rd is soprano
+                    if (semitone === 3 && dictObj && dictObj.tetrad && dictObj.tetrad.includes((acorde.rootMidi % 12 + 4) % 12)) {
+                        const otherVoices = voicing.filter((_, i) => i !== idxSlot);
+                        const currentSoprano = otherVoices.length > 0 ? Math.max(...otherVoices) : tMidi;
+                        const sopranoPC = currentSoprano % 12;
+                        const terceraMajPC = (acorde.rootMidi % 12 + 4) % 12;
+                        if (tMidi > currentSoprano && sopranoPC === terceraMajPC) tMidi -= 12;
                     }
                     voicing[idxSlot] = tMidi;
                 }
@@ -1872,6 +2180,40 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
             voicing.sort((a, b) => a - b);
             acorde.trebleMidi = voicing;
+            // DEBUG
+            if (acorde.tensionesActivas && acorde.tensionesActivas.includes(3)) {
+                const _r = acorde.rootMidi % 12;
+                console.log('[reaplicar] acorde:', acorde.nombre, 'trebleMidi:', JSON.stringify(acorde.trebleMidi), 
+                    'sopranoPC:', acorde.trebleMidi[acorde.trebleMidi.length-1]%12,
+                    'sharp9PC:', (_r+3)%12, 'terceraMajPC:', (_r+4)%12);
+            }
+            // Patch spellings for b9 (semitone 1) — always flat enharmonic (Ab not G#)
+            if (acorde.tensionesActivas && acorde.tensionesActivas.includes(1)) {
+                const b9PC = (acorde.rootMidi % 12 + 1) % 12;
+                const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                if ([1,3,6,8,10].includes(b9PC) && acorde.spellings) {
+                    acorde.spellings = [...acorde.spellings];
+                    acorde.spellings[b9PC] = flatNamesArr[b9PC];
+                }
+            }
+            // Patch spellings for #9 (semitone 3) — use correct diatonic name
+            if (acorde.tensionesActivas && acorde.tensionesActivas.includes(3)) {
+                const sharp9PC = (acorde.rootMidi % 12 + 3) % 12;
+                const sharp9VexName = window.getSharp9VexName(acorde.rootMidi, acorde.spellings);
+                if (sharp9VexName && acorde.spellings) {
+                    acorde.spellings = [...acorde.spellings];
+                    acorde.spellings[sharp9PC] = sharp9VexName;
+                }
+            }
+            // Patch spellings for b13 (semitone 8) — always flat enharmonic
+            if (acorde.tensionesActivas && acorde.tensionesActivas.includes(8)) {
+                const b13PC = (acorde.rootMidi % 12 + 8) % 12;
+                const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                if ([1,3,6,8,10].includes(b13PC) && acorde.spellings) {
+                    acorde.spellings = [...acorde.spellings];
+                    acorde.spellings[b13PC] = flatNamesArr[b13PC];
+                }
+            }
             if (acorde.voicingsDisponibles && acorde.voicingsDisponibles[acorde.voicingSeleccionado]) {
                 acorde.voicingsDisponibles[acorde.voicingSeleccionado].voicing = [...voicing];
             }
@@ -1937,16 +2279,20 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 let slotPC;
 
                 if (mode === 'add') {
-                    // Force "add voice" mode — no substitution, push as extra note
-                    slotPC = null; // will fall to idxSlot === -1 path
+                    slotPC = null;
                 } else if (mode === 'sub') {
-                    // Force substitution mode for dual-mode tensions (T11→b3, T7→1)
-                    slotPC = semitone === 5 ? (rootPC + 3) % 12  // T11 substitutes b3
-                           : semitone === 11 ? rootPC              // T7 substitutes fundamental
+                    // T11→b3, T7→°7
+                    slotPC = semitone === 5  ? (rootPC + 3) % 12   // T11 substitutes b3
+                           : semitone === 11 ? (rootPC + 9) % 12   // T7 substitutes °7
                            : esTension9 ? rootPC : quintaPC;
                 } else {
-                    // Auto mode: standard behavior
-                    slotPC = esTension9 ? rootPC : quintaPC;
+                    // Auto mode — for dim T7, always substitute °7; otherwise standard
+                    const dictForDim = window.diccionarioActual[ac.gradoId];
+                    const isDimChord = dictForDim && dictForDim.tetrad &&
+                        (() => { const t = dictForDim.tetrad; return [(t[1]-t[0]+12)%12,(t[2]-t[0]+12)%12,(t[3]-t[0]+12)%12].join(',') === '3,6,9'; })();
+                    const isDimT7 = isDimChord && semitone === 11;
+                    slotPC = isDimT7 ? (rootPC + 9) % 12
+                           : esTension9 ? rootPC : quintaPC;
                 }
 
                 // Buscar el MIDI de la nota a sustituir en el voicing actual
@@ -1984,10 +2330,23 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                         }
                     }
                     if (tensionMidi === null) {
-                        // No common tone reference — use slot octave
-                        tensionMidi = tensionPC + Math.floor(midiSlot / 12) * 12;
-                        if (tensionMidi > midiSlot + 6) tensionMidi -= 12;
-                        if (tensionMidi < midiSlot - 6) tensionMidi += 12;
+                        // No common tone reference — place tension as close as possible to slot
+                        // Find the octave of tensionPC that minimizes distance from midiSlot
+                        const baseOctave = Math.floor(midiSlot / 12) * 12;
+                        const candidates = [baseOctave - 12, baseOctave, baseOctave + 12].map(o => o + tensionPC);
+                        tensionMidi = candidates.reduce((best, m) =>
+                            Math.abs(m - midiSlot) < Math.abs(best - midiSlot) ? m : best
+                        );
+                    }
+                    // For #9 only (semitone=3): cap below soprano ONLY if maj3rd is currently soprano
+                    // (prevents exposed minor 2nd between #9 and maj3rd at the top)
+                    // If soprano is NOT the maj3rd, #9 can legitimately land anywhere
+                    if (semitone === 3) {
+                        const otherVoices = voicing.filter((_, i) => i !== idxSlot);
+                        const currentSoprano = otherVoices.length > 0 ? Math.max(...otherVoices) : tensionMidi;
+                        const sopranoPC = currentSoprano % 12;
+                        const terceraMajPC = (ac.rootMidi % 12 + 4) % 12;
+                        if (tensionMidi > currentSoprano && sopranoPC === terceraMajPC) tensionMidi -= 12;
                     }
                     voicing[idxSlot] = tensionMidi;
                 }
@@ -1996,6 +2355,75 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             // Guardar y propagar
             voicing.sort((a, b) => a - b);
             ac.trebleMidi = voicing;
+            // If #9 just applied on a dominant chord (has maj3rd in tetrad): check soprano
+            const dictForSharp9 = window.diccionarioActual[ac.gradoId];
+            if (semitone === 3 && !yaEsta &&
+                dictForSharp9 && dictForSharp9.tetrad && dictForSharp9.tetrad.includes((ac.rootMidi % 12 + 4) % 12)) {
+                const sharp9PC     = (ac.rootMidi % 12 + 3) % 12;
+                const terceraMajPC = (ac.rootMidi % 12 + 4) % 12;
+                const vLen = ac.trebleMidi.length;
+                const top1PC = ac.trebleMidi[vLen - 1] % 12;
+                // Lower maj3rd if it IS the soprano and #9 is anywhere below it in the voicing
+                const sharp9BelowSoprano = ac.trebleMidi.some(m => m % 12 === sharp9PC && m < ac.trebleMidi[vLen - 1]);
+                if (top1PC === terceraMajPC && sharp9BelowSoprano) {
+                    const idxThird = ac.trebleMidi.findIndex(m => m % 12 === terceraMajPC);
+                    if (idxThird !== -1 && ac.trebleMidi[idxThird] - 12 > ac.rootMidi) {
+                        ac.trebleMidi[idxThird] -= 12;
+                        ac.trebleMidi.sort((a, b) => a - b);
+                        voicing = [...ac.trebleMidi];
+                    }
+                }
+                // Patch spellings: use correct diatonic #9 name (e.g. F## for E7, A# for G7)
+                const sharp9VexName = window.getSharp9VexName(ac.rootMidi, ac.spellings);
+                if (sharp9VexName && ac.spellings) {
+                    ac.spellings = [...ac.spellings];
+                    ac.spellings[sharp9PC] = sharp9VexName;
+                    ac.sharp9Spelling = sharp9VexName; // persist for key change
+                }
+            } else if (semitone === 3 && yaEsta) {
+                // Restore original spelling when removing #9
+                const sharp9PC = (ac.rootMidi % 12 + 3) % 12;
+                const origSp = window.diccionarioActual[ac.gradoId]?.spellings;
+                if (origSp && ac.spellings) {
+                    ac.spellings = [...ac.spellings];
+                    ac.spellings[sharp9PC] = origSp[sharp9PC];
+                    delete ac.sharp9Spelling;
+                }
+            }
+            // b9 spelling patch: b9 (semitone 1) always uses flat enharmonic (Ab not G#)
+            if (semitone === 1) {
+                const b9PC = (ac.rootMidi % 12 + 1) % 12;
+                const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                const origSp = window.diccionarioActual[ac.gradoId]?.spellings;
+                if (ac.spellings) {
+                    ac.spellings = [...ac.spellings];
+                    if (!yaEsta) {
+                        if ([1,3,6,8,10].includes(b9PC)) ac.spellings[b9PC] = flatNamesArr[b9PC];
+                    } else {
+                        if (origSp) ac.spellings[b9PC] = origSp[b9PC];
+                    }
+                }
+            }
+            // b13 spelling patch: b13 (semitone 8) always uses flat enharmonic (never sharp)
+            // Apply when adding, restore when removing
+            if (semitone === 8) {
+                const b13PC = (ac.rootMidi % 12 + 8) % 12;
+                const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                const flatName = flatNamesArr[b13PC];
+                const origSp = window.diccionarioActual[ac.gradoId]?.spellings;
+                if (ac.spellings) {
+                    ac.spellings = [...ac.spellings];
+                    if (!yaEsta) {
+                        // Adding b13: force flat spelling if PC is a black key
+                        if ([1,3,6,8,10].includes(b13PC)) ac.spellings[b13PC] = flatName;
+                        ac.b13Spelling = flatName;
+                    } else {
+                        // Removing b13: restore original spelling
+                        if (origSp) ac.spellings[b13PC] = origSp[b13PC];
+                        delete ac.b13Spelling;
+                    }
+                }
+            }
             // Sincronizar con voicingsDisponibles para que la selección no se pierda
             if (ac.voicingsDisponibles && ac.voicingsDisponibles[ac.voicingSeleccionado]) {
                 ac.voicingsDisponibles[ac.voicingSeleccionado].voicing = [...voicing];
@@ -2006,9 +2434,15 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             if (!ac.tensionesActivas) ac.tensionesActivas = [];
             const ficha = window.obtenerFichaTensiones(ac.gradoId);
             if (ficha) {
-                // Reconstruir desde el voicing actual para máxima consistencia
+                // Include tensions from main scale AND alt scales
+                const allFichaT = [...(ficha.t || []), ...(ficha.escalasAlt || []).flatMap(a => a.t)];
+                // For dominant chords (tetrad=[0,4,7,10]), also allow alt dominant tensions
+                // (b9=1, #9=3, b13=8) from Mixolidia b9b13 and Alterada scales
+                const isDom = ficha.constitutivas && ficha.constitutivas.join(',') === '0,4,7,10';
+                const altDomT = isDom ? [1, 3, 8] : [];
+                const validT = [...new Set([...allFichaT, ...altDomT])];
                 const rootPCt = ac.rootMidi % 12;
-                ac.tensionesActivas = ficha.t.filter(s => {
+                ac.tensionesActivas = validT.filter(s => {
                     const tPC = (rootPCt + s) % 12;
                     return voicing.some(m => m % 12 === tPC);
                 });
@@ -2031,6 +2465,14 @@ window.getModeSpellings = function(baseKey, flatAdded) {
         };
 
         // Renderizar el panel inline de tensiones (dentro del asistente, en modo edición)
+        // ============================================================
+        // MODULE: UI — TENSION & BASS PANEL
+        // Responsabilidad: panel inline de tensiones y bajo (doble-click
+        // en nota del bajo o en acorde). Renderiza botones de tensión por
+        // escala, panel de inversiones, toggle omitirDoblaje.
+        // Alto acoplamiento con DOM. Llama a tensionEngine y voicingEngine.
+        // Futuro: extraer como TensionPanel component (React/Vue/Web Component)
+        // ============================================================
         window.mostrarPanelTensionesInline = function(index) {
             const panel = document.getElementById('panel-tensiones-inline');
             if (!panel) return;
@@ -2044,9 +2486,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             // ── MODO BAJO SELECCIONADO ───────────────────────────────────────────
             if (window.indiceBajoSeleccionado === index) {
                 panel.classList.remove('hidden');
-                // Move to TOP of score — bass panel should not cover bass clef at bottom
-                panel.classList.remove('bottom-3');
-                panel.classList.add('top-3');
+                // Panel is now outside score — no position switching needed
                 panel.style.borderColor = 'rgba(251,191,36,0.4)'; // amber for bass
                 // Update header: hide tension icon/label, show bass icon
                 const icon  = document.getElementById('tension-panel-icon');
@@ -2061,18 +2501,23 @@ window.getModeSpellings = function(baseKey, flatAdded) {
 
                 document.getElementById('tension-evitar-tag').classList.add('hidden');
 
-                if (tipoVoicing === 'triad') {
-                    // ── PANEL DE INVERSIONES (solo tríadas) ────────────────────────
+                if (tipoVoicing === 'triad' || tipoVoicing === 'tetrad' || tipoVoicing === 'rootless') {
+                    // ── PANEL DE INVERSIONES (tríadas y tétradas) ──────────────────
                     document.getElementById('tension-escala-tag').innerText = `Bajo: ${bassName}${octava}`;
                     const btnContainer = document.getElementById('tension-botones');
 
-                    // Build inversion options from triad notes
                     const dictObj = window.diccionarioActual[ac.gradoId];
                     const rootPC = ac.rootMidi % 12;
-                    // dictObj.tetrad stores ABSOLUTE pitch classes, not relative intervals
-                    // Convert to relative semitones from root for correct inversion calculation
-                    const triadAbsPCs = dictObj ? [dictObj.tetrad[0], dictObj.tetrad[1], dictObj.tetrad[2]] : [];
-                    const triadIntervals = triadAbsPCs.map(pc => (pc - rootPC + 12) % 12);
+                    // Get chord tones as relative intervals from root
+                    const chordAbsPCs = dictObj ? dictObj.tetrad : [];
+                    const chordIntervals = chordAbsPCs.map(pc => (pc - rootPC + 12) % 12).sort((a,b)=>a-b);
+                    // For triads use only first 3, for tetrad/rootless use all 4
+                    const useIntervals = tipoVoicing === 'triad' ? chordIntervals.slice(0,3) : chordIntervals;
+
+                    // Inversion names by voicing type
+                    const invNames = tipoVoicing === 'triad'
+                        ? ['Fundamental', '1ra inversión', '2da inversión']
+                        : ['Fundamental', '1ra inversión', '2da inversión', '3ra inversión'];
 
                     // Previous and next bass for voice leading analysis
                     let prevIdx = index - 1;
@@ -2088,10 +2533,10 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                         : null;
 
                     // Compute suggested bass: minimum movement from prev bass
-                    let suggestedPC = rootPC; // default fundamental
+                    let suggestedPC = rootPC;
                     if (prevBassMidi !== null) {
                         let minMove = Infinity;
-                        triadIntervals.forEach(interval => {
+                        useIntervals.forEach(interval => {
                             const candidatePC = (rootPC + interval) % 12;
                             let candidateMidi = candidatePC + Math.floor(prevBassMidi / 12) * 12;
                             if (candidateMidi > prevBassMidi + 6) candidateMidi -= 12;
@@ -2101,39 +2546,58 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                         });
                     }
 
-                    const inversionNames = ['Fundamental', '1ra inversión', '2da inversión'];
-                    const inversionSemitons = [0, triadIntervals[1], triadIntervals[2]];
+                    // Helper: check if bass movement is by step (grado conjunto) or common tone
+                    const isStepOrCommon = (fromMidi, toPC) => {
+                        if (fromMidi === null) return true;
+                        const diff = Math.abs((fromMidi % 12) - toPC);
+                        const dist = Math.min(diff, 12 - diff);
+                        return dist <= 2 || dist === 0;
+                    };
 
                     let optionsHtml = '';
-                    inversionSemitons.forEach((semitone, invIdx) => {
+                    useIntervals.forEach((semitone, invIdx) => {
                         const notePC = (rootPC + semitone) % 12;
                         const noteName = window.formatNotaFromPC(notePC, sp);
-                        // Find best octave for this bass note
                         let targetMidi = notePC + Math.floor(ac.rootMidi / 12) * 12;
                         if (targetMidi > ac.rootMidi + 6) targetMidi -= 12;
                         if (targetMidi < ac.rootMidi - 12) targetMidi += 12;
-                        // Keep bass in reasonable range
                         while (targetMidi > 52) targetMidi -= 12;
                         while (targetMidi < 28) targetMidi += 12;
 
-                        const isActive = (notePC === bassMidi % 12);
+                        const isActive   = (notePC === bassMidi % 12);
                         const isSuggested = (notePC === suggestedPC) && prevBassMidi !== null;
 
-                        // Warning analysis for 2nd inversion
+                        // Warnings:
+                        // 2da inversión (triada) → requires step or common tone in AND out
+                        // 3ra inversión (7ma en bajo) → free in jazz/pop, show info only
                         let warning = '';
-                        if (invIdx === 2) { // 2da inversión
-                            const entradaOk = prevBassMidi !== null && (
-                                Math.abs((prevBassMidi % 12) - notePC) <= 2 ||
-                                Math.abs((prevBassMidi % 12) - notePC) === 10 ||
-                                Math.abs((prevBassMidi % 12) - notePC) === 11 ||
-                                (prevBassMidi % 12) === notePC
-                            );
-                            const salidaOk = nextBassMidi !== null && (
-                                Math.abs((nextBassMidi % 12) - notePC) <= 2 ||
-                                Math.abs((nextBassMidi % 12) - notePC) === 10 ||
-                                Math.abs((nextBassMidi % 12) - notePC) === 11 ||
-                                (nextBassMidi % 12) === notePC
-                            );
+                        if (tipoVoicing === 'triad' && invIdx === 2) {
+                            const entradaOk = isStepOrCommon(prevBassMidi, notePC);
+                            const salidaOk  = isStepOrCommon(nextBassMidi, notePC);
+                            const entradaTxt = prevBassMidi === null ? '—' : (entradaOk ? '✓' : '✗');
+                            const salidaTxt  = nextBassMidi === null ? '—' : (salidaOk  ? '✓' : '✗');
+                            const color = (entradaOk || prevBassMidi === null) && (salidaOk || nextBassMidi === null)
+                                ? 'text-amber-400' : 'text-rose-400';
+                            warning = `<div class="mt-1.5 text-[9px] ${color} font-bold leading-tight">
+                                ⚠ 2da inv. requiere grado conjunto o nota común<br>
+                                Entrada: ${entradaTxt} · Salida: ${salidaTxt}
+                            </div>`;
+                        } else if ((tipoVoicing === 'tetrad' || tipoVoicing === 'rootless') && invIdx === 3) {
+                            // 3ra inversión (7ma en bajo) — acorde de paso, requiere grado conjunto
+                            const entradaOk = isStepOrCommon(prevBassMidi, notePC);
+                            const salidaOk  = isStepOrCommon(nextBassMidi, notePC);
+                            const entradaTxt = prevBassMidi === null ? '—' : (entradaOk ? '✓' : '✗');
+                            const salidaTxt  = nextBassMidi === null ? '—' : (salidaOk  ? '✓' : '✗');
+                            const color = (entradaOk || prevBassMidi === null) && (salidaOk || nextBassMidi === null)
+                                ? 'text-amber-400' : 'text-rose-400';
+                            warning = `<div class="mt-1.5 text-[9px] ${color} font-bold leading-tight">
+                                ⚠ 7ma en bajo · uso como acorde de paso<br>
+                                Entrada: ${entradaTxt} · Salida: ${salidaTxt}
+                            </div>`;
+                        } else if ((tipoVoicing === 'tetrad' || tipoVoicing === 'rootless') && invIdx === 2) {
+                            // 2da inversión tétrada (5ta en bajo) — same warning as triada
+                            const entradaOk = isStepOrCommon(prevBassMidi, notePC);
+                            const salidaOk  = isStepOrCommon(nextBassMidi, notePC);
                             const entradaTxt = prevBassMidi === null ? '—' : (entradaOk ? '✓' : '✗');
                             const salidaTxt  = nextBassMidi === null ? '—' : (salidaOk  ? '✓' : '✗');
                             const color = (entradaOk || prevBassMidi === null) && (salidaOk || nextBassMidi === null)
@@ -2150,16 +2614,47 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                                     ${isActive
                                         ? 'bg-amber-500/20 border-amber-400/60 text-amber-300'
                                         : 'bg-slate-700 border-slate-500 text-slate-200 hover:border-violet-400 hover:bg-slate-600'}"
-                                title="${inversionNames[invIdx]}">
+                                title="${invNames[invIdx]}">
                                 <div class="flex items-center gap-2">
                                     <span class="text-sm font-extrabold">${noteName}</span>
-                                    <span class="text-[10px] opacity-60">${inversionNames[invIdx]}</span>
+                                    <span class="text-[10px] opacity-60">${invNames[invIdx]}</span>
                                     ${isActive ? '<span class="text-[9px] bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded font-bold">ACTUAL</span>' : ''}
                                     ${isSuggested && !isActive ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">⚡ sugerida</span>' : ''}
                                 </div>
                                 ${warning}
                             </button>`;
                     });
+
+                    // Calculate omit-doubling toggle HTML (1st and 3rd inversion tetrad only)
+                    let omitHtml = '';
+                    if (tipoVoicing === 'tetrad') {
+                        const dictObjOm = window.diccionarioActual[ac.gradoId];
+                        if (dictObjOm) {
+                            const rootPCOm = ac.rootMidi % 12;
+                            const bassPCOm = (ac.bassNoteMidi ?? ac.rootMidi) % 12;
+                            const chordIntOm = dictObjOm.tetrad.map(pc => (pc - rootPCOm + 12) % 12).sort((a,b) => a - b);
+                            const bassIntOm = (bassPCOm - rootPCOm + 12) % 12;
+                            const invIdxOm = chordIntOm.indexOf(bassIntOm);
+                            if (invIdxOm === 1 || invIdxOm === 3) {
+                                const omitNote = window.formatNotaFromPC((rootPCOm + chordIntOm[invIdxOm]) % 12, sp);
+                                const omitLabel = invIdxOm === 1 ? '3ra' : '7ma';
+                                const isOmitted = !!ac.omitirDoblaje;
+                                const omitBtnClass = isOmitted
+                                    ? 'bg-violet-500/20 border-violet-400/60 text-violet-300'
+                                    : 'bg-slate-700 border-slate-600 text-slate-300 hover:border-violet-400 hover:bg-slate-600';
+                                const omitBadge = isOmitted
+                                    ? '<span class="ml-auto text-[9px] bg-violet-500/30 text-violet-300 px-1.5 py-0.5 rounded font-bold">ACTIVO</span>'
+                                    : '';
+                                omitHtml = '<div class="w-full mt-1.5 pt-1.5 border-t border-slate-700">'
+                                    + '<button onclick="window.toggleOmitirDoblaje(' + index + ')"'
+                                    + ' class="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all text-left w-full ' + omitBtnClass + '">'
+                                    + '<span class="text-[10px] font-bold">' + (isOmitted ? '✓' : '○') + '</span>'
+                                    + '<span class="text-[10px] font-bold">Quitar ' + omitLabel + ' (' + omitNote + ') de mano derecha</span>'
+                                    + omitBadge
+                                    + '</button></div>';
+                            }
+                        }
+                    }
 
                     btnContainer.innerHTML = `
                         <div class="flex flex-wrap gap-2 w-full">
@@ -2171,7 +2666,8 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                             <span class="text-[10px] text-amber-400 font-bold">${bassName}${octava}</span>
                             <button onclick="window.cambiarOctavaBajo(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 rounded text-xs">↑</button>
                             ${bassMidi !== ac.rootMidi ? `<button onclick="window.cambiarInversionBajo(${index}, null)" class="ml-2 text-[9px] text-slate-500 hover:text-rose-400 transition-colors">Restablecer fundamental</button>` : ''}
-                        </div>`;
+                        </div>
+                        ${omitHtml}`;
                     return;
                 } else {
                     // Non-triad: just show octave control
@@ -2191,9 +2687,7 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                 }
             }
 
-            // Restore tension panel styling (bottom position, violet)
-            panel.classList.remove('top-3');
-            panel.classList.add('bottom-3');
+            // Restore tension panel styling (violet)
             panel.style.borderColor = '';
             const icon  = document.getElementById('tension-panel-icon');
             const label = document.getElementById('tension-panel-label');
@@ -2207,18 +2701,25 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             // Mostrar el panel
             panel.classList.remove('hidden');
 
-            // Tag de escala
-            document.getElementById('tension-escala-tag').innerText = ficha.escala;
+            // Build all scale groups (main + alternativas)
+            const grupos = [ficha, ...(ficha.escalasAlt || [])];
+            const tieneMultiplesEscalas = grupos.length > 1;
 
-            // Tag de notas a evitar
+            // Tag de escala — show first or "múltiples" if alt scales exist
+            document.getElementById('tension-escala-tag').innerText = tieneMultiplesEscalas
+                ? grupos.map(g => g.escala).join(' · ')
+                : ficha.escala;
+
+            // Tag de notas a evitar — union of all groups
             const evitarTag = document.getElementById('tension-evitar-tag');
             const evitarNotasEl = document.getElementById('tension-evitar-notas');
-            if (ficha.ev.length > 0) {
-                const rootPC = ac.rootMidi % 12;
-                const sp = ac.spellings || window.nombresNotasActual;
-                const evNames = ficha.ev.map(s => {
-                    const pc = (rootPC + s) % 12;
-                    return `${NOMBRE_EVITAR_TENSION[s] || s} (${window.formatNotaFromPC(pc, sp)})`;
+            const allEv = [...new Set(grupos.flatMap(g => g.ev || []))];
+            if (allEv.length > 0) {
+                const rootPCev = ac.rootMidi % 12;
+                const spEv = ac.spellings || window.nombresNotasActual;
+                const evNames = allEv.map(s => {
+                    const pc = (rootPCev + s) % 12;
+                    return `${NOMBRE_EVITAR_TENSION[s] || s} (${window.formatNotaFromPC(pc, spEv)})`;
                 });
                 evitarNotasEl.innerText = evNames.join(', ');
                 evitarTag.classList.remove('hidden');
@@ -2232,35 +2733,75 @@ window.getModeSpellings = function(baseKey, flatAdded) {
             const rootPC = ac.rootMidi % 12;
             const sp = ac.spellings || window.nombresNotasActual;
 
-            // Detect diminished chord — tetrad [0,3,6,9] relative intervals
+            // Detect diminished chord
             const dictObjDim = window.diccionarioActual[ac.gradoId];
             const esDim = dictObjDim && dictObjDim.tetrad &&
                 (() => { const rPC = ac.rootMidi % 12; const t = dictObjDim.tetrad;
                     return [(t[1]-t[0]+12)%12,(t[2]-t[0]+12)%12,(t[3]-t[0]+12)%12].join(',') === '3,6,9'; })();
 
-            ficha.t.forEach(semitone => {
+            // Render tension buttons — grouped by scale when multiple scales exist
+            // When multiple scales: use flex row container so groups sit side by side
+            if (tieneMultiplesEscalas) {
+                btnContainer.className = 'flex gap-4 items-start flex-wrap';
+            } else {
+                btnContainer.className = 'flex flex-wrap gap-1.5 items-start';
+            }
+
+            grupos.forEach((grupo, grupoIdx) => {
+                // Use appropriate spellings for each group
+                const flatNames  = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                const sharpNames = ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
+                let groupSp;
+                if (grupo.flatSpellings) {
+                    groupSp = flatNames;
+                } else if (grupo.sharpSpellings) {
+                    groupSp = [...sharpNames];
+                    if (grupo.flatFor9and13) {
+                        // Lydian b7: #11 keeps sharp, but 9 (semitone 2) and 13 (semitone 9) use flat
+                        const ninePC = (rootPC + 2) % 12;
+                        const thirteenPC = (rootPC + 9) % 12;
+                        if ([1,3,6,8,10].includes(ninePC)) groupSp[ninePC] = flatNames[ninePC];
+                        if ([1,3,6,8,10].includes(thirteenPC)) groupSp[thirteenPC] = flatNames[thirteenPC];
+                    } else {
+                        // Alterada / default sharpSpellings: b13 uses flat, #9 keeps sharp
+                        const b13PC = (rootPC + 8) % 12;
+                        if ([1,3,6,8,10].includes(b13PC)) groupSp[b13PC] = flatNames[b13PC];
+                        const sharp9PC = (rootPC + 3) % 12;
+                        if ([1,3,6,8,10].includes(sharp9PC)) groupSp[sharp9PC] = sharpNames[sharp9PC];
+                    }
+                } else {
+                    groupSp = sp;
+                }
+
+                // Open group wrapper when multiple scales
+                if (tieneMultiplesEscalas) {
+                    btnContainer.innerHTML += `<div id="grupo-escala-${grupoIdx}" class="flex flex-col gap-1.5 ${grupoIdx > 0 ? 'pl-4 border-l border-slate-700' : ''}">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">${grupo.escala}</span>
+                        <div class="flex flex-wrap gap-1.5">`;
+                }
+
+                grupo.t.forEach(semitone => {
                 const tensionPC = (rootPC + semitone) % 12;
-                const notaNombre = window.formatNotaFromPC(tensionPC, sp);
+                const notaNombre = window.formatNotaFromPC(tensionPC, groupSp);
                 const nombreT = NOMBRE_TENSION[semitone] || semitone;
 
-                // For diminished: T11(5) and T7(11) have dual mode (add OR substitute)
-                const isDualMode = esDim && (semitone === 5 || semitone === 11);
-                // Standard slot labels
+                const isDualMode = esDim && semitone === 5;
                 const esTension9 = semitone <= 3;
+                // Use ficha.sustituye map if present (e.g. IVm(maj7)), else fall back to defaults
+                const sustituye = grupo.sustituye || ficha.sustituye || null;
                 const slotLabel = esDim
-                    ? (semitone === 5 ? 'sustituye b3' : semitone === 11 ? 'sustituye 1' : 'agrega voz')
-                    : (esTension9 ? 'sustituye 1' : 'sustituye 5');
+                    ? (semitone === 5 ? 'sustituye b3' : semitone === 11 ? 'sustituye °7' : semitone <= 3 ? 'sustituye 1' : 'agrega voz')
+                    : sustituye && sustituye[semitone] !== undefined
+                        ? (sustituye[semitone] === 0 ? 'sustituye 1' : sustituye[semitone] === 7 ? 'sustituye 5' : `sustituye ${sustituye[semitone]}`)
+                        : (esTension9 ? 'sustituye 1' : 'sustituye 5');
 
-                // ¿Está ya activa en el voicing?
                 const activa = ac.trebleMidi.some(m => m % 12 === tensionPC);
 
-                // ¿Es nota común con el acorde anterior?
                 const prevAcorde = index > 0 ? window.progresion[index - 1] : null;
                 const esNotaComun = prevAcorde && !prevAcorde.isRest && (
                     prevAcorde.trebleMidi && prevAcorde.trebleMidi.some(m => m % 12 === tensionPC)
                 );
 
-                // Color según tipo de tensión
                 const colorActivo = semitone === 11
                     ? 'bg-amber-600 border-amber-400 text-white shadow-amber-500/30 shadow-md'
                     : semitone <= 3
@@ -2272,13 +2813,11 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                     ? 'bg-slate-700 border-amber-400/70 text-amber-300 hover:border-amber-400 hover:bg-slate-600 ring-1 ring-amber-400/40'
                     : 'bg-slate-700 border-slate-500 text-slate-200 hover:border-violet-400 hover:text-violet-300 hover:bg-slate-600';
 
-                // Indicador de nota común
                 const notaComunTag = esNotaComun && !activa
                     ? `<span class="text-[8px] font-bold text-amber-400 leading-none mt-0.5 uppercase tracking-wide">≈ común</span>`
                     : '';
 
                 if (isDualMode && !activa) {
-                    // Dual mode: same card style as regular button, with two sub-action buttons at bottom
                     const subLabelText = semitone === 5 ? 'sustituye b3' : 'sustituye 1';
                     btnContainer.innerHTML += `
                         <div class="flex flex-col items-center gap-0.5 px-3.5 py-2 rounded-xl border min-w-[72px] text-center select-none ${colorInactivo}">
@@ -2310,7 +2849,13 @@ window.getModeSpellings = function(baseKey, flatAdded) {
                         ${notaComunTag}
                     </button>`;
                 } // end isDualMode else
-            });
+                }); // end grupo.t.forEach
+
+                // Close group wrapper
+                if (tieneMultiplesEscalas) {
+                    btnContainer.innerHTML += `</div></div>`;
+                }
+            }); // end grupos.forEach
         };
 
         // Ocultar el panel al salir del modo edición
@@ -2401,6 +2946,15 @@ window.crearPiano = function() {
             }
         };
 
+        // ============================================================
+        // MODULE: AUDIO ENGINE
+        // Responsabilidad: síntesis y reproducción de acordes vía Tone.js.
+        // cambiarSonido: selección de timbre (piano, sintetizador)
+        // tocarAcorde: reproducción de array de notas con duración
+        // detenerAudio: stop inmediato
+        // ACOPLAMIENTO ACTUAL: midiATone depende de spellings (spelling engine)
+        // Futuro: extraer como audioEngine.js con interfaz tocar(midiArray, dur)
+        // ============================================================
         window.cambiarSonido = function() {
             const selectSonido = document.getElementById('tipo-sonido'); if(selectSonido) selectSonido.blur(); window.inicializarAudio();
         };
@@ -2482,6 +3036,13 @@ window.crearPiano = function() {
          * ============================================================ */
 
         // mostrarModalDisonancia kept as alias for backward compatibility
+        // ============================================================
+        // MODULE: UI — MODALS & PEDAGOGICAL ALERTS
+        // Responsabilidad: modales de advertencia pedagógica
+        // (segunda menor expuesta, fundamental en soprano, LIL).
+        // Promesas que resuelven con la elección del usuario.
+        // Futuro: extraer como AlertSystem con show(type, options) → Promise
+        // ============================================================
         window.mostrarModalDisonancia = function(nombreAcordeReal) {
             return window.mostrarModalSegundaMenor(
                 nombreAcordeReal,
@@ -2552,6 +3113,16 @@ window.crearPiano = function() {
             });
         };
 
+        // ============================================================
+        // MODULE: NOTATION RENDERER (VexFlow)
+        // Responsabilidad: renderizado de partitura con VexFlow 4.2.2.
+        // obtenerAccidental / obtenerAccidentalConContexto: cálculo de
+        // accidentales para cada nota en contexto de armadura y compás.
+        // renderizarMiniScore: mini-partituras del panel de tensiones.
+        // renderizarPartitura: render principal de la progresión completa.
+        // ACOPLAMIENTO FUERTE con DOM (canvas, SVG containers).
+        // Futuro: extraer como NotationRenderer con render(progresion, config)
+        // ============================================================
         window.obtenerAccidental = function(notaConOctava, fifths) {
             const sharps = ['f', 'c', 'g', 'd', 'a', 'e', 'b']; const flats = ['b', 'e', 'a', 'd', 'g', 'c', 'f'];
             let notaStr = notaConOctava.split('/')[0];
@@ -2559,8 +3130,14 @@ window.crearPiano = function() {
             let inKey = null;
             if (fifths > 0 && sharps.slice(0, fifths).includes(baseNote)) inKey = '#';
             if (fifths < 0 && flats.slice(0, Math.abs(fifths)).includes(baseNote)) inKey = 'b';
+            // Detect ## and bb BEFORE single # and b (order matters)
             let current = null;
-            if (notaStr.includes('#')) current = '#'; else if (notaStr.length > 1 && notaStr.includes('b')) current = 'b';
+            if (notaStr.includes('##')) current = '##';
+            else if (notaStr.includes('#')) current = '#';
+            else if (notaStr.length > 1 && notaStr.slice(1) === 'bb') current = 'bb';
+            else if (notaStr.length > 1 && notaStr.includes('b')) current = 'b';
+            // ## and bb are always explicit — never cancelled by key signature
+            if (current === '##' || current === 'bb') return current;
             if (current === inKey) return null; if (current === null && inKey !== null) return 'n'; return current; 
         };
 
@@ -2572,9 +3149,18 @@ window.crearPiano = function() {
             let inKey = null;
             if (fifths > 0 && sharps.slice(0, fifths).includes(baseNote)) inKey = '#';
             if (fifths < 0 && flats.slice(0, Math.abs(fifths)).includes(baseNote)) inKey = 'b';
+            // Detect ## and bb BEFORE single # and b (order matters)
             let current = null;
-            if (notaStr.includes('#')) current = '#';
+            if (notaStr.includes('##')) current = '##';
+            else if (notaStr.includes('#')) current = '#';
+            else if (notaStr.length > 1 && notaStr.slice(1) === 'bb') current = 'bb';
             else if (notaStr.length > 1 && notaStr.includes('b')) current = 'b';
+
+            // ## and bb are always explicit — never cancelled by key signature, never tracked
+            if (current === '##' || current === 'bb') {
+                thisMeasureAcc[baseNote] = current;
+                return current;
+            }
 
             let acc = null;
             if (current === inKey) {
@@ -2634,6 +3220,13 @@ window.crearPiano = function() {
             voiceTreble.draw(context, staveTreble);
         };
 
+        // ============================================================
+        // MODULE: UI — ANALYSIS PANEL
+        // Responsabilidad: panel de análisis musical (notas comunes,
+        // notas guía, tritonos, saltos). toggleAnalisisMain/Panel
+        // activan capas de análisis visual sobre la partitura.
+        // Futuro: extraer como AnalysisOverlay component
+        // ============================================================
         window.toggleAnalisisMain = function() {
             if(document.activeElement) document.activeElement.blur(); 
             window.renderizarPartitura();
@@ -2904,7 +3497,35 @@ window.crearPiano = function() {
                     }
 
                     const bassMidi = acorde.bassNoteMidi !== undefined ? acorde.bassNoteMidi : acorde.rootMidi;
-                    const keyBajo = window.midiAVexFlow(bassMidi, acorde.spellings);
+                    // At render time: ensure #9 spelling is correct (diatonic sharp, not flat enharmonic)
+                    let renderSpellings = acorde.spellings;
+                    if (acorde.tensionesActivas && acorde.tensionesActivas.includes(3)) {
+                        const sharp9PC = (acorde.rootMidi % 12 + 3) % 12;
+                        const sharp9VexName = window.getSharp9VexName(acorde.rootMidi, acorde.spellings);
+                        if (sharp9VexName && acorde.spellings[sharp9PC] !== sharp9VexName) {
+                            renderSpellings = [...acorde.spellings];
+                            renderSpellings[sharp9PC] = sharp9VexName;
+                        }
+                    }
+                    // b9 render patch: always use flat spelling for b9 (semitone 1)
+                    if (acorde.tensionesActivas && acorde.tensionesActivas.includes(1)) {
+                        const b9PC = (acorde.rootMidi % 12 + 1) % 12;
+                        const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                        if ([1,3,6,8,10].includes(b9PC) && renderSpellings[b9PC] !== flatNamesArr[b9PC]) {
+                            renderSpellings = renderSpellings === acorde.spellings ? [...acorde.spellings] : renderSpellings;
+                            renderSpellings[b9PC] = flatNamesArr[b9PC];
+                        }
+                    }
+                    // b13 render patch: always use flat spelling for b13 (semitone 8)
+                    if (acorde.tensionesActivas && acorde.tensionesActivas.includes(8)) {
+                        const b13PC = (acorde.rootMidi % 12 + 8) % 12;
+                        const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                        if ([1,3,6,8,10].includes(b13PC) && renderSpellings[b13PC] !== flatNamesArr[b13PC]) {
+                            renderSpellings = renderSpellings === acorde.spellings ? [...acorde.spellings] : renderSpellings;
+                            renderSpellings[b13PC] = flatNamesArr[b13PC];
+                        }
+                    }
+                    const keyBajo = window.midiAVexFlow(bassMidi, renderSpellings);
                     const notaBass = new StaveNote({ keys: [keyBajo], duration: acorde.vexDuration, clef: "bass" });
                     
                     let accBajo = window.obtenerAccidental(keyBajo, fifths);
@@ -2912,7 +3533,7 @@ window.crearPiano = function() {
 
                     const annBass = new Annotation(acorde.roman).setVerticalJustification(Annotation.VerticalJustify.BOTTOM).setFont("Arial", 12, "bold"); notaBass.addModifier(annBass, 0);
                     
-                    const keysTreble = acorde.trebleMidi.map(m => window.midiAVexFlow(m, acorde.spellings));
+                    const keysTreble = acorde.trebleMidi.map(m => window.midiAVexFlow(m, renderSpellings));
                     const notaTreble = new StaveNote({ keys: keysTreble, duration: acorde.vexDuration, clef: "treble" });
                     
                     keysTreble.forEach((k, idx) => { 
@@ -3229,6 +3850,13 @@ window.crearPiano = function() {
             };
         };
 
+        // ============================================================
+        // MODULE: UI — CHORD OPTIONS MODAL (AJUSTES)
+        // Responsabilidad: modal de opciones de orquestación por acorde.
+        // Muestra voicings alternativos con mini-partitura, movimiento
+        // de voces, notas comunes, y permite seleccionar voicing.
+        // Futuro: extraer como ChordOptionsModal component
+        // ============================================================
         window.abrirModalOpciones = function(index, targetSection = 'all') {
             if (index < 0 || index >= window.progresion.length) return;
             window.modalContextIndex = index; window.currentModalSection = targetSection;
@@ -3356,7 +3984,35 @@ window.crearPiano = function() {
                                 </div>
                                 <div id="ms-${index}-v-${idx}" class="w-[160px] h-[140px] bg-slate-100 rounded-xl border border-slate-300 flex items-center justify-center shrink-0 shadow-inner"></div>
                             </div>`;
-                        renderTasks.push({ id: `ms-${index}-v-${idx}`, treble: displayVoicing, prevTreble: prevTrebleMidi, spellings: ac.spellings });
+                        // Apply #9 spelling patch for modal display
+                    let modalSpellings = ac.spellings;
+                    if (ac.tensionesActivas && ac.tensionesActivas.includes(3)) {
+                        const s9PC = (ac.rootMidi % 12 + 3) % 12;
+                        const s9Name = window.getSharp9VexName(ac.rootMidi, ac.spellings);
+                        if (s9Name && ac.spellings[s9PC] !== s9Name) {
+                            modalSpellings = [...ac.spellings];
+                            modalSpellings[s9PC] = s9Name;
+                        }
+                    }
+                    // Apply b9 spelling patch for modal display
+                    if (ac.tensionesActivas && ac.tensionesActivas.includes(1)) {
+                        const b9PC = (ac.rootMidi % 12 + 1) % 12;
+                        const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                        if ([1,3,6,8,10].includes(b9PC) && modalSpellings[b9PC] !== flatNamesArr[b9PC]) {
+                            modalSpellings = modalSpellings === ac.spellings ? [...ac.spellings] : modalSpellings;
+                            modalSpellings[b9PC] = flatNamesArr[b9PC];
+                        }
+                    }
+                    // Apply b13 spelling patch for modal display
+                    if (ac.tensionesActivas && ac.tensionesActivas.includes(8)) {
+                        const b13PC = (ac.rootMidi % 12 + 8) % 12;
+                        const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                        if ([1,3,6,8,10].includes(b13PC) && modalSpellings[b13PC] !== flatNamesArr[b13PC]) {
+                            modalSpellings = modalSpellings === ac.spellings ? [...ac.spellings] : modalSpellings;
+                            modalSpellings[b13PC] = flatNamesArr[b13PC];
+                        }
+                    }
+                    renderTasks.push({ id: `ms-${index}-v-${idx}`, treble: displayVoicing, prevTreble: prevTrebleMidi, spellings: modalSpellings });
                     });
                 } else {
                     list.innerHTML = `<div class="p-6 border rounded-2xl bg-slate-800/50 border-slate-700 text-slate-400 text-sm font-medium italic text-center">Solo hay 1 enlace válido posible acústicamente.</div>`;
@@ -3498,11 +4154,13 @@ window.crearPiano = function() {
                         ${contenido || `<div class="text-[10px] text-slate-600 italic px-2">No aplica</div>`}
                     </div>`;
 
-                // ── Intercambio Modal ────────────────────────────────────────────────
+                // ── Intercambio Modal (non-sus4 only) ───────────────────────────────
                 let htmlModal = '';
                 gObj.areas.intercambio.forEach(v => {
+                    if (v.sus4) return; // sus4 go to Variantes section
                     const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
-                    if (c) htmlModal += btnAcorde(c.id, c.nombre, v.name,
+                    if (!c) return;
+                    htmlModal += btnAcorde(c.id, c.nombre, v.name,
                         'bg-blue-900/20 border-blue-700/40 hover:bg-blue-900/40 hover:border-blue-500');
                 });
 
@@ -3514,33 +4172,38 @@ window.crearPiano = function() {
                         'bg-emerald-900/20 border-emerald-700/40 hover:bg-emerald-900/40 hover:border-emerald-500');
                 });
 
-                // ── Cadencias al grado (solo cadencias, sin acordes solos) ──────────────
-                let htmlDom = '';
+                // ── Variantes (sus4 y otros) ─────────────────────────────────────────
+                let htmlVar = '';
+                gObj.areas.intercambio.forEach(v => {
+                    if (!v.sus4) return;
+                    const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
+                    if (!c) return;
+                    const romanLabel = v.sus4Voicing === 'fmaj7' ? 'IVmaj7/V' : 'IIm7/V';
+                    htmlVar += btnAcorde(c.id, c.nombre, romanLabel,
+                        'bg-amber-900/20 border-amber-700/40 hover:bg-amber-900/40 hover:border-amber-500');
+                });
 
-                // Cadencias con V7
+                // ── Cadencias al grado — en grid de 2 columnas ───────────────────────
                 const cadPrinc = gObj.areas.cadencias.filter(c => !c.c2.roman.toLowerCase().includes('sub'));
-                cadPrinc.forEach(v => {
+                const cadSubs  = gObj.areas.cadencias.filter(c =>  c.c2.roman.toLowerCase().includes('sub'));
+                const todasCad = [...cadPrinc, ...cadSubs];
+                let htmlCadItems = '';
+                todasCad.forEach((v, idx) => {
                     const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"];
                     const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"];
-                    if (c1 && c2) htmlDom += btnCadencia(c1.id, c2.id, c1.nombre, c2.nombre,
+                    if (!c1 || !c2) return;
+                    // Separator before subV7 cadences when both groups exist
+                    if (cadPrinc.length > 0 && cadSubs.length > 0 && idx === cadPrinc.length)
+                        htmlCadItems += `<div class="col-span-2 h-px bg-slate-700/60"></div>`;
+                    htmlCadItems += btnCadencia(c1.id, c2.id, c1.nombre, c2.nombre,
                         v.c1.roman.trim() || '—', v.c2.roman || v.name,
                         'bg-slate-800/80 border-slate-700 hover:bg-slate-700 hover:border-rose-400');
                 });
+                const htmlCad = htmlCadItems
+                    ? `<div class="grid grid-cols-2 gap-1.5">${htmlCadItems}</div>`
+                    : `<div class="text-[10px] text-slate-600 italic px-2">No aplica</div>`;
 
-                // Cadencias con subV7
-                const cadSubs = gObj.areas.cadencias.filter(c => c.c2.roman.toLowerCase().includes('sub'));
-                if (cadSubs.length > 0) {
-                    if (cadPrinc.length > 0) htmlDom += `<div class="h-px bg-slate-700/60 my-0.5"></div>`;
-                    cadSubs.forEach(v => {
-                        const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"];
-                        const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"];
-                        if (c1 && c2) htmlDom += btnCadencia(c1.id, c2.id, c1.nombre, c2.nombre,
-                            v.c1.roman.trim() || '—', v.c2.roman || v.name,
-                            'bg-slate-800/80 border-slate-700 hover:bg-slate-700 hover:border-rose-400');
-                    });
-                }
-
-                // ── Assemble ──────────────────────────────────────────────────────────
+                // ── Assemble: top row 3 cols, bottom row cadencias full-width ─────────
                 const html = `
                 <div class="flex items-center gap-2 mb-3">
                     <span class="text-slate-200 font-extrabold text-sm">${gradoNombre}</span>
@@ -3551,10 +4214,17 @@ window.crearPiano = function() {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    ${seccion('Intercambio Modal',          'bg-blue-400',    'border-blue-700/30',    htmlModal)}
-                    ${seccion('Disminuidos',                'bg-emerald-400', 'border-emerald-700/30', htmlDim)}
-                    ${seccion(`Cadencias al ${romano}`,     'bg-rose-400',    'border-rose-700/30',    htmlDom)}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    ${seccion('Intercambio Modal', 'bg-blue-400',    'border-blue-700/30',   htmlModal)}
+                    ${seccion('Disminuidos',        'bg-emerald-400', 'border-emerald-700/30', htmlDim)}
+                    ${seccion('Variantes',          'bg-amber-400',   'border-amber-700/30',   htmlVar)}
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-rose-400"></div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-rose-400">Cadencias al ${romano}</span>
+                    </div>
+                    ${htmlCad}
                 </div>`;
 
                 panel.innerHTML = html;
@@ -3808,16 +4478,68 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
             const container = document.getElementById('timeline-container');
             if (window.progresion.length === 0) return container.innerHTML = '<span class="text-sm text-slate-500 font-medium italic">Vacío...</span>';
             container.innerHTML = '';
+
+            // Group chords into measures (4 beats each)
+            const measures = [];
+            let currentMeasure = { beats: 0, chords: [] };
             window.progresion.forEach((ac, i) => {
-                if (ac.isRest) {
-                    container.innerHTML += `<div class="inline-flex rounded-xl shadow-sm border border-slate-700 transition-transform hover:-translate-y-0.5"><button onclick="window.prepararEdicion(${i})" oncontextmenu="event.preventDefault();" class="px-4 py-1.5 text-sm font-bold transition-colors rounded-xl ${i === window.indiceEdicion ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' : 'bg-slate-800 hover:bg-slate-700 text-slate-500 border-slate-600'}">${i+1}. 𝄽 Silencio</button></div>`;
-                } else {
-                    const esPers = (i > 0 && ac.voicingSeleccionado > 0) || (ac.bassOctaveOffset !== 0) || (i === 0 && window.registroInicial !== 'central');
-                    const tActivas = window.calcularTensionesActivas(ac);
-                    const fichaTens = window.obtenerFichaTensiones(ac.gradoId);
-                    const tEnVoicing = fichaTens ? tActivas.filter(t => fichaTens.t.includes(t.intv)) : [];
-                    const tensionBadge = tEnVoicing.length > 0 ? `<span class="ml-1 text-violet-400 font-black text-[10px]">✦${tEnVoicing.map(t=>t.nombre).join(',')}</span>` : '';
-                    container.innerHTML += `<div class="inline-flex rounded-xl shadow-sm border border-slate-700 transition-transform hover:-translate-y-0.5"><button onclick="window.prepararEdicion(${i})" oncontextmenu="event.preventDefault(); window.abrirModalOpciones(${i}, 'all');" class="px-4 py-1.5 text-sm font-bold transition-colors rounded-l-xl border-r ${i === window.indiceEdicion ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600'}">${i+1}. ${ac.nombre}${tensionBadge}</button><button onclick="window.abrirModalOpciones(${i}, 'all')" title="Opciones de Orquestación" class="px-2.5 py-1.5 text-sm transition-colors rounded-r-xl flex items-center justify-center ${esPers ? 'bg-cyan-600 text-slate-900 hover:bg-cyan-500' : 'bg-slate-900 hover:bg-slate-700 text-slate-400'}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg></button></div>`;
+                if (currentMeasure.beats + ac.beats > 4) {
+                    measures.push(currentMeasure);
+                    currentMeasure = { beats: 0, chords: [] };
+                }
+                currentMeasure.chords.push({ ac, i });
+                currentMeasure.beats += ac.beats;
+                if (currentMeasure.beats === 4) {
+                    measures.push(currentMeasure);
+                    currentMeasure = { beats: 0, chords: [] };
+                }
+            });
+            if (currentMeasure.chords.length > 0) measures.push(currentMeasure);
+
+            measures.forEach((measure, mIdx) => {
+                // Measure group wrapper
+                const measureEl = document.createElement('div');
+                measureEl.className = 'inline-flex flex-col gap-1 align-top';
+
+                // Measure number label
+                const label = document.createElement('div');
+                label.className = 'text-[10px] font-bold text-slate-500 px-1 leading-none';
+                label.textContent = mIdx + 1;
+                measureEl.appendChild(label);
+
+                // Chord buttons row
+                const row = document.createElement('div');
+                row.className = 'inline-flex gap-1 items-center';
+
+                measure.chords.forEach(({ ac, i }) => {
+                    if (ac.isRest) {
+                        const btn = document.createElement('div');
+                        btn.className = 'inline-flex rounded-xl shadow-sm border border-slate-700 transition-transform hover:-translate-y-0.5';
+                        btn.innerHTML = `<button onclick="window.prepararEdicion(${i})" oncontextmenu="event.preventDefault();" class="px-4 py-1.5 text-sm font-bold transition-colors rounded-xl ${i === window.indiceEdicion ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' : 'bg-slate-800 hover:bg-slate-700 text-slate-500 border-slate-600'}">𝄽 Silencio</button>`;
+                        row.appendChild(btn);
+                    } else {
+                        const esPers = (i > 0 && ac.voicingSeleccionado > 0) || (ac.bassOctaveOffset !== 0) || (i === 0 && window.registroInicial !== 'central');
+                        const tActivas = window.calcularTensionesActivas(ac);
+                        const fichaTens = window.obtenerFichaTensiones(ac.gradoId);
+                        const allValidT = [...(fichaTens?.t || []), ...(fichaTens?.escalasAlt || []).flatMap(a => a.t)];
+                        const tEnVoicing = fichaTens ? tActivas.filter(t => allValidT.includes(t.intv)) : [];
+                        const tensionBadge = tEnVoicing.length > 0 ? `<span class="ml-1 text-violet-400 font-black text-[10px]">✦${tEnVoicing.map(t=>t.nombre).join(',')}</span>` : '';
+                        const btn = document.createElement('div');
+                        btn.className = 'inline-flex rounded-xl shadow-sm border border-slate-700 transition-transform hover:-translate-y-0.5';
+                        btn.innerHTML = `<button onclick="window.prepararEdicion(${i})" oncontextmenu="event.preventDefault(); window.abrirModalOpciones(${i}, 'all');" class="px-4 py-1.5 text-sm font-bold transition-colors rounded-l-xl border-r ${i === window.indiceEdicion ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600'}">${ac.nombre}${tensionBadge}</button><button onclick="window.abrirModalOpciones(${i}, 'all')" title="Opciones de Orquestación" class="px-2.5 py-1.5 text-sm transition-colors rounded-r-xl flex items-center justify-center ${esPers ? 'bg-cyan-600 text-slate-900 hover:bg-cyan-500' : 'bg-slate-900 hover:bg-slate-700 text-slate-400'}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg></button>`;
+                        row.appendChild(btn);
+                    }
+                });
+
+                measureEl.appendChild(row);
+                container.appendChild(measureEl);
+
+                // Barline separator between measures (not after last)
+                if (mIdx < measures.length - 1) {
+                    const sep = document.createElement('div');
+                    sep.className = 'inline-flex self-stretch items-stretch mx-1 align-top';
+                    sep.innerHTML = '<div class="w-px bg-slate-600 self-stretch mt-4"></div>';
+                    container.appendChild(sep);
                 }
             });
         };
@@ -3827,6 +4549,11 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
         window.cambiarInversionBajo = function(index, targetMidi) {
             const ac = window.progresion[index];
             if (!ac || ac.isRest) return;
+            // Clear omitirDoblaje when changing inversion — voicing will be recalculated
+            if (ac.omitirDoblaje) {
+                delete ac.omitirDoblaje;
+                window.recalcularProgresion(index);
+            }
             if (targetMidi === null) {
                 // Reset to fundamental
                 delete ac.bassNoteMidi;
@@ -3842,6 +4569,36 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
             const bassPlay = ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi;
             const notaBass = Tone.Frequency(bassPlay, 'midi').toNote();
             window.tocarAcorde([...notasTreble, notaBass], '2n');
+        };
+
+        window.toggleOmitirDoblaje = function(index) {
+            const ac = window.progresion[index];
+            if (!ac || ac.isRest) return;
+            const dictObj = window.diccionarioActual[ac.gradoId];
+            if (!dictObj) return;
+            const rootPC = ac.rootMidi % 12;
+            const bassPC = (ac.bassNoteMidi ?? ac.rootMidi) % 12;
+            // Determine which interval is in the bass (1ra inv = 3ra, 3ra inv = 7ma)
+            const chordIntervals = dictObj.tetrad.map(pc => (pc - rootPC + 12) % 12).sort((a,b)=>a-b);
+            const bassInterval = (bassPC - rootPC + 12) % 12;
+            const invIdx = chordIntervals.indexOf(bassInterval); // 0=fund,1=3ra,2=5ta,3=7ma
+
+            if (ac.omitirDoblaje) {
+                // Restore: remove flag and recalculate voicing
+                delete ac.omitirDoblaje;
+                window.recalcularProgresion(index);
+            } else {
+                // Activate: remove the bass interval note from treble
+                ac.omitirDoblaje = true;
+                const omitPC = (rootPC + chordIntervals[invIdx]) % 12;
+                ac.trebleMidi = ac.trebleMidi.filter(m => m % 12 !== omitPC);
+            }
+            window.actualizarTimeline();
+            window.renderizarPartitura(index, true);
+            window.mostrarPanelTensionesInline(index);
+            window.guardarEstado();
+            const bassPlay = ac.bassNoteMidi !== undefined ? ac.bassNoteMidi : ac.rootMidi;
+            window.tocarAcorde([...ac.trebleMidi.map(m => Tone.Frequency(m,'midi').toNote()), Tone.Frequency(bassPlay,'midi').toNote()], '2n');
         };
 
         window.cambiarOctavaBajo = function(index, direccion) {
@@ -4126,12 +4883,29 @@ window.ingresarSilencio = async function() {
             if (window.indiceEdicion !== -1) {
                 let backup = JSON.parse(JSON.stringify(window.progresion));
                 window.progresion.splice(window.indiceEdicion, 1, ...nuevosAcordes);
-                window.recalcularProgresion(window.indiceEdicion); 
-                if (!await window.auditoriaPedagogica(true)) { window.progresion = backup; window.recalcularProgresion(window.indiceEdicion); window.actualizarTimeline(); window.renderizarPartitura(); return; }
-                indiceParaTocar = window.indiceEdicion + nuevosAcordes.length - 1; 
+                window.recalcularProgresion(window.indiceEdicion);
+                indiceParaTocar = window.indiceEdicion + nuevosAcordes.length - 1;
+                // Exit edit mode and play sound immediately — before auditoría
+                // so the UX feels instant regardless of any modal the auditoría may show
+                const idxParaAuditar = window.indiceEdicion;
                 window.indiceEdicion = -1;
                 window.ocultarPanelTensionesInline();
                 document.getElementById('titulo-agregar').innerHTML = `Asistente de ingreso de acordes:`; document.getElementById('titulo-agregar').className = "font-extrabold text-cyan-400 text-sm md:text-base uppercase tracking-widest transition-colors duration-300";
+                window.actualizarTimeline(); window.renderizarPartitura();
+                if (!isBatch) {
+                    await window.inicializarAudio();
+                    const acTocar = window.progresion[indiceParaTocar];
+                    if (acTocar && !acTocar.isRest) {
+                        let notasParaTocar = [...acTocar.trebleMidi, acTocar.bassNoteMidi !== undefined ? acTocar.bassNoteMidi : acTocar.rootMidi].map(m => window.midiATone(m, acTocar.spellings));
+                        window.tocarAcorde(notasParaTocar, acTocar.beats * (60 / (parseInt(document.getElementById("tempo-input").value) || 100)));
+                    }
+                }
+                // Run auditoría after sound — if it needs to rollback, restore state
+                if (!await window.auditoriaPedagogica(true)) { window.progresion = backup; window.recalcularProgresion(idxParaAuditar); window.actualizarTimeline(); window.renderizarPartitura(); return; }
+                window.guardarEstado();
+                setTimeout(() => { const s = document.getElementById("scroll-partitura"); if (s) s.scrollLeft = s.scrollWidth; }, 50);
+                if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
+                return; // handled fully above
             } else {
                 window.progresion.push(...nuevosAcordes);
                 window.recalcularProgresion(window.progresion.length - nuevosAcordes.length); 
@@ -4349,8 +5123,18 @@ window.ingresarSilencio = async function() {
             if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
         };
 
+        // ============================================================
+        // MODULE: EXPORT
+        // Responsabilidad: exportación de la progresión a formatos externos.
+        // exportarMusicXML: genera MusicXML compatible con MuseScore/Finale/Sibelius
+        // exportarMIDI: genera archivo MIDI estándar
+        // guardarProyecto / cargarProyecto: serialización propia (.armonia)
+        // Futuro: extraer como ExportManager con export(format, progresion)
+        // ============================================================
         window.exportarMusicXML = function() {
             if (window.progresion.length === 0) return window.mostrarToast("Agrega acordes primero para poder exportar.", "error");
+            // Ensure all voicings and tensions are current before reading trebleMidi
+            window.recalcularProgresion(0);
             let measures = []; let currentMeasure = { beats: 0, chords: [] };
             window.progresion.forEach((acorde) => {
                 if (currentMeasure.beats + acorde.beats > 4) { measures.push(currentMeasure); currentMeasure = { beats: 0, chords: [] }; }
@@ -4392,8 +5176,9 @@ window.ingresarSilencio = async function() {
                     let kindTextAttr = kindStr; // default: no tensions
                     let kindContentFinal = kindContent; // default: standard kind
                     if (fichaExport && acorde.tensionesActivas && acorde.tensionesActivas.length) {
-                        // Exclude constitutive notes (e.g. 6th in acorde-6 is constitutive, not a tension)
-                        let semValidos = acorde.tensionesActivas.filter(s => fichaExport.t.includes(s));
+                        // Include tensions from escalasAlt (e.g. #9, b13 from Alterada scale)
+                        const allValidTExport = [...(fichaExport.t || []), ...(fichaExport.escalasAlt || []).flatMap(a => a.t)];
+                        let semValidos = acorde.tensionesActivas.filter(s => allValidTExport.includes(s));
                         if (fichaExport.constitutivas) {
                             semValidos = semValidos.filter(s => !fichaExport.constitutivas.includes(s));
                         }
@@ -4409,14 +5194,48 @@ window.ingresarSilencio = async function() {
                     }
                     let rootStep = root.charAt(0); let rootAlterXML = root.includes("#") ? `<root-alter>1</root-alter>` : (root.includes("b") ? `<root-alter>-1</root-alter>` : "");
                     xmlTreble += `<harmony placement="above"><root><root-step>${rootStep}</root-step>${rootAlterXML}</root><kind text="${kindTextAttr}">${kindContentFinal}</kind><staff>1</staff></harmony>`;
+                    // Build export spellings with same patches as renderizarPartitura
+                    let exportSpellings = acorde.spellings;
+                    const flatNamesExport = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
+                    if (acorde.tensionesActivas) {
+                        // b9 patch (semitone 1): always flat
+                        if (acorde.tensionesActivas.includes(1)) {
+                            const b9PC = (acorde.rootMidi % 12 + 1) % 12;
+                            if ([1,3,6,8,10].includes(b9PC) && exportSpellings[b9PC] !== flatNamesExport[b9PC]) {
+                                exportSpellings = [...exportSpellings]; exportSpellings[b9PC] = flatNamesExport[b9PC];
+                            }
+                        }
+                        // #9 patch (semitone 3): use diatonic sharp name
+                        if (acorde.tensionesActivas.includes(3)) {
+                            const sharp9PC = (acorde.rootMidi % 12 + 3) % 12;
+                            const sharp9VexName = window.getSharp9VexName(acorde.rootMidi, exportSpellings === acorde.spellings ? acorde.spellings : exportSpellings);
+                            if (sharp9VexName && exportSpellings[sharp9PC] !== sharp9VexName) {
+                                exportSpellings = exportSpellings === acorde.spellings ? [...acorde.spellings] : exportSpellings;
+                                exportSpellings[sharp9PC] = sharp9VexName;
+                            }
+                        }
+                        // b13 patch (semitone 8): always flat
+                        if (acorde.tensionesActivas.includes(8)) {
+                            const b13PC = (acorde.rootMidi % 12 + 8) % 12;
+                            if ([1,3,6,8,10].includes(b13PC) && exportSpellings[b13PC] !== flatNamesExport[b13PC]) {
+                                exportSpellings = exportSpellings === acorde.spellings ? [...acorde.spellings] : exportSpellings;
+                                exportSpellings[b13PC] = flatNamesExport[b13PC];
+                            }
+                        }
+                    }
                     acorde.trebleMidi.forEach((midi, i) => {
-                        let octava = Math.floor(midi / 12) - 1; const notaOriginal = acorde.spellings[midi % 12]; if (notaOriginal === "cb") octava += 1;
-                        const step = notaOriginal.charAt(0).toUpperCase(); let alterXML = notaOriginal.includes("#") ? `<alter>1</alter>` : (notaOriginal.length > 1 && notaOriginal.includes("b") ? `<alter>-1</alter>` : "");
+                        let octava = Math.floor(midi / 12) - 1; const notaOriginal = exportSpellings[midi % 12];
+                        if (notaOriginal === "cb") octava += 1;
+                        if (notaOriginal === "b#") octava -= 1;
+                        const step = notaOriginal.charAt(0).toUpperCase();
+                        let alterXML = notaOriginal.includes("##") ? "<alter>2</alter>" : notaOriginal.includes("#") ? "<alter>1</alter>" : (notaOriginal.length > 1 && notaOriginal.slice(1) === "bb") ? "<alter>-2</alter>" : (notaOriginal.length > 1 && notaOriginal.includes("b")) ? "<alter>-1</alter>" : "";
                         xmlTreble += `<note>${i > 0 ? "<chord/>" : ""}<pitch><step>${step}</step>${alterXML}<octave>${octava}</octave></pitch><duration>${durXML}</duration><voice>1</voice><type>${typeXML}</type><staff>1</staff></note>`;
                     });
                     xmlBass += `<harmony placement="below"><function>${acorde.roman}</function><staff>2</staff></harmony>`;
-                    let bassOct = Math.floor(acorde.rootMidi / 12) - 1; const bassNotaOriginal = acorde.spellings[acorde.rootMidi % 12]; if (bassNotaOriginal === "cb") bassOct += 1;
-                    const bStep = bassNotaOriginal.charAt(0).toUpperCase(); let bAlterXML = bassNotaOriginal.includes("#") ? `<alter>1</alter>` : (bassNotaOriginal.length > 1 && bassNotaOriginal.includes("b") ? `<alter>-1</alter>` : "");
+                    let bassOct = Math.floor(acorde.rootMidi / 12) - 1; const bassNotaOriginal = acorde.spellings[acorde.rootMidi % 12];
+                    if (bassNotaOriginal === "cb") bassOct += 1;
+                    if (bassNotaOriginal === "b#") bassOct -= 1;
+                    const bStep = bassNotaOriginal.charAt(0).toUpperCase(); let bAlterXML = bassNotaOriginal.includes("##") ? "<alter>2</alter>" : bassNotaOriginal.includes("#") ? "<alter>1</alter>" : (bassNotaOriginal.length > 1 && bassNotaOriginal.slice(1) === "bb") ? "<alter>-2</alter>" : (bassNotaOriginal.length > 1 && bassNotaOriginal.includes("b")) ? "<alter>-1</alter>" : "";
                     xmlBass += `<note><pitch><step>${bStep}</step>${bAlterXML}<octave>${bassOct}</octave></pitch><duration>${durXML}</duration><voice>2</voice><type>${typeXML}</type><staff>2</staff></note>`;
                 });
                 xmlContent += `<measure number="${mIndex + 1}">`;
