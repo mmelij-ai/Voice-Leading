@@ -781,7 +781,8 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                         { tipo: 'III_V7', name: "V7/III", rootOffset: 7, triadExt: "", tetradExt: "7", tetrad: [0, 4, 7, 10], modeShift: -4 }
                     ],
                     cadencias: [
-                        { tipo: 'cad_III_1', name: "IIrel - V7/III", c1: { rootOffset: 2, triadExt: "dim", tetradExt: "m7b5", roman: " ", tetradMod: [0,3,6,10], modeShift: -1 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/III", tetradMod: [0,4,7,10], modeShift: -4 } }
+                        { tipo: 'cad_III_1', name: "IIrel - V7/III", c1: { rootOffset: 2, triadExt: "dim", tetradExt: "m7b5", roman: " ", tetradMod: [0,3,6,10], modeShift: -1 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/III", tetradMod: [0,4,7,10], modeShift: -4 } },
+                        { tipo: 'cad_III_2', name: "IIm7 - V7/III", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: -2 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/III", tetradMod: [0,4,7,10], modeShift: -4 } }
                     ]
                 }
             },
@@ -1439,17 +1440,22 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                     if (Math.abs(sop - prevSoprano) > 14) continue; 
                     
                     let currVoicing = window.generarVoicingCerradoDesdeSoprano(sop, targetNotes, i);
-                    let distAbs = 0; let notasComunes = 0; let maxSalto = 0;
+                    let distAbs = 0; let notasComunes = 0; let maxSalto = 0; let notasInmoviles = 0;
                     const prevPCs = prevRef.map(m => m % 12);
                     for (let v = 0; v < currVoicing.length; v++) {
                         let dist = Math.abs(currVoicing[v] - prevRef[v]);
                         distAbs += dist;
                         // Common tone: same pitch class appears in prev voicing (any voice)
                         if (prevPCs.includes(currVoicing[v] % 12)) notasComunes++;
+                        // Inmóvil: exact same MIDI — strongest tiebreaker
+                        if (dist === 0) notasInmoviles++;
                         if (dist > maxSalto) maxSalto = dist;
                     }
                     if(!todasLasOpciones.find(o => o.voicing.join(',') === currVoicing.join(','))) {
-                        todasLasOpciones.push({ voicing: currVoicing, distancia: distAbs, score: distAbs - (notasComunes * 6) + (maxSalto > 5 ? (maxSalto - 5) * 10 : 0), notasComunes: notasComunes });
+                        // Score: minimize movement, reward common tones, reward immobile notes,
+                        // penalize large leaps. Tiebreaker: notasInmoviles (subtracted to lower score)
+                        todasLasOpciones.push({ voicing: currVoicing, distancia: distAbs, notasComunes,
+                            score: distAbs - (notasComunes * 6) - (notasInmoviles * 4) + (maxSalto > 5 ? (maxSalto - 5) * 10 : 0) });
                     }
                 }
             }
@@ -2004,7 +2010,10 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
             'II_cad_II_4_2':    { escala: 'Lidia b7',         t: [2,6,9], ev: [],    constitutivas: [0,4,7,10] },
             // ─ Toward III ─
             'III_cad_III_1_1':  { escala: 'Locria',            t: [5],     ev: [1,8], constitutivas: [0,3,6,10] },
+            // IIm7 dórico relativo de V7/III → Dórica (9, 11 | sin notas a evitar)
+            'III_cad_III_2_1':  { escala: 'Dórica',            t: [2,5],   ev: [9],   constitutivas: [0,3,7,10] },
             'III_cad_III_1_2':  { escala: 'Mixolidia b9 b13', t: [1,8],   ev: [5],   constitutivas: [0,4,7,10] },
+            'III_cad_III_2_2':  { escala: 'Mixolidia b9 b13', t: [1,8],   ev: [5],   constitutivas: [0,4,7,10] },
             // ─ Toward IV ─
             // Vm7 actúa como IIm7 de IV — Dórica libre (9, 11, 13 sin restricciones)
             // La 6ta no crea tritono en este contexto (distinto al IIm7 diatónico de C)
