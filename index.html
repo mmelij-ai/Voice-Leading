@@ -529,6 +529,10 @@
             const titulo = document.getElementById('titulo-agregar');
             titulo.innerHTML = `Asistente de ingreso de acordes:`;
             titulo.classList.remove('text-yellow-400'); titulo.classList.add('text-cyan-400');
+            // Fully exit edit mode: hide banner and bass/tension panel
+            const aviso = document.getElementById('aviso-modo-edicion');
+            if (aviso) { aviso.classList.add('hidden'); aviso.classList.remove('flex'); }
+            if (typeof window.ocultarPanelTensionesInline === 'function') window.ocultarPanelTensionesInline();
             window.omitirGuardado = false; 
         };
 
@@ -659,6 +663,39 @@
                     if (aviso) { aviso.classList.add('hidden'); aviso.classList.remove('flex'); }
                     window.renderizarPartitura(); 
                 }
+                // Auto-complete incomplete last measure with theoretically-correct rests
+                if (window.progresion.length > 0) {
+                    const totalBeats = window.progresion.reduce((sum, ac) => sum + ac.beats, 0);
+                    const faltantes = (4 - (totalBeats % 4)) % 4; // 0, 1, 2, or 3
+                    if (faltantes > 0) {
+                        const silencios = [];
+                        if (faltantes === 1) {
+                            silencios.push({ isRest: true, nombre: "𝄽", vexDuration: 'q', beats: 1 });
+                        } else if (faltantes === 2) {
+                            silencios.push({ isRest: true, nombre: "𝄽", vexDuration: 'h', beats: 2 });
+                        } else if (faltantes === 3) {
+                            // negra + blanca: completa el tiempo fuerte primero
+                            silencios.push({ isRest: true, nombre: "𝄽", vexDuration: 'q', beats: 1 });
+                            silencios.push({ isRest: true, nombre: "𝄽", vexDuration: 'h', beats: 2 });
+                        }
+                        window.progresion.push(...silencios);
+                        window.actualizarTimeline();
+                        window.renderizarPartitura();
+                        window.guardarEstado();
+                    }
+                }
+                return;
+            }
+
+            // Arrow keys navigation in edit mode: move selection between chords
+            if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && window.indiceEdicion !== -1) {
+                e.preventDefault();
+                if (document.activeElement) document.activeElement.blur();
+                const total = window.progresion.length;
+                if (total === 0) return;
+                const dir = e.key === 'ArrowRight' ? 1 : -1;
+                const nuevoIdx = (window.indiceEdicion + dir + total) % total; // wrap around
+                window.prepararEdicion(nuevoIdx, true);
                 return;
             }
 
@@ -1254,6 +1291,15 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
 
         window.alCambiarTipoVoicing = async function() {
             document.getElementById('tipo-voicing').blur(); 
+            // Exit edit mode if active — changing voicing type during editing is ambiguous
+            if (window.indiceEdicion !== -1) {
+                window.indiceEdicion = -1;
+                const aviso = document.getElementById('aviso-modo-edicion');
+                if (aviso) { aviso.classList.add('hidden'); aviso.classList.remove('flex'); }
+                const titulo = document.getElementById('titulo-agregar');
+                if (titulo) { titulo.innerHTML = 'Asistente de ingreso de acordes:'; titulo.classList.remove('text-yellow-400'); titulo.classList.add('text-cyan-400'); }
+                if (typeof window.ocultarPanelTensionesInline === 'function') window.ocultarPanelTensionesInline();
+            }
             window.actualizarOpcionesSoprano(false); 
             window.actualizarDiccionario();          
             if (window.progresion.length > 0) {
@@ -1680,6 +1726,35 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                 // Pass previous chord's voicing (with tensions) so tension octave
                 // follows voice leading — same pitch class stays in same register.
                 window.reaplicarTensiones(ac, lastTrebleConTension);
+
+                // ── Reinsertar fundamental en rootless con inversión activa ────────
+                // After recalc, if rootless is active and bassNoteMidi is set (inversion),
+                // the root must remain in the treble (it was inserted by cambiarInversionBajo)
+                const tipoVoicingRecalc = document.getElementById('tipo-voicing').value;
+                if (tipoVoicingRecalc === 'rootless' && ac.bassNoteMidi !== undefined) {
+                    const rootPC = ac.rootMidi % 12;
+                    if (!ac.trebleMidi.some(m => m % 12 === rootPC)) {
+                        // Place root just below the 3rd of the chord
+                        const dictRL2 = window.diccionarioActual[ac.gradoId];
+                        let thirdMidi2 = null;
+                        if (dictRL2 && dictRL2.tetrad && dictRL2.tetrad.length >= 2) {
+                            const thirdPC2 = dictRL2.tetrad[1];
+                            thirdMidi2 = ac.trebleMidi.find(m => m % 12 === thirdPC2);
+                        }
+                        const refMidi2 = thirdMidi2 !== null && thirdMidi2 !== undefined
+                            ? thirdMidi2
+                            : Math.min(...ac.trebleMidi);
+                        let rootMidi = rootPC + Math.floor(refMidi2 / 12) * 12;
+                        while (rootMidi >= refMidi2) rootMidi -= 12;
+                        while (rootMidi < refMidi2 - 12) rootMidi += 12;
+                        ac.trebleMidi.push(rootMidi);
+                        ac.trebleMidi.sort((a, b) => a - b);
+                        ac.rootInsertadoMidi = rootMidi;
+                    }
+                } else if (ac.rootInsertadoMidi !== undefined && (tipoVoicingRecalc !== 'rootless' || ac.bassNoteMidi === undefined)) {
+                    // Voicing changed or returned to fundamental: clear the marker
+                    delete ac.rootInsertadoMidi;
+                }
                 lastTrebleMidi = diatonicVoicing;
                 // For guide voicing, store only pure guide tones (3rd+7th) as reference
                 // so next chord doesn't see tensions in the voice leading reference
@@ -2510,10 +2585,41 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
 
                 document.getElementById('tension-evitar-tag').classList.add('hidden');
 
-                if (tipoVoicing === 'triad' || tipoVoicing === 'tetrad' || tipoVoicing === 'rootless') {
+                if (tipoVoicing === 'triad' || tipoVoicing === 'tetrad' || tipoVoicing === 'rootless' || tipoVoicing === 'guide') {
                     // ── PANEL DE INVERSIONES (tríadas y tétradas) ──────────────────
                     document.getElementById('tension-escala-tag').innerText = `Bajo: ${bassName}${octava}`;
                     const btnContainer = document.getElementById('tension-botones');
+
+                    // sus4 chords: bass is always the V root — no inversions, only octave change
+                    const dictObjSus4Check = window.diccionarioActual[ac.gradoId];
+                    if (dictObjSus4Check && dictObjSus4Check.sus4) {
+                        btnContainer.innerHTML = `
+                            <div class="text-[10px] text-slate-400 italic mb-2">
+                                El bajo del V7sus4 es siempre la fundamental del V.
+                            </div>
+                            <div class="w-full flex items-center gap-2">
+                                <span class="text-[9px] text-slate-500">Octava del bajo:</span>
+                                <button onclick="window.cambiarOctavaBajo(${index}, -1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 rounded text-xs">↓</button>
+                                <span class="text-[10px] text-amber-400 font-bold">${bassName}${octava}</span>
+                                <button onclick="window.cambiarOctavaBajo(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 rounded text-xs">↑</button>
+                            </div>`;
+                        return;
+                    }
+
+                    // Guide notes: only octave change, no inversions (minimal 2-note voicing)
+                    if (tipoVoicing === 'guide') {
+                        btnContainer.innerHTML = `
+                            <div class="text-[10px] text-slate-400 italic mb-2">
+                                Las notas guía son un voicing mínimo — solo se puede ajustar la octava del bajo.
+                            </div>
+                            <div class="w-full flex items-center gap-2">
+                                <span class="text-[9px] text-slate-500">Octava del bajo:</span>
+                                <button onclick="window.cambiarOctavaBajo(${index}, -1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 rounded text-xs">↓</button>
+                                <span class="text-[10px] text-amber-400 font-bold">${bassName}${octava}</span>
+                                <button onclick="window.cambiarOctavaBajo(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 rounded text-xs">↑</button>
+                            </div>`;
+                        return;
+                    }
 
                     const dictObj = window.diccionarioActual[ac.gradoId];
                     const rootPC = ac.rootMidi % 12;
@@ -3389,12 +3495,12 @@ window.crearPiano = function() {
 
             const div = document.getElementById("contenedor-partitura"); div.innerHTML = ""; 
             const { Renderer, Stave, StaveNote, Formatter, Voice, StaveConnector, Annotation, Accidental } = Vex.Flow;
-            let measures = []; let currentMeasure = { beats: 0, chords: [] };
+            let measures = []; let currentMeasure = { beats: 0, chords: [], chordIdxs: [] };
             
-            window.progresion.forEach((acorde) => {
-                if (currentMeasure.beats + acorde.beats > 4) { measures.push(currentMeasure); currentMeasure = { beats: 0, chords: [] }; }
-                currentMeasure.chords.push(acorde); currentMeasure.beats += acorde.beats;
-                if (currentMeasure.beats === 4) { measures.push(currentMeasure); currentMeasure = { beats: 0, chords: [] }; }
+            window.progresion.forEach((acorde, idx) => {
+                if (currentMeasure.beats + acorde.beats > 4) { measures.push(currentMeasure); currentMeasure = { beats: 0, chords: [], chordIdxs: [] }; }
+                currentMeasure.chords.push(acorde); currentMeasure.chordIdxs.push(idx); currentMeasure.beats += acorde.beats;
+                if (currentMeasure.beats === 4) { measures.push(currentMeasure); currentMeasure = { beats: 0, chords: [], chordIdxs: [] }; }
             });
             if (currentMeasure.chords.length > 0) measures.push(currentMeasure);
 
@@ -3627,8 +3733,41 @@ window.crearPiano = function() {
                     context.restore();
                 }
 
-                currentX += measure.width; 
+                currentX += measure.width;
+                if (mIndex === 0) window._measurePositions = [];
+                window._measurePositions.push({ rightX: currentX, y: currentY, chordIdxs: measure.chordIdxs });
             });
+
+            // ── Cursor de inserción — SVG injection ──────────────────────────────
+            if (!window.isPrinting && window._measurePositions && window._measurePositions.length > 0) {
+                const svgCursor = div.querySelector('svg');
+                if (svgCursor) {
+                    let targetMeasure;
+                    if (window.indiceEdicion !== -1) {
+                        targetMeasure = window._measurePositions.find(mp => mp.chordIdxs && mp.chordIdxs.includes(window.indiceEdicion));
+                    }
+                    if (!targetMeasure) targetMeasure = window._measurePositions[window._measurePositions.length - 1];
+
+                    const cursorX = targetMeasure.rightX + 4;
+                    // Solo pentagrama de treble (altura ~40px)
+                    const cursorTopY = 60 + targetMeasure.y - 4;
+                    const cursorBottomY = 60 + targetMeasure.y + 44;
+                    const SVG_NS = 'http://www.w3.org/2000/svg';
+                    // Ámbar al editar, cyan al insertar al final
+                    const cursorColor = window.indiceEdicion !== -1 ? '#facc15' : '#06b6d4';
+                    const line = document.createElementNS(SVG_NS, 'line');
+                    line.setAttribute('x1', cursorX); line.setAttribute('y1', cursorTopY);
+                    line.setAttribute('x2', cursorX); line.setAttribute('y2', cursorBottomY);
+                    line.setAttribute('stroke', cursorColor);
+                    line.setAttribute('stroke-width', '2');
+                    line.setAttribute('stroke-linecap', 'round');
+                    svgCursor.appendChild(line);
+                    const tri = document.createElementNS(SVG_NS, 'polygon');
+                    tri.setAttribute('points', `${cursorX},${cursorTopY} ${cursorX + 6},${cursorTopY - 4} ${cursorX + 6},${cursorTopY + 4}`);
+                    tri.setAttribute('fill', cursorColor);
+                    svgCursor.appendChild(tri);
+                }
+            }
 
             if (visualAnalysisOn && showCommon) {
                 const svg = div.querySelector('svg');
@@ -4476,7 +4615,7 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
             inputEl.blur();
 
             if (noEncontrados.length > 0) {
-                window.mostrarToast(`Los siguientes acordes no se encontraron o no corresponden a la tonalidad:<br><br><b class='text-white'>${noEncontrados.join(", ")}</b>`, "error");
+                window.mostrarToast(`Acorde válido pero no disponible en el voicing actual:<br><br><b class='text-white'>${noEncontrados.join(", ")}</b>`, "error");
             } else {
                 window.mostrarToast("¡Acordes ingresados con éxito!", "success");
                 window.cerrarIngresoManual(); 
@@ -4551,6 +4690,7 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
                     container.appendChild(sep);
                 }
             });
+
         };
 
         window.indiceBajoSeleccionado = -1;
@@ -4563,6 +4703,44 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
                 delete ac.omitirDoblaje;
                 window.recalcularProgresion(index);
             }
+
+            // ── Rootless inversion handling: insert/remove root in treble ────────
+            const tipoVoicingNow = document.getElementById('tipo-voicing').value;
+            const isRootlessInv = tipoVoicingNow === 'rootless';
+            if (isRootlessInv) {
+                const rootPC = ac.rootMidi % 12;
+                // If returning to fundamental: remove the inserted root from treble
+                if (targetMidi === null) {
+                    if (ac.rootInsertadoMidi !== undefined) {
+                        ac.trebleMidi = ac.trebleMidi.filter(m => m !== ac.rootInsertadoMidi);
+                        delete ac.rootInsertadoMidi;
+                    }
+                } else {
+                    // Inverting: insert root JUST BELOW the 3rd of the chord.
+                    // The 3rd may NOT be the lowest treble voice (rootless can invert internally).
+                    // Find the actual 3rd note in the treble by matching its pitch class.
+                    const dictRL = window.diccionarioActual[ac.gradoId];
+                    let thirdMidi = null;
+                    if (dictRL && dictRL.tetrad && dictRL.tetrad.length >= 2) {
+                        const thirdPC = dictRL.tetrad[1]; // tetrad stores ABSOLUTE PCs, idx 1 = 3rd
+                        thirdMidi = ac.trebleMidi.find(m => m % 12 === thirdPC);
+                    }
+                    // Reference: 3rd if found, else lowest treble as fallback
+                    const refMidi = thirdMidi !== null && thirdMidi !== undefined
+                        ? thirdMidi
+                        : Math.min(...ac.trebleMidi);
+                    let rootMidi = rootPC + Math.floor(refMidi / 12) * 12;
+                    while (rootMidi >= refMidi) rootMidi -= 12;
+                    while (rootMidi < refMidi - 12) rootMidi += 12;
+                    if (ac.rootInsertadoMidi !== undefined) {
+                        ac.trebleMidi = ac.trebleMidi.filter(m => m !== ac.rootInsertadoMidi);
+                    }
+                    ac.trebleMidi.push(rootMidi);
+                    ac.trebleMidi.sort((a, b) => a - b);
+                    ac.rootInsertadoMidi = rootMidi;
+                }
+            }
+
             if (targetMidi === null) {
                 // Reset to fundamental
                 delete ac.bassNoteMidi;
