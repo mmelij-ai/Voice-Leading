@@ -25,7 +25,7 @@
             .hide-on-print { display: none !important; }
             #main-ui-container { max-width: none !important; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
             .print-wrapper { background: white !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; }
-            #scroll-partitura { overflow: visible !important; width: 100% !important; }
+            #scroll-partitura { overflow: visible !important; width: 100% !important; height: auto !important; }
             #contenedor-partitura svg path, #contenedor-partitura svg rect { fill: #000000 !important; stroke: #000000 !important; }
             #contenedor-partitura svg path[fill="none"] { fill: none !important; }
             #contenedor-partitura svg text { fill: #000000 !important; stroke: none !important; font-weight: bold !important; }
@@ -248,7 +248,7 @@
         <!-- ═══════════════════════════════════════════════════════════
              PARTITURA
              ════════════════════════════════════════════════════════ -->
-        <div class="bg-slate-200 rounded-3xl p-4 md:p-6 flex flex-col items-center border-[6px] border-slate-800 shadow-[inset_0_2px_20px_rgba(0,0,0,0.2)] min-h-[340px] relative overflow-hidden print-wrapper mt-3 mb-2">
+        <div class="bg-slate-200 rounded-3xl p-4 md:p-6 flex flex-col items-center border-[6px] border-slate-800 shadow-[inset_0_2px_20px_rgba(0,0,0,0.2)] relative overflow-hidden print-wrapper mt-3 mb-2">
             <!-- Badge figura activa -->
             <div id="badge-figura" class="absolute top-3 right-3 z-20 hide-on-print bg-slate-800/90 backdrop-blur-sm border border-slate-600/80 rounded-xl px-2.5 py-1.5 flex items-center gap-2 shadow-lg transition-all duration-200 select-none pointer-events-none">
                 <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none">Figura</span>
@@ -256,7 +256,7 @@
                 <span id="badge-figura-label" class="text-[10px] font-bold text-slate-300 leading-none min-w-[36px]"></span>
             </div>
 
-            <div id="scroll-partitura" class="w-full overflow-x-auto pb-4 pt-4 scroll-smooth scrollbar-thin scrollbar-thumb-slate-400 relative z-0 text-center">
+            <div id="scroll-partitura" class="w-full overflow-auto pb-4 pt-4 scroll-smooth scrollbar-thin scrollbar-thumb-slate-400 relative z-0 text-center" style="height: 300px;">
                 <div id="contenedor-partitura" class="inline-block text-left text-slate-900 mt-6 px-4 md:px-8">
                     <p class="text-slate-500 text-center mt-20 font-medium italic text-lg">Agrega acordes para visualizar el Voice Leading...</p>
                 </div>
@@ -306,6 +306,16 @@
             <button data-capa="rad-notas-guia"      onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Notas Guía</button>
             <button data-capa="rad-tritonos"        onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Tritonos</button>
             <button data-capa="rad-saltos"          onclick="window.toggleCapa(this)" class="capa-btn px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Saltos</button>
+            <button id="btn-relacion-ea" onclick="window.toggleRelacionEA(this)" class="px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:bg-slate-700/40 transition-colors whitespace-nowrap">Relación E/A</button>
+        </div>
+
+        <!-- Panel Relación Escala/Acorde -->
+        <div id="panel-relacion-ea" class="hidden bg-slate-800/60 rounded-2xl border border-slate-700/60 mb-2 hide-on-print overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-2.5 border-b border-slate-700/60">
+                <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Relación Escala / Acorde</span>
+                <span class="text-[10px] text-slate-500">— escala recomendada para cada acorde</span>
+            </div>
+            <div id="contenedor-relacion-ea" class="p-3 flex flex-col gap-2 max-h-[320px] overflow-y-auto"></div>
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════
@@ -466,9 +476,18 @@
 
         <div id="modal-lil" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
             <div id="modal-lil-content" class="bg-slate-800 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-w-md w-full p-8 transform scale-95 transition-transform duration-300 border border-rose-500/30">
-                <h3 class="text-2xl font-extrabold text-white tracking-tight mb-5">Cuidado con el Bajo</h3>
-                <p class="text-slate-300 mb-8 font-medium leading-relaxed">El acorde <strong id="modal-lil-chord" class="text-cyan-400"></strong> ha superado el límite de frecuencias graves. <span id="modal-lil-notes-container"></span> <span id="modal-lil-desc"></span><br><br>¿Deseas mantener este acorde para escuchar el error o prefieres deshacer tu acción?</p>
-                <div class="flex flex-col gap-3"><button id="btn-modal-lil-deshacer" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:-translate-y-0.5 border border-rose-500">Deshacer Acción</button><button id="btn-modal-lil-mantener" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-600 font-bold py-3.5 rounded-xl transition-colors">Sí, mantener de todas formas</button></div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+                        <span class="text-amber-400 text-xl">⚠</span>
+                    </div>
+                    <h3 class="text-2xl font-extrabold text-white tracking-tight">Límite de intervalos graves</h3>
+                </div>
+                <div class="bg-slate-900/50 rounded-2xl p-4 mb-4 border border-slate-700">
+                    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1">Detectado en</p>
+                    <p class="text-slate-200 font-medium leading-relaxed">En <strong id="modal-lil-chord" class="text-cyan-400"></strong>, <span id="modal-lil-notes-container"></span> <span id="modal-lil-desc"></span></p>
+                </div>
+                <p class="text-slate-400 text-sm mb-6 leading-relaxed">En el registro grave, los intervalos cercanos suenan turbios y pierden definición. Para mantener un sonido claro conviene abrir el intervalo o subir el bajo de octava.</p>
+                <div class="flex flex-col gap-3"><button id="btn-modal-lil-deshacer" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:-translate-y-0.5 border border-rose-500">Deshacer cambio</button><button id="btn-modal-lil-mantener" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-600 font-bold py-3.5 rounded-xl transition-colors">Mantener de todas formas</button></div>
             </div>
         </div>
 
@@ -495,7 +514,7 @@
         window.progresion = []; window.indiceEdicion = -1; window.modoActual = 'ingreso'; window.registroInicial = 'central'; 
         window.modalContextIndex = -1; window.currentModalSection = 'all'; window.isAnalysisMenuOpen = false;
         window.historial = []; window.pasoActual = -1; window.omitirGuardado = false; 
-        window.vistaVertical = false; window.logicalZoom = 1.0; window.baseScale = 0.81; 
+        window.vistaVertical = false; window.logicalZoom = 1.0; window.baseScale = 0.729; 
         window.mostrarPianoVisible = false; window.isPrinting = false; window.portapapeles = null;
 
         // ============================================================
@@ -1849,8 +1868,18 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                 const sopranoPC = soprano % 12;
                 const rootPC = acorde.rootMidi % 12;
 
-                // ── CASO 1: Fundamental en soprano de acorde maj7 (solo tétradas) ──────────
-                if (tipoVoicing === 'tetrad' && dictObj && dictObj.isMaj7 && sopranoPC === rootPC) {
+                // ── CASO 1: Fundamental en soprano con 7ma mayor presente (2da menor expuesta) ──
+                // Aplica a cualquier acorde que tenga una 7ma mayor (PC root+11), ya sea
+                // constitutiva (maj7, m(maj7)) o como tensión T7 activa (disminuidos).
+                // La fundamental en soprano + la 7ma mayor justo debajo forman la 2da menor.
+                const maj7PC = (rootPC + 11) % 12;
+                const tieneMaj7 = (dictObj && dictObj.tetrad && dictObj.tetrad.includes(maj7PC)) ||
+                                  (acorde.tensionesActivas && acorde.tensionesActivas.includes(11));
+                // For an EXPOSED minor 2nd, the maj7 must be the voice immediately below the
+                // root in the soprano (the two highest voices a semitone apart).
+                const segundaVoz = acorde.trebleMidi.length >= 2 ? acorde.trebleMidi[acorde.trebleMidi.length - 2] : null;
+                const maj7Adyacente = segundaVoz !== null && segundaVoz % 12 === maj7PC && (soprano - segundaVoz) === 1;
+                if (tipoVoicing === 'tetrad' && sopranoPC === rootPC && tieneMaj7 && maj7Adyacente) {
                     window.renderizarPartitura(i, true);
                     const gradoId6 = acorde.gradoId + "_6";
                     const tiene6 = !!window.diccionarioActual[gradoId6];
@@ -1859,7 +1888,7 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                     const respuesta = await window.mostrarModalSegundaMenor(
                         acorde.nombre,
                         'fundamental en la soprano',
-                        `En un acorde maj7, la fundamental y la 7ma mayor forman una segunda menor en el extremo superior, lo que se evita en el voice leading tradicional.`,
+                        `La fundamental y la 7ma mayor forman una segunda menor en el extremo superior, lo que se evita en el voice leading tradicional.`,
                         tiene6 ? [{ id: 'acorde6', label: `Cambiar a ${nombre6} (acorde 6)`, desc: 'Reemplaza la 7ma por la 6ta, eliminando la segunda menor' }] : [],
                         'Mantener (segunda menor visible)'
                     );
@@ -1955,19 +1984,36 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
         };
 
         window.revisarLimitesGraves = async function(canCancel = true) {
+            // Helper to interpret the modal result consistently across all three checks.
+            // Returns 'continue' (keep auditing), 'abort-false' (caller rolls back),
+            // or 'abort-undone' (global undo already ran, stop everything).
+            const manejarResultado = async (res) => {
+                if (res === 'mantener') return 'continue';
+                if (res === 'deshacer-local') return 'abort-false';
+                // 'deshacer-global' — no local rollback available, run global undo
+                if (typeof window.deshacerAccion === 'function') window.deshacerAccion();
+                return 'abort-undone';
+            };
+
             for (let i = 0; i < window.progresion.length; i++) {
                 const acorde = window.progresion[i];
                 if (acorde.ignorarLIL || acorde.isRest) continue;
                 const minTreble = Math.min(...acorde.trebleMidi);
                 if (minTreble <= acorde.rootMidi) {
                     window.renderizarPartitura(i, true);
-                    if (await window.mostrarModalLIL(acorde.nombre, window.midiATone(minTreble, acorde.spellings), window.midiATone(acorde.rootMidi, acorde.spellings), `<span class="font-bold text-rose-400">se cruzan</span>.`, canCancel) || !canCancel) acorde.ignorarLIL = true;
-                    else return false; continue; 
+                    const res = await window.mostrarModalLIL(acorde.nombre, window.midiATone(minTreble, acorde.spellings), window.midiATone(acorde.rootMidi, acorde.spellings), `<span class="font-bold text-rose-400">se cruzan</span>.`, canCancel);
+                    const accion = await manejarResultado(res);
+                    if (accion === 'continue') { acorde.ignorarLIL = true; continue; }
+                    if (accion === 'abort-false') return false;
+                    return true; // abort-undone: undo already restored state
                 }
                 if (acorde.rootMidi < 36) {
                     window.renderizarPartitura(i, true);
-                    if (await window.mostrarModalLIL(acorde.nombre, window.midiATone(acorde.rootMidi, acorde.spellings), "", `está <span class="font-bold text-rose-400">bajo el Do2</span>.`, canCancel) || !canCancel) acorde.ignorarLIL = true;
-                    else return false; continue;
+                    const res = await window.mostrarModalLIL(acorde.nombre, window.midiATone(acorde.rootMidi, acorde.spellings), "", `está <span class="font-bold text-rose-400">por debajo del Do2</span>.`, canCancel);
+                    const accion = await manejarResultado(res);
+                    if (accion === 'continue') { acorde.ignorarLIL = true; continue; }
+                    if (accion === 'abort-false') return false;
+                    return true;
                 }
                 const notas = [acorde.rootMidi, ...acorde.trebleMidi].sort((a, b) => a - b);
                 let lilTriggered = false;
@@ -1976,9 +2022,11 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                         const intv = notas[k] - notas[j];
                         if (LIMITES_LIL[intv] && notas[j] < LIMITES_LIL[intv].min) {
                             window.renderizarPartitura(i, true);
-                            if (await window.mostrarModalLIL(acorde.nombre, window.midiATone(notas[j], acorde.spellings), window.midiATone(notas[k], acorde.spellings), `forman una <span class="font-bold text-rose-400">${LIMITES_LIL[intv].nombre}</span> grave.`, canCancel) || !canCancel) {
-                                acorde.ignorarLIL = true; lilTriggered = true; break;
-                            } else return false; 
+                            const res = await window.mostrarModalLIL(acorde.nombre, window.midiATone(notas[j], acorde.spellings), window.midiATone(notas[k], acorde.spellings), `forman una <span class="font-bold text-rose-400">${LIMITES_LIL[intv].nombre}</span> en el registro grave.`, canCancel);
+                            const accion = await manejarResultado(res);
+                            if (accion === 'continue') { acorde.ignorarLIL = true; lilTriggered = true; break; }
+                            if (accion === 'abort-false') return false;
+                            return true; // abort-undone
                         }
                     }
                 }
@@ -2043,7 +2091,7 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
             // Acordes de 6ta (sustitución del maj7 cuando queda fundamental en soprano)
             // La 6ta (semitono 9 desde root) es nota constitutiva, NO tensión.
             'I_6':  { escala: 'Jónica',    t: [2],       ev: [5],    constitutivas: [0,4,7,9] },
-            'IV_6': { escala: 'Lidia',     t: [2],       ev: [],     constitutivas: [0,4,7,9] },
+            'IV_6': { escala: 'Lidia',     t: [2,6],     ev: [],     constitutivas: [0,4,7,9] },
 
             // ── INTERCAMBIO MODAL ──────────────────────────────────────────────────
             // Im7 prestado → Dórica (9, 11, 13 — sin restricciones)
@@ -2451,11 +2499,17 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                         if (prevMatches.length > 0) tensionMidi = Math.max(...prevMatches);
                     }
                     if (tensionMidi === null) {
-                        // No common tone — place near soprano
-                        const ref = voicing[voicing.length - 1] || 65;
-                        tensionMidi = tensionPC + Math.floor(ref / 12) * 12;
-                        if (tensionMidi > ref + 6) tensionMidi -= 12;
-                        if (tensionMidi < ref - 6) tensionMidi += 12;
+                        // No common tone — place the added voice within the voicing range,
+                        // in the octave closest to the voicing centroid (best distribution,
+                        // avoids pushing the note an octave above the soprano).
+                        const centroid = voicing.length > 0
+                            ? voicing.reduce((s, m) => s + m, 0) / voicing.length
+                            : 65;
+                        const baseOct = Math.floor(centroid / 12) * 12;
+                        const candidates = [baseOct - 12 + tensionPC, baseOct + tensionPC, baseOct + 12 + tensionPC];
+                        tensionMidi = candidates.reduce((best, m) =>
+                            Math.abs(m - centroid) < Math.abs(best - centroid) ? m : best
+                        );
                     }
                     voicing.push(tensionMidi);
                 } else {
@@ -3277,19 +3331,22 @@ window.crearPiano = function() {
                 const modal = document.getElementById('modal-lil');
                 const btnDeshacer = document.getElementById('btn-modal-lil-deshacer'); const btnMantener = document.getElementById('btn-modal-lil-mantener');
                 document.getElementById('modal-lil-chord').innerText = acordeNombre;
-                document.getElementById('modal-lil-notes-container').innerHTML = n2Nombre === "" ? `La nota <strong class="text-rose-400 font-bold bg-rose-900/30 px-1 rounded">${n1Nombre}</strong>` : `Las notas <strong class="text-rose-400 font-bold bg-rose-900/30 px-1 rounded">${n1Nombre}</strong> y <strong class="text-rose-400 font-bold bg-rose-900/30 px-1 rounded">${n2Nombre}</strong>`;
+                document.getElementById('modal-lil-notes-container').innerHTML = n2Nombre === "" ? `la nota <strong class="text-rose-400 font-bold bg-rose-900/30 px-1 rounded">${n1Nombre}</strong>` : `las notas <strong class="text-rose-400 font-bold bg-rose-900/30 px-1 rounded">${n1Nombre}</strong> y <strong class="text-rose-400 font-bold bg-rose-900/30 px-1 rounded">${n2Nombre}</strong>`;
                 document.getElementById('modal-lil-desc').innerHTML = intDesc;
-                
-                if (!canCancel) {
-                    btnDeshacer.style.display = 'none'; btnMantener.innerText = 'Entendido';
-                    btnMantener.classList.replace('bg-slate-700', 'bg-cyan-600'); btnMantener.classList.replace('text-slate-300', 'text-white');
-                } else {
-                    btnDeshacer.style.display = 'block'; btnMantener.innerText = 'Sí, mantener de todas formas';
-                    btnMantener.classList.replace('bg-cyan-600', 'bg-slate-700'); btnMantener.classList.replace('text-white', 'text-slate-300');
-                }
+
+                // Deshacer is ALWAYS available now.
+                btnDeshacer.style.display = 'block';
+                btnMantener.innerText = 'Mantener de todas formas';
+                btnMantener.classList.replace('bg-cyan-600', 'bg-slate-700'); btnMantener.classList.replace('text-white', 'text-slate-300');
+
                 modal.classList.remove('hidden'); requestAnimationFrame(() => { modal.classList.remove('opacity-0'); document.getElementById('modal-lil-content').classList.remove('scale-95'); });
-                const cerrar = (resultado) => { modal.classList.add('opacity-0'); document.getElementById('modal-lil-content').classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); resolve(resultado); }, 300); };
-                btnDeshacer.onclick = () => cerrar(false); btnMantener.onclick = () => cerrar(true);
+                // resolve values:  'mantener' | 'deshacer-local' | 'deshacer-global'
+                const cerrar = (resultado) => {
+                    modal.classList.add('opacity-0'); document.getElementById('modal-lil-content').classList.add('scale-95');
+                    setTimeout(() => { modal.classList.add('hidden'); resolve(resultado); }, 300);
+                };
+                btnMantener.onclick = () => cerrar('mantener');
+                btnDeshacer.onclick = () => cerrar(canCancel ? 'deshacer-local' : 'deshacer-global');
             });
         };
 
@@ -3411,6 +3468,173 @@ window.crearPiano = function() {
         window.toggleAnalisisMain = function() {
             if(document.activeElement) document.activeElement.blur(); 
             window.renderizarPartitura();
+        };
+
+        // Refresca el panel Relación E/A si está visible (llamado tras cambios en la progresión)
+        window.refrescarRelacionEA = function() {
+            const panel = document.getElementById('panel-relacion-ea');
+            if (panel && !panel.classList.contains('hidden')) window.renderRelacionEA();
+        };
+
+        // ── Relación Escala/Acorde ────────────────────────────────────────────
+        // Reconstruye la escala de cada acorde desde su ficha de tensiones y
+        // muestra cada nota con su nomenclatura funcional:
+        //   Arpegio (constitutivas): 1, 3, 5, 7
+        //   Tensiones disponibles:   T9, T#11, T13, etc.
+        //   Notas a evitar:          S4, Sb2, Sb6, etc.
+        window.toggleRelacionEA = function(btn) {
+            const panel = document.getElementById('panel-relacion-ea');
+            const activo = btn.dataset.activo === '1';
+            if (activo) {
+                panel.classList.add('hidden');
+                btn.dataset.activo = '0';
+                btn.classList.remove('bg-purple-500/20', 'text-purple-400');
+                btn.classList.add('text-slate-500');
+            } else {
+                btn.dataset.activo = '1';
+                btn.classList.remove('text-slate-500');
+                btn.classList.add('bg-purple-500/20', 'text-purple-400');
+                window.renderRelacionEA();
+                panel.classList.remove('hidden');
+            }
+            if (document.activeElement) document.activeElement.blur();
+        };
+
+        window.renderRelacionEA = function() {
+            const cont = document.getElementById('contenedor-relacion-ea');
+            if (!cont) return;
+            if (window.progresion.length === 0) {
+                cont.innerHTML = '<p class="text-[11px] text-slate-500 italic px-2 py-1">Agrega acordes para ver su relación escala/acorde.</p>';
+                return;
+            }
+
+            // Semitone → interval name (relative to root)
+            const intervalNames = { 0:'1',1:'b2',2:'2',3:'b3',4:'3',5:'4',6:'b5',7:'5',8:'b6',9:'6',10:'b7',11:'7' };
+            const tensionNames  = { 1:'b9',2:'9',3:'#9',5:'11',6:'#11',8:'b13',9:'13' };
+            // Arpeggio names reflect interval quality: b3, b5, b7, 7, etc.
+            const arpNames      = { 0:'1',3:'b3',4:'3',6:'b5',7:'5',8:'#5',9:'6',10:'b7',11:'7' };
+
+            const labelFor = (st, ficha, esDim) => {
+                if (ficha.constitutivas && ficha.constitutivas.includes(st)) {
+                    // En acordes disminuidos, el semitono 9 es la 7ma disminuida (bb7), no 6ta
+                    if (st === 9 && esDim) return { txt: 'bb7', tipo: 'arp' };
+                    return { txt: (arpNames[st] || intervalNames[st]), tipo: 'arp' };
+                }
+                if (ficha.t && ficha.t.includes(st)) return { txt: 'T' + (tensionNames[st] || intervalNames[st]), tipo: 'ten' };
+                if (ficha.ev && ficha.ev.includes(st)) return { txt: 'S' + intervalNames[st], tipo: 'ev' };
+                return { txt: intervalNames[st], tipo: 'otro' };
+            };
+
+            // Choose the active scale ficha: for chords with escalasAlt, pick the alt
+            // whose tension set matches the active tensions; else the primary.
+            const elegirFicha = (ac) => {
+                const base = window.obtenerFichaTensiones(ac.gradoId);
+                if (!base) return null;
+                if (!base.escalasAlt || !ac.tensionesActivas || ac.tensionesActivas.length === 0) return base;
+                // Find the alt scale that contains all active tensions
+                const activas = ac.tensionesActivas;
+                for (const alt of base.escalasAlt) {
+                    if (activas.every(t => alt.t.includes(t) || (alt.constitutivas && alt.constitutivas.includes(t)))) {
+                        return alt;
+                    }
+                }
+                // Default: if any active tension is in an alt but not the base, use first matching alt
+                for (const alt of base.escalasAlt) {
+                    if (activas.some(t => alt.t.includes(t))) return alt;
+                }
+                return base;
+            };
+
+            cont.innerHTML = '';
+            window.progresion.forEach((ac, i) => {
+                if (ac.isRest) return;
+                const ficha = elegirFicha(ac);
+                const rootPC = ac.rootMidi % 12;
+                const sp = ac.spellings || window.nombresNotasActual;
+
+                const row = document.createElement('div');
+                row.className = 'flex items-start gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-700/30 transition-colors';
+
+                // Chord name + scale name
+                const head = document.createElement('div');
+                head.className = 'shrink-0 w-[120px]';
+                head.innerHTML = `<div class="text-[12px] font-bold text-slate-200">${ac.nombre}</div><div class="text-[10px] text-slate-500">${ficha ? ficha.escala : '—'}</div>`;
+                row.appendChild(head);
+
+                if (ficha) {
+                    // Detectar si es disminuido (constitutivas con b3 y b5, o nombre con dim/°)
+                    const esDim = (ficha.constitutivas && ficha.constitutivas.includes(3) && ficha.constitutivas.includes(6) && ficha.constitutivas.includes(9))
+                                  || /dim|°/.test(ac.nombre);
+                    // Detectar si es acorde 6 (constitutivas incluye la 6ta=9 pero no la 7ma)
+                    const esAcorde6 = !esDim && ficha.constitutivas && ficha.constitutivas.includes(9)
+                                      && !ficha.constitutivas.includes(10) && !ficha.constitutivas.includes(11);
+
+                    let scaleSemis, septimaEvitar = null;
+                    if (esDim) {
+                        // Escala Disminuida Diatónica: mostrar la escala completa de 8 notas.
+                        // Arpegio (1,b3,b5,°7) + tensiones disponibles + resto como notas a evitar (solo "S").
+                        // La escala disminuida simétrica: 1,2,b3,4,b5,b6,°7,7 → semitonos 0,2,3,5,6,8,9,11
+                        scaleSemis = [0,2,3,5,6,8,9,11];
+                    } else {
+                        // Build scale from constitutivas ∪ t ∪ ev
+                        scaleSemis = [...new Set([...(ficha.constitutivas||[]), ...(ficha.t||[]), ...(ficha.ev||[])])];
+                        if (esAcorde6) {
+                            const esEscalaMenor = ficha.constitutivas.includes(3);
+                            septimaEvitar = esEscalaMenor ? 10 : 11;
+                            if (!scaleSemis.includes(septimaEvitar)) scaleSemis.push(septimaEvitar);
+                        }
+                    }
+                    scaleSemis.sort((a,b) => a-b);
+
+                    const notesWrap = document.createElement('div');
+                    notesWrap.className = 'flex gap-1.5 flex-wrap';
+                    scaleSemis.forEach(st => {
+                        const notePC = (rootPC + st) % 12;
+                        const noteName = window.formatNotaFromPC(notePC, sp);
+                        let lab;
+                        if (esDim) {
+                            // Disminuido: arpegio (1,b3,b5,°7), tensiones (T...), resto solo "S"
+                            if (st === 0) lab = { txt: '1', tipo: 'arp' };
+                            else if (st === 3) lab = { txt: 'b3', tipo: 'arp' };
+                            else if (st === 6) lab = { txt: 'b5', tipo: 'arp' };
+                            else if (st === 9) lab = { txt: '°7', tipo: 'arp' };
+                            else if (ficha.t && ficha.t.includes(st)) lab = { txt: 'T' + (tensionNames[st] || intervalNames[st]), tipo: 'ten' };
+                            else lab = { txt: 'S', tipo: 'ev' }; // nota a evitar sin intervalo
+                        } else if (esAcorde6 && st === septimaEvitar) {
+                            lab = { txt: st === 11 ? 'S7' : 'Sb7', tipo: 'ev' };
+                        } else {
+                            lab = labelFor(st, ficha, esDim);
+                        }
+                        // Color de la etiqueta y de la nota según tipo, con buen contraste:
+                        // arpegio = blanco/gris neutro, tensión = cyan vivo, evitar = rojo
+                        const labelColor = lab.tipo === 'arp' ? 'text-slate-500'
+                                         : lab.tipo === 'ten' ? 'text-cyan-300'
+                                         : lab.tipo === 'ev'  ? 'text-rose-400'
+                                         : 'text-slate-600';
+                        const noteColor  = lab.tipo === 'arp' ? 'text-slate-100'
+                                         : lab.tipo === 'ten' ? 'text-cyan-300'
+                                         : lab.tipo === 'ev'  ? 'text-rose-300'
+                                         : 'text-slate-400';
+                        const cell = document.createElement('div');
+                        cell.className = 'flex flex-col items-center min-w-[28px]';
+                        cell.innerHTML = `<div class="text-[13px] font-bold ${noteColor} font-mono">${noteName}</div><div class="text-[9px] font-extrabold ${labelColor} mt-0.5">${lab.txt}</div>`;
+                        notesWrap.appendChild(cell);
+                    });
+                    row.appendChild(notesWrap);
+                } else {
+                    const noInfo = document.createElement('div');
+                    noInfo.className = 'text-[10px] text-slate-600 italic';
+                    noInfo.textContent = 'Sin escala registrada';
+                    row.appendChild(noInfo);
+                }
+                cont.appendChild(row);
+            });
+
+            // Legend
+            const legend = document.createElement('div');
+            legend.className = 'flex gap-4 px-2 pt-2 mt-1 border-t border-slate-700/40 text-[9px] text-slate-500';
+            legend.innerHTML = '<span><span class="text-slate-400 font-bold">1·3·5·7</span> Arpegio</span><span><span class="text-cyan-400 font-bold">T</span> Tensión</span><span><span class="text-rose-400 font-bold">S</span> Nota a evitar</span>';
+            cont.appendChild(legend);
         };
 
         // Colores activos por capa (para el botón y el indicador en el header)
@@ -3560,6 +3784,15 @@ window.crearPiano = function() {
             }
 
             const div = document.getElementById("contenedor-partitura"); div.innerHTML = ""; 
+            // Vista horizontal: altura fija con scroll interno (el zoom no empuja el layout).
+            // Vista vertical: la altura se fija más abajo a la base de todos los sistemas,
+            // de modo que el zoom no expanda el área (solo agranda el contenido con scroll).
+            const scrollCont = document.getElementById("scroll-partitura");
+            if (scrollCont && !window.vistaVertical) {
+                scrollCont.style.height = '300px';
+                scrollCont.style.overflowY = 'auto';
+                scrollCont.style.overflowX = 'auto';
+            }
             const { Renderer, Stave, StaveNote, Formatter, Voice, StaveConnector, Annotation, Accidental } = Vex.Flow;
             let measures = []; let currentMeasure = { beats: 0, chords: [], chordIdxs: [] };
             
@@ -3594,6 +3827,16 @@ window.crearPiano = function() {
 
             const context = renderer.getContext();
             context.scale(actualScale, actualScale);
+
+            // Vista vertical: fija la altura del área a la que ocupan todos los sistemas
+            // a zoom base (logicalZoom = 1). Así, al hacer zoom, el área no sigue creciendo
+            // verticalmente — el contenido se agranda dentro del área con scroll interno.
+            if (window.vistaVertical && scrollCont) {
+                const alturaBase = (Math.max(300, (numLines * 280) + 80) * window.baseScale) + 40;
+                scrollCont.style.height = alturaBase + 'px';
+                scrollCont.style.overflowY = 'auto';
+                scrollCont.style.overflowX = 'auto';
+            }
 
             let currentX = 20; let noteIndexGlobal = 0; let allNotes = [];
 
@@ -4709,6 +4952,7 @@ window.mostrarToast = function(mensaje, tipo = 'error') {
         };
 
         window.actualizarTimeline = function() {
+            if (typeof window.refrescarRelacionEA === 'function') window.refrescarRelacionEA();
             const container = document.getElementById('timeline-container');
             if (window.progresion.length === 0) return container.innerHTML = '<span class="text-sm text-slate-500 font-medium italic">Vacío...</span>';
             container.innerHTML = '';
