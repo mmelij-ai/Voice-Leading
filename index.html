@@ -313,7 +313,7 @@
         <div id="panel-relacion-ea" class="hidden bg-slate-800/60 rounded-2xl border border-slate-700/60 mb-2 hide-on-print overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-2.5 border-b border-slate-700/60">
                 <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Relación Escala / Acorde</span>
-                <span class="text-[10px] text-slate-500">— escala recomendada para cada acorde</span>
+                <span class="text-[10px] text-slate-500">— escala recomendada para cada acorde, por compás</span>
             </div>
             <div id="contenedor-relacion-ea" class="p-3 flex flex-col gap-2 max-h-[320px] overflow-y-auto"></div>
         </div>
@@ -820,6 +820,13 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                         { tipo: 'cad_II_2', name: "IIrel - V7", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 4 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/II", tetradMod: [0,4,7,10], modeShift: -1 } },
                         { tipo: 'cad_II_4', name: "IIrel - subV7", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 4 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/II", tetradMod: [0,4,7,10], modeShift: 2 } },
                         { tipo: 'cad_II_3', name: "IIIm7 - subV7", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "IIIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/II", tetradMod: [0,4,7,10], modeShift: 2 } }
+                    ],
+                    // Resolución deceptiva de los dominantes secundarios/sustitutos del II.
+                    // V7/II (A7) resuelve un semitono abajo → Abmaj7 (bVImaj7).
+                    // subV7/II (Eb7) resuelve una 4ta justa arriba → Abmaj7 (bVImaj7).
+                    // Ambos al mismo acorde; se analiza como intercambio modal (bVImaj7).
+                    deceptivasSecundarias: [
+                        { ref: 'VI_VI_modal_1', label: 'bVImaj7', dominantesPrevios: ['II_II_V7', 'II_II_subV7'] }
                     ]
                 }
             },
@@ -849,7 +856,8 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                     intercambio: [
                         { tipo: 'IV_modal_1',    name: "IVm7",       rootOffset: 0, triadExt: "m",      tetradExt: "m7",     tetrad: [0, 3, 7, 10], modeShift: 3 },
                         { tipo: 'IV_modal_2',    name: "IV7",        rootOffset: 0, triadExt: "",        tetradExt: "7",      tetrad: [0, 4, 7, 10], modeShift: 2 },
-                        { tipo: 'IV_modal_mmaj7', name: "IVm(maj7)", rootOffset: 0, triadExt: "m(maj7)", tetradExt: "m(maj7)", tetrad: [0, 3, 7, 11], modeShift: 4 }
+                        { tipo: 'IV_modal_mmaj7', name: "IVm(maj7)", rootOffset: 0, triadExt: "m(maj7)", tetradExt: "m(maj7)", tetrad: [0, 3, 7, 11], modeShift: 4 },
+                        { tipo: 'IV_modal_sharp4m7b5', name: "#IVm7b5", rootOffset: 1, triadExt: "dim", tetradExt: "m7b5", tetrad: [0, 3, 6, 10], modeShift: -1, raisedFourth: true }
                     ],
                     disminuidos: [
                         { tipo: 'IV_dimUp', name: "#IV°7", rootOffset: 1, triadExt: "dim", tetradExt: "dim7", tetrad: [0, 3, 6, 9], modeShift: -1 }
@@ -888,6 +896,18 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                         { tipo: 'cad_V_2', name: "IIrel - V7/V", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 7, triadExt: "", tetradExt: "7", roman: "V7/V", tetradMod: [0,4,7,10], modeShift: -1 } },
                         { tipo: 'cad_V_4', name: "IIrel - subV7/V", c1: { rootOffset: 8, triadExt: "m", tetradExt: "m7", roman: " ", tetradMod: [0,3,7,10], modeShift: 6 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/V", tetradMod: [0,4,7,10], modeShift: 4 } },
                         { tipo: 'cad_V_3', name: "VIm7 - subV7/V", c1: { rootOffset: 2, triadExt: "m", tetradExt: "m7", roman: "VIm7", tetradMod: [0,3,7,10], modeShift: 0 }, c2: { rootOffset: 1, triadExt: "", tetradExt: "7", roman: "subV7/V", tetradMod: [0,4,7,10], modeShift: 4 } }
+                    ],
+                    // Resoluciones deceptivas del V7: referencias a acordes que ya existen
+                    // en otros grados. Al seleccionar, se ingresa ese acorde y el V7 previo
+                    // (diatónico o sus4) cambia su análisis a "(V7)" con paréntesis.
+                    deceptivas: [
+                        { ref: 'III',              label: 'IIIm7' },
+                        { ref: 'VI',               label: 'VIm7' },
+                        { ref: 'IV_IV_modal_sharp4m7b5', label: '#IVm7b5' },
+                        { ref: 'III_III_modal_1',  label: 'bIIImaj7' },
+                        { ref: 'VI_VI_modal_1',    label: 'bVImaj7' },
+                        { ref: 'II_II_modal_2',    label: 'bIImaj7' },
+                        { ref: 'VII_VII_modal_2',  label: 'bVIImaj7' }
                     ]
                 }
             },
@@ -943,6 +963,7 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
         // Sin dependencias de DOM. Reutilizables directamente.
         // Futuro: extraer como spellingEngine.js
         // ============================================================
+        // Patch b5 spelling: tritone (semitone 6) always uses flat enharmonic (Ab not G#)
         window.patchB5Spellings = function(sp, chordRootPC) {
             const b5PC = (chordRootPC + 6) % 12;
             const flatNamesArr = ['c','db','d','eb','e','f','gb','g','ab','a','bb','b'];
@@ -952,6 +973,34 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
             }
             return sp;
         };
+
+        // Spell a chord's tones by stacking thirds from a given root NAME, so the
+        // letters are correct (e.g. #IVm7b5 in B major = E# G# B D#, not F...).
+        // Returns a spellings array (12 PCs) patched for this chord's tones.
+        // rootName: e.g. 'e#'; tetradIntervals: semitones from root, e.g. [0,3,6,10].
+        window.spellChordByLetters = function(sp, rootName, tetradIntervals) {
+            const letters = ['c','d','e','f','g','a','b'];
+            const letterPC = { c:0, d:2, e:4, f:5, g:7, a:9, b:11 };
+            const rootLetter = rootName[0];
+            const rootLetterIdx = letters.indexOf(rootLetter);
+            if (rootLetterIdx === -1) return sp;
+            const rootAcc = rootName.slice(1);
+            const accVal = rootAcc === '#' ? 1 : rootAcc === '##' ? 2 : rootAcc === 'b' ? -1 : rootAcc === 'bb' ? -2 : 0;
+            const rootPC = (letterPC[rootLetter] + accVal + 12) % 12;
+            // Stack in thirds: each chord tone is two letters above the previous
+            const letterSteps = [0, 2, 4, 6];
+            const out = [...sp];
+            tetradIntervals.forEach((iv, i) => {
+                const L = letters[(rootLetterIdx + (letterSteps[i] || 0)) % 7];
+                const targetPC = (rootPC + iv) % 12;
+                const nat = letterPC[L];
+                let d = (targetPC - nat + 12) % 12; if (d > 6) d -= 12;
+                const acc = d === 1 ? '#' : d === 2 ? '##' : d === -1 ? 'b' : d === -2 ? 'bb' : '';
+                out[targetPC] = L + acc;
+            });
+            return out;
+        };
+
         window.getModeSpellings = function(baseKey, flatAdded) {
             if (!flatAdded) return infoTonalidades[baseKey].notas;
             const circleOfFifths = ["Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B"];
@@ -1016,17 +1065,16 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                 window.modosActivos.clear();
                 window.modoBoton = 'diat';
             } else {
-                // Toggle the clicked mode
+                // Mutually exclusive: clicking a mode that's already active turns it off
+                // (back to diatonic); clicking a different mode switches to only that one.
                 if (window.modosActivos.has(modo)) {
-                    window.modosActivos.delete(modo);
+                    window.modosActivos.clear();
+                    window.modoBoton = 'diat';
                 } else {
+                    window.modosActivos.clear();
                     window.modosActivos.add(modo);
+                    window.modoBoton = modo;
                 }
-                // Determine effective single mode by priority: dom > subv7 > modal > diat
-                if      (window.modosActivos.has('dom'))   window.modoBoton = 'dom';
-                else if (window.modosActivos.has('subv7')) window.modoBoton = 'subv7';
-                else if (window.modosActivos.has('modal')) window.modoBoton = 'modal';
-                else                                        window.modoBoton = 'diat';
             }
 
             // Update button visuals
@@ -1213,6 +1261,22 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                                      : window.getModeSpellings(window.tonalidadActual, v.modeShift || 0);
                             if (ext === 'm7b5' || ext === 'dim') sp = window.patchB5Spellings(sp, rMidi % 12);
                             if (ext === '7') sp = window.patchDominantThird(sp, rMidi % 12);
+                            // #IVm7b5: spell by letters from the raised-fourth root (IV letter + sharp)
+                            if (v.raisedFourth) {
+                                // IV note name in this key (the 4th scale degree), then raise it
+                                const ivPC = (chordRootMidi % 12); // chordRootMidi is the grade root = IV
+                                const ivName = window.getModeSpellings(window.tonalidadActual, 0)[ivPC];
+                                const ivLetter = ivName ? ivName[0] : null;
+                                if (ivLetter) {
+                                    // Raised fourth root = IV letter + sharp (accidental to reach #IV PC)
+                                    const letterPCmap = { c:0, d:2, e:4, f:5, g:7, a:9, b:11 };
+                                    const sharpRootPC = (rMidi % 12);
+                                    let d = (sharpRootPC - letterPCmap[ivLetter] + 12) % 12; if (d > 6) d -= 12;
+                                    const acc = d === 1 ? '#' : d === 2 ? '##' : d === 0 ? '' : d === -1 ? 'b' : '';
+                                    const raisedRootName = ivLetter + acc;
+                                    sp = window.spellChordByLetters(sp, raisedRootName, v.tetrad);
+                                }
+                            }
                             const dictIdMM = g.id + "_" + v.tipo;
                             const chordTetradMM = v.tetrad.map(n => ((rMidi % 12) + n) % 12);
                             // sus4 chords: nombre uses root name + '7sus4', roman = 'V7sus4'
@@ -1329,7 +1393,7 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                     let nuevoDatos = window.diccionarioActual[ac.gradoId];
                     if (nuevoDatos && !ac.isRest) {
                         ac.nombre = nuevoDatos.nombre; 
-                        ac.roman = nuevoDatos.roman;
+                        ac.roman = ac.resolucionDeceptiva ? '(' + nuevoDatos.roman + ')' : nuevoDatos.roman;
                         ac.bassOctaveOffset = 0; 
                         ac.rootMidi = nuevoDatos.root;
                         ac.spellings = nuevoDatos.spellings || window.nombresNotasActual;
@@ -2106,6 +2170,8 @@ const LIMITES_LIL={1:{min:48,nombre:"2da menor"},2:{min:48,nombre:"2da Mayor"},3
                                    sustituye: { 2: 0, 5: 7, 9: 7 } },
             // IV7 prestado → Mixolidia (9, 13 | evitar 4)
             'IV_IV_modal_2':   { escala: 'Mixolidia',        t: [2,9],     ev: [5],   constitutivas: [0,4,7,10] },
+            // #IVm7b5 → Locrio (11 | evitar b9, b13)
+            'IV_IV_modal_sharp4m7b5': { escala: 'Locrio', t: [5], ev: [1,8], constitutivas: [0,3,6,10] },
             // Vm7 prestado (intercambio modal) → Dórica (9, 11, 13 sin restricciones)
             // NOTA: Frigia es para Vm7 DIATÓNICO del modo menor. Intercambio modal usa Dórica.
             'V_V_modal':       { escala: 'Dórica',            t: [2,5,9],   ev: [],    constitutivas: [0,3,7,10] },
@@ -3545,9 +3611,8 @@ window.crearPiano = function() {
                 return base;
             };
 
-            cont.innerHTML = '';
-            window.progresion.forEach((ac, i) => {
-                if (ac.isRest) return;
+            // Renderiza una fila (un acorde) y la añade al contenedor dado.
+            const renderFila = (ac, destino) => {
                 const ficha = elegirFicha(ac);
                 const rootPC = ac.rootMidi % 12;
                 const sp = ac.spellings || window.nombresNotasActual;
@@ -3555,28 +3620,21 @@ window.crearPiano = function() {
                 const row = document.createElement('div');
                 row.className = 'flex items-start gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-700/30 transition-colors';
 
-                // Chord name + scale name
                 const head = document.createElement('div');
                 head.className = 'shrink-0 w-[120px]';
                 head.innerHTML = `<div class="text-[12px] font-bold text-slate-200">${ac.nombre}</div><div class="text-[10px] text-slate-500">${ficha ? ficha.escala : '—'}</div>`;
                 row.appendChild(head);
 
                 if (ficha) {
-                    // Detectar si es disminuido (constitutivas con b3 y b5, o nombre con dim/°)
                     const esDim = (ficha.constitutivas && ficha.constitutivas.includes(3) && ficha.constitutivas.includes(6) && ficha.constitutivas.includes(9))
                                   || /dim|°/.test(ac.nombre);
-                    // Detectar si es acorde 6 (constitutivas incluye la 6ta=9 pero no la 7ma)
                     const esAcorde6 = !esDim && ficha.constitutivas && ficha.constitutivas.includes(9)
                                       && !ficha.constitutivas.includes(10) && !ficha.constitutivas.includes(11);
 
                     let scaleSemis, septimaEvitar = null;
                     if (esDim) {
-                        // Escala Disminuida Diatónica: mostrar la escala completa de 8 notas.
-                        // Arpegio (1,b3,b5,°7) + tensiones disponibles + resto como notas a evitar (solo "S").
-                        // La escala disminuida simétrica: 1,2,b3,4,b5,b6,°7,7 → semitonos 0,2,3,5,6,8,9,11
                         scaleSemis = [0,2,3,5,6,8,9,11];
                     } else {
-                        // Build scale from constitutivas ∪ t ∪ ev
                         scaleSemis = [...new Set([...(ficha.constitutivas||[]), ...(ficha.t||[]), ...(ficha.ev||[])])];
                         if (esAcorde6) {
                             const esEscalaMenor = ficha.constitutivas.includes(3);
@@ -3593,20 +3651,17 @@ window.crearPiano = function() {
                         const noteName = window.formatNotaFromPC(notePC, sp);
                         let lab;
                         if (esDim) {
-                            // Disminuido: arpegio (1,b3,b5,°7), tensiones (T...), resto solo "S"
                             if (st === 0) lab = { txt: '1', tipo: 'arp' };
                             else if (st === 3) lab = { txt: 'b3', tipo: 'arp' };
                             else if (st === 6) lab = { txt: 'b5', tipo: 'arp' };
                             else if (st === 9) lab = { txt: '°7', tipo: 'arp' };
                             else if (ficha.t && ficha.t.includes(st)) lab = { txt: 'T' + (tensionNames[st] || intervalNames[st]), tipo: 'ten' };
-                            else lab = { txt: 'S', tipo: 'ev' }; // nota a evitar sin intervalo
+                            else lab = { txt: 'S', tipo: 'ev' };
                         } else if (esAcorde6 && st === septimaEvitar) {
                             lab = { txt: st === 11 ? 'S7' : 'Sb7', tipo: 'ev' };
                         } else {
                             lab = labelFor(st, ficha, esDim);
                         }
-                        // Color de la etiqueta y de la nota según tipo, con buen contraste:
-                        // arpegio = blanco/gris neutro, tensión = cyan vivo, evitar = rojo
                         const labelColor = lab.tipo === 'arp' ? 'text-slate-500'
                                          : lab.tipo === 'ten' ? 'text-cyan-300'
                                          : lab.tipo === 'ev'  ? 'text-rose-400'
@@ -3627,7 +3682,35 @@ window.crearPiano = function() {
                     noInfo.textContent = 'Sin escala registrada';
                     row.appendChild(noInfo);
                 }
-                cont.appendChild(row);
+                destino.appendChild(row);
+            };
+
+            cont.innerHTML = '';
+
+            // Vista completa: todos los acordes agrupados por compás (4 beats c/u)
+            const measures = [];
+            let cur = { beats: 0, items: [] };
+            window.progresion.forEach((ac, idx) => {
+                if (cur.beats + ac.beats > 4 && cur.items.length > 0) { measures.push(cur); cur = { beats: 0, items: [] }; }
+                cur.items.push({ ac, idx }); cur.beats += ac.beats;
+                if (cur.beats >= 4) { measures.push(cur); cur = { beats: 0, items: [] }; }
+            });
+            if (cur.items.length > 0) measures.push(cur);
+
+            measures.forEach((measure, mIdx) => {
+                const chordsInMeasure = measure.items.filter(it => !it.ac.isRest);
+                if (chordsInMeasure.length === 0) return;
+                const block = document.createElement('div');
+                block.className = 'flex gap-3 items-start';
+                const numLabel = document.createElement('div');
+                numLabel.className = 'shrink-0 w-7 pt-1.5 text-right text-[11px] font-bold text-purple-400/70';
+                numLabel.textContent = (mIdx + 1);
+                block.appendChild(numLabel);
+                const rowsWrap = document.createElement('div');
+                rowsWrap.className = 'flex-1 flex flex-col gap-1 border-l border-slate-700/40 pl-3';
+                chordsInMeasure.forEach(it => renderFila(it.ac, rowsWrap));
+                block.appendChild(rowsWrap);
+                cont.appendChild(block);
             });
 
             // Legend
@@ -4631,10 +4714,10 @@ window.crearPiano = function() {
                         ${contenido || `<div class="text-[10px] text-slate-600 italic px-2">No aplica</div>`}
                     </div>`;
 
-                // ── Intercambio Modal (non-sus4 only) ───────────────────────────────
+                // ── Intercambio Modal (acordes de otro modo) ────────────────────────
                 let htmlModal = '';
                 gObj.areas.intercambio.forEach(v => {
-                    if (v.sus4) return; // sus4 go to Variantes section
+                    if (v.sus4 || v.raisedFourth) return; // estos van a Variantes
                     const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
                     if (!c) return;
                     htmlModal += btnAcorde(c.id, c.nombre, v.name,
@@ -4649,38 +4732,95 @@ window.crearPiano = function() {
                         'bg-emerald-900/20 border-emerald-700/40 hover:bg-emerald-900/40 hover:border-emerald-500');
                 });
 
-                // ── Variantes (sus4 y otros) ─────────────────────────────────────────
+                // ── Variantes (sus4, #IVm7b5 y otras reinterpretaciones) ─────────────
                 let htmlVar = '';
                 gObj.areas.intercambio.forEach(v => {
-                    if (!v.sus4) return;
+                    if (!v.sus4 && !v.raisedFourth) return;
                     const c = window.diccionarioActual[gObj.id + "_" + v.tipo];
                     if (!c) return;
-                    const romanLabel = v.sus4Voicing === 'fmaj7' ? 'IVmaj7/V' : 'IIm7/V';
+                    const romanLabel = v.sus4 ? (v.sus4Voicing === 'fmaj7' ? 'IVmaj7/V' : 'IIm7/V')
+                                              : v.name; // raisedFourth muestra su propio nombre (#IVm7b5)
                     htmlVar += btnAcorde(c.id, c.nombre, romanLabel,
                         'bg-amber-900/20 border-amber-700/40 hover:bg-amber-900/40 hover:border-amber-500');
                 });
 
-                // ── Cadencias al grado — en grid de 2 columnas ───────────────────────
+                // ── Cadencias al grado — dos columnas (V7 | subV7), cada una con su ──
+                // ── resolución deceptiva al final ────────────────────────────────────
                 const cadPrinc = gObj.areas.cadencias.filter(c => !c.c2.roman.toLowerCase().includes('sub'));
                 const cadSubs  = gObj.areas.cadencias.filter(c =>  c.c2.roman.toLowerCase().includes('sub'));
-                const todasCad = [...cadPrinc, ...cadSubs];
-                let htmlCadItems = '';
-                todasCad.forEach((v, idx) => {
-                    const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"];
-                    const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"];
-                    if (!c1 || !c2) return;
-                    // Separator before subV7 cadences when both groups exist
-                    if (cadPrinc.length > 0 && cadSubs.length > 0 && idx === cadPrinc.length)
-                        htmlCadItems += `<div class="col-span-2 h-px bg-slate-700/60"></div>`;
-                    htmlCadItems += btnCadencia(c1.id, c2.id, c1.nombre, c2.nombre,
-                        v.c1.roman.trim() || '—', v.c2.roman || v.name,
-                        'bg-slate-800/80 border-slate-700 hover:bg-slate-700 hover:border-rose-400');
-                });
-                const htmlCad = htmlCadItems
-                    ? `<div class="grid grid-cols-2 gap-1.5">${htmlCadItems}</div>`
+                const decSecMap = {};
+                if (gObj.areas.deceptivasSecundarias) {
+                    gObj.areas.deceptivasSecundarias.forEach(d => {
+                        d.dominantesPrevios.forEach(domId => { decSecMap[domId] = d; });
+                    });
+                }
+
+                // Build one column of cadence buttons + optional deceptive button at the end.
+                // tituloRomano y domGradoId se derivan del c2 de las cadencias de la columna.
+                const construirColumna = (cads, domGradoId, tituloRomano) => {
+                    let items = '';
+                    cads.forEach(v => {
+                        const c1 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_1"];
+                        const c2 = window.diccionarioActual[gObj.id + "_" + v.tipo + "_2"];
+                        if (!c1 || !c2) return;
+                        items += btnCadencia(c1.id, c2.id, c1.nombre, c2.nombre,
+                            v.c1.roman.trim() || '—', v.c2.roman || v.name,
+                            'bg-slate-800/80 border-slate-700 hover:bg-slate-700 hover:border-rose-400');
+                    });
+                    if (!items) return '';
+                    // Deceptive resolution for this column's dominant (only if defined for this grade)
+                    const dec = domGradoId ? decSecMap[domGradoId] : null;
+                    if (dec) {
+                        const cDec = window.diccionarioActual[dec.ref];
+                        if (cDec) {
+                            items += `<div class="flex items-center gap-1.5 mt-1 mb-0.5">
+                                <div class="h-px bg-purple-700/40 flex-1"></div>
+                                <span class="text-[8px] font-bold uppercase tracking-wider text-purple-400/80">resol. deceptiva</span>
+                                <div class="h-px bg-purple-700/40 flex-1"></div>
+                            </div>`;
+                            items += `<button onclick="window.agregarResolucionDeceptivaSecundaria('${dec.ref}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');"
+                                title="Resolución deceptiva de ${tituloRomano}"
+                                class="flex items-center justify-between gap-2 w-full px-3 py-2 rounded-lg border bg-purple-900/20 border-purple-700/40 hover:bg-purple-900/40 hover:border-purple-500 transition-all text-left">
+                                <span class="text-sm font-bold text-purple-200">⤳ ${cDec.nombre}</span>
+                                <span class="text-[10px] font-bold text-purple-400/70 shrink-0">${dec.label}</span>
+                            </button>`;
+                        }
+                    }
+                    // Column title only when there's a deceptive resolution to distinguish columns
+                    const titulo = dec ? `<div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pb-1 mb-0.5 border-b border-slate-700/60">${tituloRomano}</div>` : '';
+                    return titulo + items;
+                };
+
+                // Derive the dominant gradoId and roman title from each column's cadences.
+                // The dominant's intrinsic gradoId follows the pattern: {grade}_{grade}_V7 / _subV7
+                const domV7Id   = gObj.id + "_" + gObj.id + "_V7";
+                const domSubId  = gObj.id + "_" + gObj.id + "_subV7";
+                const tituloV7  = cadPrinc.length > 0 ? (cadPrinc[0].c2.roman || 'V7') : 'V7';
+                const tituloSub = cadSubs.length  > 0 ? (cadSubs[0].c2.roman  || 'subV7') : 'subV7';
+                const colPrinc = construirColumna(cadPrinc, decSecMap[domV7Id] ? domV7Id : null, tituloV7);
+                const colSubs  = construirColumna(cadSubs, decSecMap[domSubId] ? domSubId : null, tituloSub);
+                const htmlCad = (colPrinc || colSubs)
+                    ? `<div class="grid grid-cols-2 gap-3">
+                          <div class="flex flex-col gap-1.5">${colPrinc}</div>
+                          <div class="flex flex-col gap-1.5">${colSubs}</div>
+                       </div>`
                     : `<div class="text-[10px] text-slate-600 italic px-2">No aplica</div>`;
 
-                // ── Assemble: top row 3 cols, bottom row cadencias full-width ─────────
+                // ── Resoluciones deceptivas (solo V7): botones pequeños en una fila ──
+                let htmlDeceptivas = '';
+                if (gObj.areas.deceptivas) {
+                    gObj.areas.deceptivas.forEach(d => {
+                        const c = window.diccionarioActual[d.ref];
+                        if (!c) return;
+                        htmlDeceptivas += `<button onclick="window.agregarResolucionDeceptiva('${d.ref}'); document.getElementById('panel-variantes-armonicas').classList.add('hidden');"
+                            class="px-2 py-2 rounded-lg border bg-slate-800/80 border-slate-700 hover:bg-slate-700 hover:border-purple-400 transition-all text-center">
+                            <span class="block text-[13px] font-extrabold text-slate-100 leading-tight">${c.nombre}</span>
+                            <span class="block text-[9px] font-bold text-slate-500 leading-tight mt-0.5">${d.label}</span>
+                        </button>`;
+                    });
+                }
+
+                // ── Assemble: top row 3 cols, then cadencias, then deceptivas ────────
                 const html = `
                 <div class="flex items-center gap-2 mb-3">
                     <span class="text-slate-200 font-extrabold text-sm">${gradoNombre}</span>
@@ -4696,13 +4836,21 @@ window.crearPiano = function() {
                     ${seccion('Disminuidos',        'bg-emerald-400', 'border-emerald-700/30', htmlDim)}
                     ${seccion('Variantes',          'bg-amber-400',   'border-amber-700/30',   htmlVar)}
                 </div>
-                <div>
+                <div${htmlDeceptivas ? ' class="mb-4"' : ''}>
                     <div class="flex items-center gap-1.5 mb-1.5">
                         <div class="w-1.5 h-1.5 rounded-full bg-rose-400"></div>
                         <span class="text-[10px] font-bold uppercase tracking-widest text-rose-400">Cadencias al ${romano}</span>
                     </div>
                     ${htmlCad}
-                </div>`;
+                </div>
+                ${htmlDeceptivas ? `
+                <div>
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-purple-400">Resolución deceptiva</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1.5">${htmlDeceptivas}</div>
+                </div>` : ''}`;
 
                 panel.innerHTML = html;
 
@@ -5638,6 +5786,69 @@ window.ingresarSilencio = async function() {
             window.tocarAcorde([...c1.trebleMidi, c1.bassNoteMidi !== undefined ? c1.bassNoteMidi : c1.rootMidi].map(m => window.midiATone(m, c1.spellings)), c1.beats * negraSecs, Tone.now());
             window.tocarAcorde([...c2.trebleMidi, c2.bassNoteMidi !== undefined ? c2.bassNoteMidi : c2.rootMidi].map(m => window.midiATone(m, c2.spellings)), c2.beats * negraSecs, Tone.now() + (c1.beats * negraSecs));
             if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
+        };
+
+        // Ingresa una resolución deceptiva del V7: añade el acorde referenciado
+        // (conservando su grado original) y, si el acorde inmediatamente anterior es
+        // un V7 (diatónico o sus4), cambia su análisis a "(V7)" con paréntesis.
+        window.agregarResolucionDeceptiva = async function(refGradoId) {
+            document.getElementById('panel-variantes-armonicas').classList.add('hidden');
+            // Índice donde quedará el nuevo acorde
+            const indexNuevo = (window.indiceEdicion !== -1) ? window.indiceEdicion : window.progresion.length;
+            // Encontrar el acorde previo real (saltando silencios)
+            let prevIdx = indexNuevo - 1;
+            while (prevIdx >= 0 && window.progresion[prevIdx] && window.progresion[prevIdx].isRest) prevIdx--;
+            const prev = prevIdx >= 0 ? window.progresion[prevIdx] : null;
+
+            // Ingresar el acorde de resolución como un acorde normal
+            await window.agregarAcordeGrado(refGradoId);
+
+            // Si el acorde previo es un V7 (diatónico 'V' o sus4), marcar su análisis con paréntesis
+            if (prev && !prev.isRest) {
+                const esV7 = prev.gradoId === 'V';
+                const dictPrev = window.diccionarioActual[prev.gradoId];
+                const esV7sus4 = dictPrev && dictPrev.sus4;
+                if (esV7 || esV7sus4) {
+                    const romanActual = prev.roman || (esV7sus4 ? 'V7sus4' : 'V7');
+                    // Evitar doble paréntesis
+                    if (!romanActual.startsWith('(')) {
+                        prev.roman = '(' + romanActual + ')';
+                        prev.resolucionDeceptiva = true;
+                        window.actualizarTimeline();
+                        window.renderizarPartitura();
+                        window.guardarEstado();
+                    }
+                }
+            }
+        };
+
+        // Resolución deceptiva de dominantes secundarios/sustitutos.
+        // Igual que la del V7 primario, pero el dominante previo válido es cualquier
+        // dominante secundario (_V7) o sustituto (_subV7), y se marca con paréntesis.
+        window.agregarResolucionDeceptivaSecundaria = async function(refGradoId) {
+            document.getElementById('panel-variantes-armonicas').classList.add('hidden');
+            const indexNuevo = (window.indiceEdicion !== -1) ? window.indiceEdicion : window.progresion.length;
+            let prevIdx = indexNuevo - 1;
+            while (prevIdx >= 0 && window.progresion[prevIdx] && window.progresion[prevIdx].isRest) prevIdx--;
+            const prev = prevIdx >= 0 ? window.progresion[prevIdx] : null;
+
+            await window.agregarAcordeGrado(refGradoId);
+
+            // Marcar con paréntesis si el previo es un dominante secundario o sustituto.
+            // Se detecta por su análisis romano (contiene "V7/" o "subV7/"), ya que el
+            // gradoId de un dominante dentro de una cadencia termina en "_2", no en "_V7".
+            if (prev && !prev.isRest) {
+                const romanActual = prev.roman || '';
+                const romanLimpio = romanActual.replace(/[()]/g, '');
+                const esDominanteSec = /^subV7\//.test(romanLimpio) || /^V7\//.test(romanLimpio);
+                if (esDominanteSec && !romanActual.startsWith('(')) {
+                    prev.roman = '(' + romanActual + ')';
+                    prev.resolucionDeceptiva = true;
+                    window.actualizarTimeline();
+                    window.renderizarPartitura();
+                    window.guardarEstado();
+                }
+            }
         };
 
         // ============================================================
